@@ -1,22 +1,11 @@
-(ns chrono.core)
+(ns chrono.core
+  (:require [chrono.util :as util]))
 
-
-(defn simplify [key default max [t r]]
-  (let [v (get t key)]
-    (vector
-     (assoc t key (if v
-                    (rem (+ r v) max)
-                    (+ r default)))
-     (if v
-       (quot (+ r v) max)
-       0))))
-
-(defn normalize [t]
-  (->> [t 0]
-       (simplify :second 0 60)
-       (simplify :minute 0 60)
-       (simplify :hour 0 24)
-       first))
+(defn datetime [t]
+  (merge {:type :datetime
+          :year 1900
+          :month 1
+          :day 1} t))
 
 (defn parse [s format])
 
@@ -27,9 +16,7 @@
 (defn diff [t t'])
 
 (defn plus [t i]
-  (normalize
+  (util/normalize
    (merge-with + t i)))
 
 (defn to-tz [t tz])
-
-(defn datetime [t])
