@@ -1,24 +1,22 @@
 (ns chrono.core)
 
-(def fields-hierarchy
-  [[:second 0 60 :minute]
-   [:minute 0 60]
-   [:hour 0 24]
-   :day
-   :month
-   :year])
 
-(defmulti normalize-field (fn [k _] (if (vector? k) (first k) k)))
-
-(defmethod normalize-field :default [k t]
-  )
-
+(defn simplify [key default max [t r]]
+  (let [v (get t key)]
+    (vector
+     (assoc t key (if v
+                    (rem (+ r v) max)
+                    (+ r default)))
+     (if v
+       (quot (+ r v) max)
+       0))))
 
 (defn normalize [t]
-  (reduce (fn [t key]
-            (merge t (normalize-field key t)))
-          t
-          fields-hierarchy))
+  (->> [t 0]
+       (simplify :second 0 60)
+       (simplify :minute 0 60)
+       (simplify :hour 0 24)
+       first))
 
 (defn parse [s format])
 
