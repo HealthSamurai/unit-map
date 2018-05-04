@@ -59,4 +59,4 @@
                (simplify :minute 60)
                (simplify :hour)
                first)
-    :else t))
+    t))
