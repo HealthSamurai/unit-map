@@ -1,0 +1,6 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure     {:mvn/version "1.10.0-alpha4"}
+        org.clojure/clojurescript {:mvn/version "1.10.238"}}
+
+ :aliases {:dev {:extra-paths ["test"]
+                 :extra-deps {matcho {:mvn/version "0.1.0-RC6"}}}}}
