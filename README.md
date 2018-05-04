@@ -1,6 +1,6 @@
 # chrono
 
-Pure clojure time implementation for clj & cljs
+Pure clojure time made simple for clj & cljs
 
 ## Usage
 
