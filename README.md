@@ -2,6 +2,8 @@
 
 Pure clojure time made simple for clj & cljs
 
+![clock](clocks.png)
+
 ## Usage
 
 ```clj
