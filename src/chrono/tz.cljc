@@ -170,6 +170,7 @@
     (assoc (plus t {:h (- off)}) :tz tz)))
 
 ;; iso is default
+(def default-time {:y 0 :m 1 :d 1 :h 0 :mi 0 :s 0})
 (defn format [t & [fmt-vec]]
   (str/join "" (mapv (fn [x] (if (keyword? x) (get t x) x)) fmt-vec)))
 

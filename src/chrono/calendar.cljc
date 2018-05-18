@@ -58,28 +58,28 @@
 (defn for-month [y m & [{today :today active :active}]]
   (let [start-day (day-of-week y m 1)
         pm-num-days (number-of-days y (dec m))
-        pm-last-day {:m (dec m) :d pm-num-days}
+        pm-last-day {:month (dec m) :day pm-num-days}
         start-cal (if (= 0 start-day)
-                    {:m m :d 1}
-                    {:m (dec m) :d (inc (- pm-num-days start-day))})
+                    {:month m :day 1}
+                    {:month (dec m) :day (inc (- pm-num-days start-day))})
         num-d     (number-of-days y m)]
-    {:y y :m m
+    {:year y :month m
      :cal (for [r (range 6)]
             (for [wd (range 7)]
               (let [idx (+ (* r 7) wd)
                     d (inc (- idx start-day))
                     cell (cond
                            (< idx start-day)
-                           {:y y :m (dec m) :d (+ (:d start-cal) idx)}
+                           {:year y :month (dec m) :day (+ (:day start-cal) idx)}
 
                            (> d num-d)
-                           {:y y :m (inc m) :d (inc (- idx start-day num-d))}
+                           {:year y :month (inc m) :day (inc (- idx start-day num-d))}
 
                            :else
-                           {:y y :m m :d d :current true})]
-                (if (and (= (:y cell) (:y active))
-                         (= (:m cell) (:m active))
-                         (= (:d cell) (:d active)))
+                           {:year y :month m :day d :current true})]
+                (if (and (= (:year cell) (:year active))
+                         (= (:month cell) (:month active))
+                         (= (:day cell) (:day active)))
                   (assoc cell :active true)
                   cell))))}))
 
@@ -98,8 +98,8 @@
    12 {:name  "December" :short "Dec"}})
 
 (defn today []
-  #?(:clj {:y 2018 :m 4 :d 27})
+  #?(:clj {:year 2018 :month 4 :day 27})
   #?(:cljs (let [d (js/Date.)]
-             {:y (.getFullYear d)
-              :m (inc (.getMonth d))
-              :d (.getDate d)})))
+             {:year (.getFullYear d)
+              :month (inc (.getMonth d))
+              :day (.getDate d)})))
