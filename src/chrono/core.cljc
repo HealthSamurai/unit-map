@@ -77,7 +77,7 @@
 
         [y' mm' d] (when (and d y' mm')
                      (if (< 0 d 28)
-                       [nil d nil]
+                       [y' mm' d]
                        (days-and-months y' mm' d)))
 
         mm (when (or mm' mm'') (+ (or mm' 0) (or mm'' 0)))
@@ -86,13 +86,13 @@
 
         y (when (or y' y'' y+) (+ (or y' 0) (or y'' 0) (or y+ 0)))]
     (cond-> {}
-      ms (assoc :ms ms)
-      s (assoc :sec s)
-      m (assoc :min m)
-      h (assoc :hour h)
-      d (assoc :day d)
-      mm (assoc :month mm)
-      y (assoc :year y))))
+      ms  (assoc :ms ms)
+      s   (assoc :sec s)
+      m   (assoc :min m)
+      h   (assoc :hour h)
+      d   (assoc :day d)
+      mm  (assoc :month mm)
+      y   (assoc :year y))))
 
 (defn day-of-week
   "m 1-12; y > 1752"
@@ -117,7 +117,6 @@
           (< dw' dw) (+ d (- dw dw')))))
 
 (def more-or-eq (memoize *more-or-eq))
-
 
 (defmethod day-saving
   :ny
