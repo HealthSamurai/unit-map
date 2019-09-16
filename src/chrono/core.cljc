@@ -1,6 +1,8 @@
 (ns chrono.core
   (:require [chrono.util :as util]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            #?(:cljs [goog.string])
+            #?(:cljs [goog.string.format])))
 
 (defn datetime [t]
   (merge {:type :datetime
@@ -196,18 +198,26 @@
     #?(:clj (Integer/parseInt x)
        :cljs (js/parseInt  x))))
 
-
 ;; iso is default
 (defn parse [s & [fmt]]
-  (let [[y m d h mi s ms] (str/split s #"[- T:.]")]
-    (reduce (fn [acc [k v]]
-              (if v (assoc acc k (parse-int v)) acc))
-            {}
-            {:year y :month m :day d :hour h :min mi :sec s :ms ms})))
+  (let [[y m d h mi s ms] (str/split s #"[-Zz/ T:.]")]
+    (reduce-kv
+     (fn [acc k v]
+      (if v (assoc acc k (parse-int v)) acc))
+     {}
+     {:year y :month m :day d :hour h :min mi :sec s :ms ms})))
 
 (defn format [t & [fmt-vec]]
-  (str/join "" (mapv (fn [x] (if (keyword? x) (get t x) x)) fmt-vec)))
-
+  (->> fmt-vec
+       (mapv #(cond
+                (keyword? %) (get t %)
+                (vector? %)  (let [[fmt kw] %]
+                               (#?(:clj  clojure.core/format
+                                   :cljs goog.string/format)
+                                fmt (get t kw)))
+                :else        %))
+       (str/join "")))
+(defn foo [ ] 1)
 
 (defn timestamp [t])
 
