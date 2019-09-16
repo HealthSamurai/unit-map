@@ -8,6 +8,31 @@
           :month 1
           :day 1} t))
 
+(defn now []
+  (let [now   (#?(:clj  java.time.LocalDateTime/now
+                  :cljs js/Date.))
+        year  #?(:clj  (-> now .getYear)
+                 :cljs (-> now .getFullYear))
+        month #?(:clj  (-> now .getMonthValue)
+                 :cljs (-> now .getMonth inc))
+        day   #?(:clj  (-> now .getDayOfMonth)
+                 :cljs (-> now .getDate))
+        hour  #?(:clj  (-> now .getHour)
+                 :cljs (-> now .getHours))
+        min   #?(:clj  (-> now .getMinute)
+                 :cljs (-> now .getMinutes))
+        sec   #?(:clj  (-> now .getSecond)
+                 :cljs (-> now .getSeconds))
+        ms    #?(:clj  (-> now .getNano (/ 1000000))
+                 :cljs (-> now .getMilliseconds))]
+    {:year  year
+     :month month
+     :day   day
+     :hour  hour
+     :min   min
+     :sec   sec
+     :ms    ms}))
+
 (def month-length
   {1 31
    2 {true 28 false 29}
