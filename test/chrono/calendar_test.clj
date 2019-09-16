@@ -34,13 +34,13 @@
 
   (matcho/match
    (cal/for-month 2018 3)
-   {:y 2018 :m 3
-    :cal [[{:m 2 :d 25} {:m 2 :d 26} {:m 2 :d 27} {:m 2 :d 28} {:m 3 :d 1} {:m 3 :d 2} {:m 3 :d 3}]
-          [{:m 3 :d 4} {:m 3 :d 5} {:m 3 :d 6} {:m 3 :d 7} {:m 3 :d 8} {:m 3 :d 9} {:m 3 :d 10}]
-          [{:m 3 :d 11} {:m 3 :d 12} {:m 3 :d 13} {:m 3 :d 14} {:m 3 :d 15} {:m 3 :d 16} {:m 3 :d 17}]
+   {:year 2018 :month 3
+    :cal [[{:month 2 :day 25} {:month 2 :day 26} {:month 2 :day 27} {:month 2 :day 28} {:month 3 :day 1} {:month 3 :day 2} {:month 3 :day 3}]
+          [{:month 3 :day 4} {:month 3 :day 5} {:month 3 :day 6} {:month 3 :day 7} {:month 3 :day 8} {:month 3 :day 9} {:month 3 :day 10}]
+          [{:month 3 :day 11} {:month 3 :day 12} {:month 3 :day 13} {:month 3 :day 14} {:month 3 :day 15} {:month 3 :day 16} {:month 3 :day 17}]
           []
           []
-          [{:m 4 :d 1} {:m 4 :d 2} {:m 4 :d 3} {:m 4 :d 4} {:m 4 :d 5} {:m 4 :d 6} {:m 4 :d 7}]]})
+          [{:month 4 :day 1} {:month 4 :day 2} {:month 4 :day 3} {:month 4 :day 4} {:month 4 :day 5} {:month 4 :day 6} {:month 4 :day 7}]]})
 
 
   )
