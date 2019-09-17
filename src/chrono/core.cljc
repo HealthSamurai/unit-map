@@ -4,6 +4,8 @@
             #?(:cljs [goog.string])
             #?(:cljs [goog.string.format])))
 
+(def sprintf #?(:clj  clojure.core/format, :cljs goog.string/format))
+
 (defn datetime [t]
   (merge {:type :datetime
           :year 1900
@@ -196,19 +198,19 @@
     #?(:clj (Integer/parseInt x)
        :cljs (js/parseInt  x))))
 
-(def iso-fmt [:year "-" :month "-" :day "T" :hh ":" :min ":" :sec "." :ms])
+(def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 (def parse-patterns
   {:year  #"\d{1,4}"
    :month #"[01]?\d"
    :day   #"[0-3]?\d"
-   :hour  #"(?:[0-1]?\d|2[0-4])"
+   :hour  #"(?:2[0-4]|[0-1]?\d)"
    :min   #"[0-5]?\d"
    :sec   #"[0-5]?\d"
    :ms    #"\d{1,3}"})
 
 (def format-patterns
-  {:year  0
+  {:year  1
    :month 2
    :day   2
    :hour  2
@@ -221,41 +223,33 @@
 (defn parse
   ([s] (parse s iso-fmt))
   ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) second) fmt)
+   (prn )
+   (let [fmt (map #(cond-> % (vector? %) first) fmt)
          pat (map #(parse-patterns % %) fmt)]
      (loop [s            s
             [f & rest-f] fmt
             [p & rest-p] pat
             acc          {}]
-       (if (nil? f)
+       (if-not (and s f)
          acc
-         (let [ahead            (str \( (str/join rest-p) \))
-               [_ cur-s rest-s] (-> (str \( p \) ahead)
-                                    re-pattern
-                                    (re-matches s))]
+         (let [ahead            "(.+)?"
+               [_ cur-s rest-s] (re-matches (re-pattern (str \( p \) ahead)) s)]
            (recur rest-s rest-f rest-p
                   (cond-> acc
                     (contains? parse-patterns f)
                     (assoc f (parse-int cur-s))))))))))
 
-#_(is (= (parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
-         {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
-
 (defn format
   ([t] (format t iso-fmt))
   ([t fmt-vec]
    (->> fmt-vec
-        (mapv #(cond
-                 (keyword? %) (get t %)
-                 (vector? %)  (let [[fmt kw] %]
-                                (#?(:clj  clojure.core/format
-                                    :cljs goog.string/format)
-                                 fmt (get t kw)))
-                 :else        %))
-        (str/join ""))))
-
-#_(is (= (parse (format {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}))
-         {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}))
+        (mapv (fn form [x]
+                (let [kw (cond-> x (vector? x) first)
+                      v  (get t kw)]
+                  (if v
+                    (sprintf (str "%0" (if (vector? x) (second x) (format-patterns x)) \d) v)
+                    x))))
+        str/join)))
 
 (defn timestamp [t])
 
