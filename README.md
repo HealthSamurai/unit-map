@@ -26,7 +26,7 @@ Pure clojure time made simple for clj & cljs
 (ch/to-tz t :ny)
 (ch/to-tz t :utc)
 
-(def iso [:year "-" :month "-" :day "T" :h ":" :min ":" :sec])
+(def iso [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec])
 (ch/format t iso) 
 (ch/parse t iso) 
 
