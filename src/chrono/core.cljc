@@ -39,7 +39,7 @@
 
 (def month-length
   {1 31
-   2 {true 28 false 29}
+   2 {true 29, false 28}
    3 31
    4 30
    5 31
@@ -52,21 +52,23 @@
    12 31})
 
 (defn is-leap? [y]
-  (if (= 0 (rem y 100))
-    (= 0 (rem y 400))
-    (= 0 (rem y 4))))
+  (if (zero? (rem y 100))
+    (zero? (rem y 400))
+    (zero? (rem y 4))))
 
-(defn number-of-days [y m]
-  (if (not (= 2 m))
-    (get month-length m)
-    (if (is-leap? y) 29 28)))
+(defn number-of-days [m leap?]
+  (let [l (get month-length m)]
+    (cond-> l (map? l) (get leap?))))
+
+(defn year-number-of-days [y m]
+  (number-of-days m (is-leap? y)))
 
 (defn days-and-months [y m d]
   (if (<= 1 d 27)
     [y m d]
     (cond
       (> d 0)
-      (let [num-days (number-of-days y m)
+      (let [num-days (year-number-of-days y m)
             dd (- d num-days)]
         (if (<= d num-days)
           [y m d]
@@ -76,8 +78,8 @@
 
       (<= d 0)
       (let [[num-days ny nm] (if (= m 1)
-                               [(number-of-days (dec y) 12) (dec y) 12]
-                               [(number-of-days y (dec m)) y (dec m)])
+                               [(year-number-of-days (dec y) 12) (dec y) 12]
+                               [(year-number-of-days y (dec m)) y (dec m)])
             dd (+ num-days d)]
         (if (< 0 dd)
           [ny nm dd]
