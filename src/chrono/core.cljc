@@ -245,8 +245,8 @@
    (->> fmt-vec
         (mapv (fn form [x]
                 (let [kw (cond-> x (vector? x) first)
-                      v  (get t kw)]
-                  (if v
+                      v  (get t kw 0)]
+                  (if (contains? format-patterns kw)
                     (sprintf (str "%0" (if (vector? x) (second x) (format-patterns x)) \d) v)
                     x))))
         str/join)))
