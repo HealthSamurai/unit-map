@@ -83,38 +83,27 @@
           [ny nm dd]
           (days-and-months ny nm dd))))))
 
+(defn- safe+ [& args]
+  (when (some identity args)
+    (reduce + (map #(or % 0) args))))
+
+(def ^{:private true} rem-quot (juxt rem quot))
 
 (defn plus
   [{ms' :ms s' :sec m' :min h' :hour d' :day mm' :month y' :year :as t}
    {ms'' :ms s'' :sec m'' :min h'' :hour d'' :day mm'' :month y'' :year :as i}]
-  (let [ms      (when (or ms' ms'') (+ (or ms' 0) (or ms'' 0)))
-        [ms s+] (when ms [(rem ms 1000) (quot ms 1000)])
-
-        s (when (or s' s'' s+) (+ (or s' 0) (or s'' 0) (or s+ 0)))
-
-        [s m+] (when s [(rem s 60) (quot s 60)])
-
-        m (when (or m' m'' m+) (+ (or m' 0) (or m'' 0) (or m+ 0)))
-
-        [m h+] (when m [(rem m 60) (quot m 60)])
-
-        h (when (or h' h'' h+) (+ (or h' 0) (or h'' 0) (or h+ 0)))
-
-        [h d+] (when h [(rem h 24) (quot h 24)])
-
-        d (when (or d' d'' d+) (+ (or d' 0) (or d'' 0) (or d+ 0)))
-
+  (let [[ms s+] (some-> (safe+ ms' ms'') (rem-quot 1000))
+        [s m+]  (some-> (safe+ s' s'' s+) (rem-quot 60))
+        [m h+]  (some-> (safe+ m' m'' m+) (rem-quot 60))
+        [h d+]  (some-> (safe+ h' h'' h+) (rem-quot 24))
+        d (safe+ d' d'' d+)
         [y' mm' d] (if (and d y' mm')
                      (if (< 0 d 28)
                        [y' mm' d]
                        (days-and-months y' mm' d))
                      [y' mm' d])
-
-        mm (when (or mm' mm'') (+ (or mm' 0) (or mm'' 0)))
-
-        [mm y+] (when mm [(rem mm 12) (quot mm 12)])
-
-        y (when (or y' y'' y+) (+ (or y' 0) (or y'' 0) (or y+ 0)))]
+        [mm y+] (some-> (safe+ mm' mm'') (rem-quot 12))
+        y (safe+ y' y'' y+)]
     (cond-> {}
       ms  (assoc :ms ms)
       s   (assoc :sec s)
@@ -210,7 +199,7 @@
    :ms    "\\d{1,3}"})
 
 (def format-patterns
-  {:year  1
+  {:year  4
    :month 2
    :day   2
    :hour  2
