@@ -217,13 +217,14 @@
    :sec   2
    :ms    3})
 
-;; sanitize "[-.\\+*?\\[^\\]$(){}=!<>|:\\\\]", "\\\\$0"
+(defn sanitize [s]
+  (str/replace s #"[-.\+*?\[^\]$(){}=!<>|:\\]" #(str \\ %)))
 
 (defn parse
   ([s] (parse s iso-fmt))
   ([s fmt]
    (let [fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(parse-patterns % %) fmt)]
+         pat (map #(or (parse-patterns %) (sanitize %)) fmt)]
      (loop [s            s
             [f & rest-f] fmt
             [p & rest-p] pat
