@@ -222,21 +222,17 @@
 (defn parse
   ([s] (parse s iso-fmt))
   ([s fmt]
-   (prn)
    (let [fmt (map #(cond-> % (vector? %) first) fmt)
          pat (map #(parse-patterns % %) fmt)]
      (loop [s            s
             [f & rest-f] fmt
             [p & rest-p] pat
             acc          {}]
-       (prn s f p acc)
        (if-not (and s f)
          acc
          (let [ahead            "(.+)?"
                pat              (re-pattern (str "(" p ")" ahead))
                [_ cur-s rest-s] (re-matches pat s)]
-           (prn ahead p  pat)
-           (prn cur-s rest-s)
            (recur rest-s rest-f rest-p
                   (cond-> acc
                     (contains? parse-patterns f)
