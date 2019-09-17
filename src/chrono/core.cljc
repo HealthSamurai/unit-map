@@ -104,10 +104,11 @@
 
         d (when (or d' d'' d+) (+ (or d' 0) (or d'' 0) (or d+ 0)))
 
-        [y' mm' d] (when (and d y' mm')
+        [y' mm' d] (if (and d y' mm')
                      (if (< 0 d 28)
                        [y' mm' d]
-                       (days-and-months y' mm' d)))
+                       (days-and-months y' mm' d))
+                     [y' mm' d])
 
         mm (when (or mm' mm'') (+ (or mm' 0) (or mm'' 0)))
 
