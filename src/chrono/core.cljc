@@ -220,6 +220,18 @@
 (defn sanitize [s]
   (str/replace s #"[-.\+*?\[^\]$(){}=!<>|:\\]" #(str \\ %)))
 
+(defn mk-ahead [fmt]
+  (let [{:keys [prefix postfix]}
+        (reduce
+         (fn [acc x]
+           (-> acc
+               (update :prefix conj (str \( x))
+               (update :postfix conj ")?")))
+         {:prefix  []
+          :postfix '()}
+         (conj (vec fmt) ".+"))]
+    (str/join (concat prefix postfix))))
+
 (defn parse
   ([s] (parse s iso-fmt))
   ([s fmt]
@@ -231,7 +243,7 @@
             acc          {}]
        (if-not (and s f)
          acc
-         (let [ahead            "(.+)?"
+         (let [ahead            (mk-ahead rest-p)
                pat              (re-pattern (str "(" p ")" ahead))
                [_ cur-s rest-s] (re-matches pat s)]
            (recur rest-s rest-f rest-p
