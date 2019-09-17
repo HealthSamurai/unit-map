@@ -176,7 +176,6 @@
         (= tp tp') (and (not (empty? ps)) (recur ps))
         :else false))))
 
-
 (defn eq? [t t']
   (let [t (merge default-time t)
         t' (merge default-time t')]
@@ -201,13 +200,13 @@
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 (def parse-patterns
-  {:year  #"\d{1,4}"
-   :month #"[01]?\d"
-   :day   #"[0-3]?\d"
-   :hour  #"(?:2[0-4]|[0-1]?\d)"
-   :min   #"[0-5]?\d"
-   :sec   #"[0-5]?\d"
-   :ms    #"\d{1,3}"})
+  {:year  "\\d{1,4}"
+   :month "[01]?\\d"
+   :day   "[0-3]?\\d"
+   :hour  "(?:2[0-4]|[0-1]?\\d)"
+   :min   "[0-5]?\\d"
+   :sec   "[0-5]?\\d"
+   :ms    "\\d{1,3}"})
 
 (def format-patterns
   {:year  1
@@ -223,17 +222,21 @@
 (defn parse
   ([s] (parse s iso-fmt))
   ([s fmt]
-   (prn )
+   (prn)
    (let [fmt (map #(cond-> % (vector? %) first) fmt)
          pat (map #(parse-patterns % %) fmt)]
      (loop [s            s
             [f & rest-f] fmt
             [p & rest-p] pat
             acc          {}]
+       (prn s f p acc)
        (if-not (and s f)
          acc
          (let [ahead            "(.+)?"
-               [_ cur-s rest-s] (re-matches (re-pattern (str \( p \) ahead)) s)]
+               pat              (re-pattern (str "(" p ")" ahead))
+               [_ cur-s rest-s] (re-matches pat s)]
+           (prn ahead p  pat)
+           (prn cur-s rest-s)
            (recur rest-s rest-f rest-p
                   (cond-> acc
                     (contains? parse-patterns f)
