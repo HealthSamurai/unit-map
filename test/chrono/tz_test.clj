@@ -4,6 +4,62 @@
             [matcho.core :as matcho])
   (:import [java.util Date]))
 
+(deftest comparsion-operators-test
+  (testing "="
+    (is (sut/= {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (not (sut/= {:year 2011 :month 1 :day 2 :hour 0}
+                    {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (sut/= {:year 2011 :month 1 :day 1 :hour 1}
+               {:year 2011 :month 1 :day 1 :hour 1}))
+    (is (not (sut/= {:year 2011 :month 1 :day 1 :hour 0}
+                    {:year 2011 :month 1 :day 2 :hour 0}
+                    {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (sut/= {:year 2011 :month 1 :day 1 :hour 0}
+               {:year 2011 :month 1 :day 1 :hour 0}
+               {:year 2011 :month 1 :day 1 :hour 0})))
+  (testing ">"
+    (is (sut/> {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (not (sut/> {:year 2011 :month 1 :day 1 :hour 0}
+                    {:year 2011 :month 1 :day 2 :hour 0})))
+    (is (sut/> {:year 2011 :month 1 :day 2 :hour 0}
+               {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (sut/> {:year 2011 :month 1 :day 2 :hour 0}
+               {:year 2011 :month 1 :day 1 :hour 1}
+               {:year 2011 :month 1 :day 1 :hour 0})))
+  (testing "<"
+    (is (sut/< {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (not (sut/< {:year 2011 :month 1 :day 2 :hour 0}
+                    {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (sut/< {:year 2011 :month 1 :day 1 :hour 0}
+               {:year 2011 :month 1 :day 2 :hour 0}))
+    (is (sut/< {:year 2011 :month 1 :day 1 :hour 0}
+               {:year 2011 :month 1 :day 1 :hour 1}
+               {:year 2011 :month 1 :day 2 :hour 0})))
+  (testing "<="
+    (is (sut/<= {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (sut/<= {:year 2011 :month 1 :day 1 :hour 0}
+                {:year 2011 :month 1 :day 2 :hour 0}))
+    (is (sut/<= {:year 2011 :month 1 :day 1 :hour 0}
+                {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (not (sut/<= {:year 2011 :month 1 :day 2 :hour 0}
+                     {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (sut/<= {:year 2011 :month 1 :day 1 :hour 0}
+                {:year 2011 :month 1 :day 1 :hour 0}
+                {:year 2011 :month 1 :day 2 :hour 0})))
+  (testing ">="
+    (is (sut/>= {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (sut/>= {:year 2011 :month 1 :day 2 :hour 0}
+                {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (sut/>= {:year 2011 :month 1 :day 2 :hour 1}
+                {:year 2011 :month 1 :day 1 :hour 1}
+                {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (not (sut/>= {:year 2011 :month 1 :day 1 :hour 0}
+                     {:year 2011 :month 1 :day 2 :hour 0})))
+    (is (sut/>= {:year 2011 :month 1 :day 2 :hour 0}
+                {:year 2011 :month 1 :day 1 :hour 0}
+                {:year 2011 :month 1 :day 1 :hour 0})))
+  )
+
 (deftest tz-test
   ;; d(2010,3,14,7,0,0),
   (is (= 14 (sut/more-or-eq 2010 3 0 8)))
@@ -142,21 +198,21 @@
    {:in {:month 3 :day 10}
     :out {:month 11 :day 3}})
 
-  (is (sut/before=? {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+  (is (sut/<= {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
                    {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
-  (is (sut/before=?
+  (is (sut/<=
        {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
        {:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}))
 
-  (is (sut/after?
+  (is (sut/>
        {:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}
        {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
-  (is (sut/before=? {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+  (is (sut/<= {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
                    {:year 2018 :month 11}))
 
-  (is (sut/after?
+  (is (sut/>
        {:year 2018 :month 11}
        {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
@@ -195,6 +251,11 @@
    (sut/+ t {:ms 600})
    {:ms 100
     :sec 31})
+
+  (matcho/match
+   (sut/+ {:ms 600} {:ms 600} {:ms 300})
+   {:ms 500
+    :sec 1})
 
   (matcho/match
    (sut/+ t {:sec 20})

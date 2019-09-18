@@ -87,3 +87,8 @@
 (defn diff [t t'])
 
 (def + tz/+)
+(def = tz/=)
+(def > tz/>)
+(def >= tz/>=)
+(def < tz/<)
+(def <= tz/<=)

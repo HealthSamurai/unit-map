@@ -91,6 +91,23 @@
       (normalize-m)
       (normalize-d)))
 
+(def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0] [:ms 0]])
+
+(defn- after? [t t']
+  (loop [[[p s] & ps] defaults-units]
+    (let [tp (get t p s) tp' (get t' p s)]
+      (cond
+        (> tp tp') true
+        (= tp tp') (and (not (empty? ps)) (recur ps))
+        :else false))))
+
+(def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
+
+(defn- eq? [& ts]
+  (apply = (map #(-> (merge default-time %) (select-keys (keys default-time))) ts)))
+
+(def ^{:private true} before=? (complement after?))
+
 (defmulti day-saving "[tz y]" (fn [tz _] tz))
 
 (defmethod day-saving
@@ -109,31 +126,6 @@
            :out-utc (plus (:out ds) {:hour (+ (:offset ds) (:ds ds))}))))
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
-
-(def default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0})
-(def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0]])
-
-
-(defn after? [t t']
-  (loop [[[p s] & ps] defaults-units]
-    (let [tp (get t p s) tp' (get t' p s)]
-      (cond
-        (> tp tp') true
-        (= tp tp') (and (not (empty? ps)) (recur ps))
-        :else false))))
-
-(defn eq? [t t']
-  (let [t (merge default-time t)
-        t' (merge default-time t')]
-    (and
-     (= (:year t) (:year t'))
-     (= (:month t) (:month t'))
-     (= (:day t) (:day t'))
-     (= (:hour t) (:hour t'))
-     (= (:min t) (:min t'))
-     (= (:sec t) (:sec t')))))
-
-(def before=? (complement after?))
 
 (defn to-utc [t]
   (let [ds (day-saving-with-utc (:tz t) (:year t))
@@ -196,4 +188,39 @@
   (d (+ (g 2017 12 31) 1))
   (d (+ (g 2017 12 31) 370)))
 
-(def + plus)
+(defn +
+  ([] default-time)
+  ([x] x)
+  ([x y] (plus x y))
+  ([x y & more]
+   (reduce + (+ x y) more)))
+
+(def = eq?)
+
+(defn >
+  ([x] true)
+  ([x y] (after? x y))
+  ([x y & more]
+   (if (> x y)
+     (if (next more)
+       (recur y (first more) (next more))
+       (> y (first more)))
+     false)))
+
+(defn >=
+  ([x] true)
+  ([x y] (or (> x y) (= x y)))
+  ([x y & more]
+   (if (>= x y)
+     (if (next more)
+       (recur y (first more) (next more))
+       (>= y (first more)))
+     false)))
+
+(defn <
+  ([x] true)
+  ([x & args] (apply (complement >=) x args)))
+
+(defn <=
+  ([x] true)
+  ([x & args] (apply (complement >) x args)))
