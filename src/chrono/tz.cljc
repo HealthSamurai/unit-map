@@ -74,12 +74,6 @@
       (assoc x :year y :month m :day d))
     x))
 
-(defn init-plus [r i]
-  (->>
-   (concat (keys (dissoc r :tz)) (keys i))
-   (into #{})
-   (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
-
 (defn normalize [t]
   (->> t
        normalize-ms
@@ -90,6 +84,12 @@
        normalize-d
        (remove (comp zero? val))
        (into {})))
+
+(defn init-plus [r i]
+  (->>
+   (concat (keys (dissoc r :tz)) (keys i))
+   (into #{})
+   (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
 
 (defn- plus
   "time & interval"
@@ -105,11 +105,6 @@
         (> tp tp') true
         (= tp tp') (and (not (empty? ps)) (recur ps))
         :else false))))
-
-(def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
-
-(defn- eq? [& ts]
-  (apply = (map #(-> (merge default-time %) (select-keys (keys default-time))) ts)))
 
 (def ^{:private true} before=? (complement after?))
 
@@ -193,6 +188,8 @@
   (d (+ (g 2017 12 31) 1))
   (d (+ (g 2017 12 31) 370)))
 
+(def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
+
 (defn +
   ([] default-time)
   ([x] x)
@@ -200,7 +197,10 @@
   ([x y & more]
    (reduce + (+ x y) more)))
 
-(def = eq?)
+(defn = [& ts]
+  (apply clojure.core/= (map normalize ts)))
+
+(def not= (complement =))
 
 (defn >
   ([x] true)

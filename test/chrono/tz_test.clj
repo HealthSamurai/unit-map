@@ -17,6 +17,18 @@
     (is (sut/= {:year 2011 :month 1 :day 1 :hour 0}
                {:year 2011 :month 1 :day 1 :hour 0}
                {:year 2011 :month 1 :day 1 :hour 0})))
+  (testing "not="
+    (is (not (sut/not= {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (not (sut/not= {:year 2011 :month 1 :day 1 :hour 0}
+                       {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (sut/not= {:year 2011 :month 1 :day 2 :hour 1}
+                  {:year 2011 :month 1 :day 1 :hour 1}))
+    (is (not (sut/not= {:year 2011 :month 1 :day 1 :hour 0}
+                       {:year 2011 :month 1 :day 1 :hour 0}
+                       {:year 2011 :month 1 :day 1 :hour 0})))
+    (is (sut/not= {:year 2011 :month 1 :day 1 :hour 0}
+                  {:year 2011 :month 1 :day 2 :hour 0}
+                  {:year 2011 :month 1 :day 1 :hour 0})))
   (testing ">"
     (is (sut/> {:year 2011 :month 1 :day 1 :hour 0}))
     (is (not (sut/> {:year 2011 :month 1 :day 1 :hour 0}
