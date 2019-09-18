@@ -31,7 +31,7 @@
 
 (defn gen-norm [k k-next del m]
   (fn [x]
-    (if-let [z (get x k)] 
+    (if-let [z (get x k)]
       (let [ds (int (/ z del))
             s  (or (get x k-next) m)
             r  (rem z del)]
@@ -80,16 +80,21 @@
    (into #{})
    (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
 
+(defn normalize [t]
+  (->> t
+       normalize-ms
+       normalize-s
+       normalize-mi
+       normalize-h
+       normalize-m
+       normalize-d
+       (remove (comp zero? val))
+       (into {})))
+
 (defn- plus
   "time & interval"
   [t i]
-  (-> (init-plus t i)
-      (normalize-ms)
-      (normalize-s)
-      (normalize-mi)
-      (normalize-h)
-      (normalize-m)
-      (normalize-d)))
+  (normalize (init-plus t i)))
 
 (def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0] [:ms 0]])
 

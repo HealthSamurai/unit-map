@@ -24,6 +24,8 @@ Pure clojure time made simple for clj & cljs
 (ch/+ t {:min 100}) ;; => {:min 40, :day 29, :hour 11, :second 15, :month 1, :year 2018, :minutes 30}
 (ch/+ t {:min -100}) ;; => {:min 20, :day 29, :hour 8, :second 15, :month 1, :year 2018, :minutes 30}
 
+(normalize {:min 100}) ;; => {:min 40, :hour 1}
+
 (def iso [:year \- :month \- :day \T :hour \: :min \: :sec])
 (ch/format t iso) ;; => "2018-01-29T10:30:15"
 (ch/parse "2018-01-29T10:30:15" iso) ;; => {:year 2018, :month 1, :day 29, :hour 10, :min 30, :sec 15}

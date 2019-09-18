@@ -86,6 +86,8 @@
 
 (defn diff [t t'])
 
+(def normalize tz/normalize)
+
 (def + tz/+)
 (def = tz/=)
 (def > tz/>)
