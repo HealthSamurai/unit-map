@@ -98,12 +98,11 @@
    12 {:name  "December" :short "Dec"}})
 
 (defn today []
-  (let [now   (#?(:clj  java.time.LocalDateTime/now
-                  :cljs js/Date.))
-        year  #?(:clj  (-> now .getYear)
-                 :cljs (-> now .getFullYear))
-        month #?(:clj  (-> now .getMonthValue)
-                 :cljs (-> now .getMonth inc))
-        day   #?(:clj  (-> now .getDayOfMonth)
-                 :cljs (-> now .getDate))]
-    {:year year, :month month, :day day}))
+  (let [now (#?(:clj  java.time.LocalDateTime/now
+                :cljs js/Date.))]
+    {:year  #?(:clj  (-> now .getYear)
+               :cljs (-> now .getFullYear))
+     :month #?(:clj  (-> now .getMonthValue)
+               :cljs (-> now .getMonth inc))
+     :day   #?(:clj  (-> now .getDayOfMonth)
+               :cljs (-> now .getDate))}))
