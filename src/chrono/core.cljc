@@ -28,7 +28,28 @@
      :ms    #?(:clj  (-> now .getNano (/ 1000000))
                :cljs (-> now .getMilliseconds))}))
 
+(defn utc-now []
+  (let [now #?(:clj  (java.time.LocalDateTime/ofInstant
+                      (java.time.Instant/now)
+                      java.time.ZoneOffset/UTC)
+               :cljs (js/Date.))]
+    {:year  #?(:clj  (-> now .getYear)
+               :cljs (-> now .getUTCFullYear))
+     :month #?(:clj  (-> now .getMonthValue)
+               :cljs (-> now .getUTCMonth inc))
+     :day   #?(:clj  (-> now .getDayOfMonth)
+               :cljs (-> now .getUTCDate))
+     :hour  #?(:clj  (-> now .getHour)
+               :cljs (-> now .getUTCHours))
+     :min   #?(:clj  (-> now .getMinute)
+               :cljs (-> now .getUTCMinutes))
+     :sec   #?(:clj  (-> now .getSecond)
+               :cljs (-> now .getUTCSeconds))
+     :ms    #?(:clj  (-> now .getNano (/ 1000000))
+               :cljs (-> now .getUTCMilliseconds))}))
+
 (def today cal/today)
+(def utc-today cal/utc-today)
 
 (def ^{:private true} parse-patterns
   {:year  "\\d{1,4}"

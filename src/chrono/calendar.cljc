@@ -106,3 +106,17 @@
                :cljs (-> now .getMonth inc))
      :day   #?(:clj  (-> now .getDayOfMonth)
                :cljs (-> now .getDate))}))
+
+(defn utc-today []
+  (let [now #?(:clj  (java.time.LocalDateTime/ofInstant
+                      (java.time.Instant/now)
+                      java.time.ZoneOffset/UTC)
+               :cljs (js/Date.))]
+    {:year  #?(:clj  (-> now .getYear)
+               :cljs (-> now .getUTCFullYear))
+     :month #?(:clj  (-> now .getMonthValue)
+               :cljs (-> now .getUTCMonth inc))
+     :day   #?(:clj  (-> now .getDayOfMonth)
+               :cljs (-> now .getUTCDate))
+     :hour  #?(:clj  (-> now .getHour)
+               :cljs (-> now .getUTCHours))}))
