@@ -1,5 +1,7 @@
 (ns chrono.core
   (:require [chrono.util :as util]
+            [chrono.tz :as tz]
+            [chrono.calendar :as cal]
             [clojure.string :as str]
             #?(:cljs [goog.string])
             #?(:cljs [goog.string.format])))
@@ -68,7 +70,7 @@
     [y m d]
     (cond
       (> d 0)
-      (let [num-days (year-number-of-days y m)
+      (let [num-days (cal/number-of-days y m)
             dd (- d num-days)]
         (if (<= d num-days)
           [y m d]
@@ -78,8 +80,8 @@
 
       (<= d 0)
       (let [[num-days ny nm] (if (= m 1)
-                               [(year-number-of-days (dec y) 12) (dec y) 12]
-                               [(year-number-of-days y (dec m)) y (dec m)])
+                               [(cal/number-of-days (dec y) 12) (dec y) 12]
+                               [(cal/number-of-days y (dec m)) y (dec m)])
             dd (+ num-days d)]
         (if (< 0 dd)
           [ny nm dd]

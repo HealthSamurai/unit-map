@@ -74,51 +74,51 @@
      {:y 2011 :m 1 :d 1 :h 12 :mi 4 :s 5 :ms 100}))
 
   (matcho/match
-   (tz/plus {:ms 100} {:ms 300})
+   (tz/+ {:ms 100} {:ms 300})
    {:ms 400})
 
   (matcho/match
-   (tz/plus {:ms 900} {:ms 300})
+   (tz/+ {:ms 900} {:ms 300})
    {:ms 200 :s 1})
 
   (matcho/match
-   (tz/plus {:s 40} {:s 50})
+   (tz/+ {:s 40} {:s 50})
    {:s 30 :mi 1})
 
   (matcho/match
-   (tz/plus {:mi 40} {:mi 50})
+   (tz/+ {:mi 40} {:mi 50})
    {:mi 30 :h 1})
 
   (matcho/match
-   (tz/plus {:h 13} {:h 14})
+   (tz/+ {:h 13} {:h 14})
    {:h 3 :d 1})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 1 :h 23} {:h 5})
+   (tz/+ {:y 2011 :m 1 :d 1 :h 23} {:h 5})
    {:y 2011 :m 1 :d 2 :h 4})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 30} {:d 3})
+   (tz/+ {:y 2011 :m 1 :d 30} {:d 3})
    {:y 2011 :m 2 :d 2})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 1} {:d 365})
+   (tz/+ {:y 2011 :m 1 :d 1} {:d 365})
    {:y 2012 :m 1 :d 1})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 12 :d 31 :h 23} {:h 5})
+   (tz/+ {:y 2011 :m 12 :d 31 :h 23} {:h 5})
    {:y 2012 :m 1 :d 1 :h 4})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 1 :h 0} {:h -1})
+   (tz/+ {:y 2011 :m 1 :d 1 :h 0} {:h -1})
    {:y 2010 :m 12 :d 31 :h 23})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 1 :h 0} {:s -1})
+   (tz/+ {:y 2011 :m 1 :d 1 :h 0} {:s -1})
    {:y 2010 :m 12 :d 31 :h 23 :mi 59 :s 59})
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 1 :h 0} {:ms -1})
+   (tz/+ {:y 2011 :m 1 :d 1 :h 0} {:ms -1})
    {:y 2010 :m 12 :d 31 :h 23 :mi 59 :s 59 :ms 999})
 
   (is (= [2011 4 10] (tz/days-and-months 2011 1 100)))
@@ -139,7 +139,7 @@
   (is (= [2012 1 1] (tz/days-and-months 2013 1 -364)))
 
   (matcho/match
-   (tz/plus {:y 2011 :m 1 :d 1 :h 23} {:h -23 :mi -30})
+   (tz/+ {:y 2011 :m 1 :d 1 :h 23} {:h -23 :mi -30})
    {:y 2010 :m 12 :d 31 :h 23 :mi 30}))
 
 (deftest test-timezones

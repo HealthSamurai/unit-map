@@ -18,7 +18,6 @@
 ;; -5:00	NYC	E%sT	1967
 ;; -5:00	US	E%sT
 
-
 ;; rules from tzdb like sun >= 8
 (defn *more-or-eq [y m dw d]
   (let [dw' (cal/day-of-week y m d)]
@@ -32,12 +31,10 @@
 (def iso-fmt [:y "-" :m "-" :d "T" :hh ":" :mi ":" :s "." :ms])
 (defn from-utc [t tz])
 
-
 (defn parse-int [x]
   (when (string? x)
     #?(:clj (Integer/parseInt x)
        :cljs (js/parseInt  x))))
-
 
 ;; iso is default
 (defn parse [s & [fmt]]
@@ -98,7 +95,7 @@
    (into #{})
    (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
 
-(defn plus
+(defn- plus
   "time & interval"
   [t i]
   (-> (init-plus t i)
@@ -213,14 +210,13 @@
         dd  (+ ddd (- (*mmm mi)) 1)]
     [y mm dd]))
 
+(comment
+  (g 2018 3 1)
+  (d (g 2018 1 1))
+  (d (g 2018 3 5))
+  (d (g 2018 7 2))
+  (d (- (g 2018 1 1) 1))
+  (d (+ (g 2017 12 31) 1))
+  (d (+ (g 2017 12 31) 370)))
 
-(g 2018 3 1)
-(d (g 2018 1 1))
-(d (g 2018 3 5))
-(d (g 2018 7 2))
-(d (- (g 2018 1 1) 1))
-(d (+ (g 2017 12 31) 1))
-(d (+ (g 2017 12 31) 370))
-
-
-
+(def + plus)

@@ -196,7 +196,6 @@
 
   (is (= [2012 12 31] (ch/days-and-months 2013 1 0)))
   (is (= [2012 12 30] (ch/days-and-months 2013 1 -1)))
-  
 
   (is (= [2013 1 1] (ch/days-and-months 2013 1 1)))
   (is (= [2013 1 31] (ch/days-and-months 2013 1 31)))
