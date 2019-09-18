@@ -1,6 +1,5 @@
 (ns chrono.tz
-  (:require [chrono.calendar :as cal]
-            [clojure.string :as str]))
+  (:require [chrono.calendar :as cal]))
 
 ;; Rule  US   1967 2006  -   Oct lastSun  2:00  0    S
 ;; Rule  US   1967 1973  -   Apr lastSun  2:00  1:00 D
@@ -28,16 +27,7 @@
 
 (def more-or-eq (memoize *more-or-eq))
 
-(def iso-fmt [:year "-" :month "-" :day "T" :hh ":" :min ":" :sec "." :ms])
 (defn from-utc [t tz])
-
-;; iso is default
-(defn parse [s & [fmt]]
-  (let [[y m d h mi s ms] (str/split s #"[- T:.]")]
-    (reduce (fn [acc [k v]]
-              (if v (assoc acc k (parse-int v)) acc))
-            {}
-            {:year y :month m :day d :hour h :min mi :sec s :ms ms})))
 
 (defn gen-norm [k k-next del m]
   (fn [x]
@@ -158,12 +148,6 @@
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
     (assoc (plus t {:hour (- off)}) :tz tz)))
-
-;; iso is default
-(def default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0})
-(defn format [t & [fmt-vec]]
-  (str/join "" (mapv (fn [x] (if (keyword? x) (get t x) x)) fmt-vec)))
-
 
 ;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 ;; https://alcor.concordia.ca/~gpkatch/gdate-method.html
