@@ -117,6 +117,4 @@
      :month #?(:clj  (-> now .getMonthValue)
                :cljs (-> now .getUTCMonth inc))
      :day   #?(:clj  (-> now .getDayOfMonth)
-               :cljs (-> now .getUTCDate))
-     :hour  #?(:clj  (-> now .getHour)
-               :cljs (-> now .getUTCHours))}))
+               :cljs (-> now .getUTCDate))}))

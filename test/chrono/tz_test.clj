@@ -272,8 +272,7 @@
 
   (matcho/match
    (sut/+ t {:min 30})
-   {:hour 13
-    :min 0})
+   {:hour 13})
 
   (matcho/match
    (sut/+ {:year 2018 :month 12 :day 31} {:day 1})
