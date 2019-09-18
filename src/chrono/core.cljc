@@ -93,17 +93,15 @@
 
 (def ^{:private true} quot-rem (juxt quot rem))
 
-(defn plus
+(defn- plus
   [{ms' :ms s' :sec m' :min h' :hour d' :day mm' :month y' :year :as t}
    {ms'' :ms s'' :sec m'' :min h'' :hour d'' :day mm'' :month y'' :year :as i}]
   (let [[s+ ms] (some-> (safe+ ms' ms'') (quot-rem 1000))
         [m+ s]  (some-> (safe+ s' s'' s+) (quot-rem 60))
         [h+ m]  (some-> (safe+ m' m'' m+) (quot-rem 60))
         [d+ h]  (some-> (safe+ h' h'' h+) (quot-rem 24))
-        d (safe+ d' d'' d+)
-        [y' mm' d] (if (and d y' mm')
-                     (days-and-months y' mm' d)
-                     [y' mm' d])
+        y'mm'd  [y' mm' (safe+ d' d'' d+)]
+        [y' mm' d] (cond->> y'mm'd (every? identity y'mm'd) (apply days-and-months))
         [y+ mm] (some-> (safe+ mm' mm'') (quot-rem 12))
         y (safe+ y' y'' y+)]
     (cond-> {}
@@ -246,3 +244,5 @@
 (defn timestamp [t])
 
 (defn diff [t t'])
+
+(def + plus)

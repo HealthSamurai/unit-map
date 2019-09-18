@@ -44,54 +44,54 @@
 
 (deftest plus-test
   (matcho/match
-   (ch/plus t {:ms 200})
+   (ch/+ t {:ms 200})
    {:ms 700})
 
   (matcho/match
-   (ch/plus t {:ms 600})
+   (ch/+ t {:ms 600})
    {:ms 100
     :sec 31})
 
   (matcho/match
-   (ch/plus t {:sec 20})
+   (ch/+ t {:sec 20})
    {:sec 50})
 
   (matcho/match
-   (ch/plus t {:sec 20})
+   (ch/+ t {:sec 20})
    {:sec 50})
 
   (matcho/match
-   (ch/plus t {:min 20})
+   (ch/+ t {:min 20})
    {:hour 12
     :min 50})
 
   (matcho/match
-   (ch/plus t {:min 30})
+   (ch/+ t {:min 30})
    {:hour 13
     :min 0})
 
   (matcho/match
-   (ch/plus {:year 2018 :month 12 :day 31} {:day 1})
+   (ch/+ {:year 2018 :month 12 :day 31} {:day 1})
    {:year 2019 :month 1 :day 1})
 
   (matcho/match
-   (ch/plus {:year 2018 :month 1 :day 1} {:day 31})
+   (ch/+ {:year 2018 :month 1 :day 1} {:day 31})
    {:year 2018 :month 2 :day 1})
 
   (matcho/match
-   (ch/plus {:year 2018 :month 12 :day 31} {:day 366})
+   (ch/+ {:year 2018 :month 12 :day 31} {:day 366})
    {:year 2020 :month 1 :day 1})
 
   (matcho/match
-   (ch/plus {:year 2018 :month 2 :day 28} {:day 1})
+   (ch/+ {:year 2018 :month 2 :day 28} {:day 1})
    {:year 2018 :month 3 :day 1})
 
   (matcho/match
-   (ch/plus {:year 2018 :month 3 :day 30} {:day 1})
+   (ch/+ {:year 2018 :month 3 :day 30} {:day 1})
    {:year 2018 :month 3 :day 31})
 
   (matcho/match
-   (ch/plus {:year 2018 :month 3 :day 31} {:day 1})
+   (ch/+ {:year 2018 :month 3 :day 31} {:day 1})
    {:year 2018 :month 4 :day 1})
 
 
@@ -140,51 +140,51 @@
   ;; (is (= 5 (ch/offset-for {:year 2010 :month 12 :day 1 :hour 0 :ch :ny})))
 
   (matcho/match
-   (ch/plus {:ms 100} {:ms 300})
+   (ch/+ {:ms 100} {:ms 300})
    {:ms 400})
 
   (matcho/match
-   (ch/plus {:ms 900} {:ms 300})
+   (ch/+ {:ms 900} {:ms 300})
    {:ms 200 :sec 1})
 
   (matcho/match
-   (ch/plus {:sec 40} {:sec 50})
+   (ch/+ {:sec 40} {:sec 50})
    {:sec 30 :min 1})
 
   (matcho/match
-   (ch/plus {:min 40} {:min 50})
+   (ch/+ {:min 40} {:min 50})
    {:min 30 :hour 1})
 
   (matcho/match
-   (ch/plus {:hour 13} {:hour 14})
+   (ch/+ {:hour 13} {:hour 14})
    {:hour 3 :day 1})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 1 :hour 23} {:hour 5})
+   (ch/+ {:year 2011 :month 1 :day 1 :hour 23} {:hour 5})
    {:year 2011 :month 1 :day 2 :hour 4})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 30} {:day 3})
+   (ch/+ {:year 2011 :month 1 :day 30} {:day 3})
    {:year 2011 :month 2 :day 2})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 1} {:day 365})
+   (ch/+ {:year 2011 :month 1 :day 1} {:day 365})
    {:year 2012 :month 1 :day 1})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 12 :day 31 :hour 23} {:hour 5})
+   (ch/+ {:year 2011 :month 12 :day 31 :hour 23} {:hour 5})
    {:year 2012 :month 1 :day 1 :hour 4})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 1 :hour 0} {:hour -1})
+   (ch/+ {:year 2011 :month 1 :day 1 :hour 0} {:hour -1})
    {:year 2010 :month 12 :day 31 :hour 23})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 1 :hour 0} {:sec -1})
+   (ch/+ {:year 2011 :month 1 :day 1 :hour 0} {:sec -1})
    {:year 2010 :month 12 :day 31 :hour 23 :min 59 :sec 59})
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 1 :hour 0} {:ms -1})
+   (ch/+ {:year 2011 :month 1 :day 1 :hour 0} {:ms -1})
    {:year 2010 :month 12 :day 31 :hour 23 :min 59 :sec 59 :ms 999})
 
   (is (= [2011 4 10] (ch/days-and-months 2011 1 100)))
@@ -205,7 +205,7 @@
   (is (= [2012 1 1] (ch/days-and-months 2013 1 -364)))
 
   (matcho/match
-   (ch/plus {:year 2011 :month 1 :day 1 :hour 23} {:hour -23 :min -30})
+   (ch/+ {:year 2011 :month 1 :day 1 :hour 23} {:hour -23 :min -30})
    {:year 2010 :month 12 :day 31 :hour 23 :min 30})
 
 
