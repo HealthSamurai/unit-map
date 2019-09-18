@@ -18,8 +18,11 @@ Pure clojure time made simple for clj & cljs
    :sec   15
    :tz    :utc})
 
-(ch/now) ;; => {:year 2019, :month 9, :day 18, :hour 15, :min 50, :sec 2, :ms 842}
-         ;;    (^^^                    current local time                     ^^^)
+(ch/now)     ;; => {:year 2019, :month 9, :day 18, :hour 15, :min 50, :sec 2, :ms 842}
+             ;;    (^^^                    current local time                     ^^^)
+
+(ch/utc-now) ;; => {:year 2019, :month 9, :day 18, :hour 13, :min 50, :sec 2, :ms 842}
+             ;;    (^^^                    current utc time                       ^^^)
 
 (ch/+ t {:min 100}) ;; => {:min 40, :day 29, :hour 11, :second 15, :month 1, :year 2018, :minutes 30}
 (ch/+ t {:min -100}) ;; => {:min 20, :day 29, :hour 8, :second 15, :month 1, :year 2018, :minutes 30}
