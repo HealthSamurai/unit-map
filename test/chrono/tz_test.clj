@@ -32,46 +32,46 @@
   ;; d(2020,11,1,6,0,0),
   (is (= 1 (tz/more-or-eq 2020 11 0 1)))
 
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 1 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 2 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 3 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 3 :d 14 :h 0 :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 3 :d 14 :h 2 :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 3 :d 20 :h 0 :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 4 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 5 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 6 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 7 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 8 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 9 :d 1 :h 0  :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 10 :d 1 :h 0 :tz :ny})))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 11 :d 1 :h 0 :tz :ny })))
-  ;; (is (= 4 (tz/offset-for {:y 2010 :m 11 :d 7 :h 0 :tz :ny })))
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 11 :d 7 :h 2 :tz :ny })))
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 11 :d 20 :h 0 :tz :ny})))
-  ;; (is (= 5 (tz/offset-for {:y 2010 :m 12 :d 1 :h 0 :tz :ny})))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 1 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 2 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 3 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 3 :day 14 :hour 0 :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 3 :day 14 :hour 2 :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 3 :day 20 :hour 0 :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 4 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 5 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 6 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 7 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 8 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 9 :day 1 :hour 0  :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 10 :day 1 :hour 0 :tz :ny})))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 11 :day 1 :hour 0 :tz :ny })))
+  ;; (is (= 4 (tz/offset-for {:year 2010 :month 11 :day 7 :hour 0 :tz :ny })))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 11 :day 7 :hour 2 :tz :ny })))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 11 :day 20 :hour 0 :tz :ny})))
+  ;; (is (= 5 (tz/offset-for {:year 2010 :month 12 :day 1 :hour 0 :tz :ny})))
 
 
-  (is (= "12/1/2010" (tz/format {:y 2010 :m 12 :d 1} [:m "/" :d "/" :y])))
+  (is (= "12/1/2010" (tz/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year])))
   
 
   (testing "parse"
 
     (matcho/match
      (tz/parse "2011-01-01")
-     {:y 2011 :m 1 :d 1})
+     {:year 2011 :month 1 :day 1})
 
     (matcho/match
      (tz/parse "2011-01-01T12:00")
-     {:y 2011 :m 1 :d 1 :h 12 :mi 0})
+     {:year 2011 :month 1 :day 1 :hour 12 :min 0})
 
     (matcho/match
      (tz/parse "2011-01-01T12:00:00")
-     {:y 2011 :m 1 :d 1 :h 12 :mi 0 :s 0})
+     {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
 
     (matcho/match
      (tz/parse "2011-01-01T12:04:05.100")
-     {:y 2011 :m 1 :d 1 :h 12 :mi 4 :s 5 :ms 100}))
+     {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100}))
 
   (matcho/match
    (tz/+ {:ms 100} {:ms 300})
@@ -79,47 +79,47 @@
 
   (matcho/match
    (tz/+ {:ms 900} {:ms 300})
-   {:ms 200 :s 1})
+   {:ms 200 :sec 1})
 
   (matcho/match
-   (tz/+ {:s 40} {:s 50})
-   {:s 30 :mi 1})
+   (tz/+ {:sec 40} {:sec 50})
+   {:sec 30 :min 1})
 
   (matcho/match
-   (tz/+ {:mi 40} {:mi 50})
-   {:mi 30 :h 1})
+   (tz/+ {:min 40} {:min 50})
+   {:min 30 :hour 1})
 
   (matcho/match
-   (tz/+ {:h 13} {:h 14})
-   {:h 3 :d 1})
+   (tz/+ {:hour 13} {:hour 14})
+   {:hour 3 :day 1})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 1 :h 23} {:h 5})
-   {:y 2011 :m 1 :d 2 :h 4})
+   (tz/+ {:year 2011 :month 1 :day 1 :hour 23} {:hour 5})
+   {:year 2011 :month 1 :day 2 :hour 4})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 30} {:d 3})
-   {:y 2011 :m 2 :d 2})
+   (tz/+ {:year 2011 :month 1 :day 30} {:day 3})
+   {:year 2011 :month 2 :day 2})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 1} {:d 365})
-   {:y 2012 :m 1 :d 1})
+   (tz/+ {:year 2011 :month 1 :day 1} {:day 365})
+   {:year 2012 :month 1 :day 1})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 12 :d 31 :h 23} {:h 5})
-   {:y 2012 :m 1 :d 1 :h 4})
+   (tz/+ {:year 2011 :month 12 :day 31 :hour 23} {:hour 5})
+   {:year 2012 :month 1 :day 1 :hour 4})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 1 :h 0} {:h -1})
-   {:y 2010 :m 12 :d 31 :h 23})
+   (tz/+ {:year 2011 :month 1 :day 1 :hour 0} {:hour -1})
+   {:year 2010 :month 12 :day 31 :hour 23})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 1 :h 0} {:s -1})
-   {:y 2010 :m 12 :d 31 :h 23 :mi 59 :s 59})
+   (tz/+ {:year 2011 :month 1 :day 1 :hour 0} {:sec -1})
+   {:year 2010 :month 12 :day 31 :hour 23 :min 59 :sec 59})
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 1 :h 0} {:ms -1})
-   {:y 2010 :m 12 :d 31 :h 23 :mi 59 :s 59 :ms 999})
+   (tz/+ {:year 2011 :month 1 :day 1 :hour 0} {:ms -1})
+   {:year 2010 :month 12 :day 31 :hour 23 :min 59 :sec 59 :ms 999})
 
   (is (= [2011 4 10] (tz/days-and-months 2011 1 100)))
   (is (= [2011 2 1] (tz/days-and-months 2011 1 32)))
@@ -139,67 +139,67 @@
   (is (= [2012 1 1] (tz/days-and-months 2013 1 -364)))
 
   (matcho/match
-   (tz/+ {:y 2011 :m 1 :d 1 :h 23} {:h -23 :mi -30})
-   {:y 2010 :m 12 :d 31 :h 23 :mi 30}))
+   (tz/+ {:year 2011 :month 1 :day 1 :hour 23} {:hour -23 :min -30})
+   {:year 2010 :month 12 :day 31 :hour 23 :min 30}))
 
 (deftest test-timezones
   (matcho/match
    (tz/day-saving :ny 2017)
-   {:in {:m 3 :d 12 :h 2 :mi 0}
-    :out {:m 11 :d 5 :h 2}})
+   {:in {:month 3 :day 12 :hour 2 :min 0}
+    :out {:month 11 :day 5 :hour 2}})
 
   (matcho/match
    (tz/day-saving-with-utc :ny 2017)
-   {:in     {:m 3 :d 12 :h 2 :mi 0}
-    :in-utc {:m 3 :d 12 :h 7}
+   {:in     {:month 3 :day 12 :hour 2 :min 0}
+    :in-utc {:month 3 :day 12 :hour 7}
 
-    :out     {:m 11 :d 5 :h 2}
-    :out-utc {:m 11 :d 5 :h 6}})
+    :out     {:month 11 :day 5 :hour 2}
+    :out-utc {:month 11 :day 5 :hour 6}})
 
   (matcho/match
    (tz/day-saving-with-utc :ny 2018)
-   {:in {:m 3 :d 11}
-    :out {:m 11 :d 4}})
+   {:in {:month 3 :day 11}
+    :out {:month 11 :day 4}})
 
   (matcho/match
    (tz/day-saving-with-utc :ny 2019)
-   {:in {:m 3 :d 10}
-    :out {:m 11 :d 3}})
+   {:in {:month 3 :day 10}
+    :out {:month 11 :day 3}})
   
 
-  (is (tz/before=? {:y 2018 :m 5 :d 2 :h 14 :tz :ny}
-                   {:y 2018 :m 5 :d 2 :h 14 :tz :ny}))
+  (is (tz/before=? {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+                   {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
   (is (tz/before=?
-       {:y 2018 :m 5 :d 2 :h 14 :tz :ny}
-       {:y 2018 :m 5 :d 2 :h 14 :s 1 :tz :ny}))
+       {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+       {:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}))
 
   (is (tz/after?
-       {:y 2018 :m 5 :d 2 :h 14 :s 1 :tz :ny}
-       {:y 2018 :m 5 :d 2 :h 14 :tz :ny}))
+       {:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}
+       {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
-  (is (tz/before=? {:y 2018 :m 5 :d 2 :h 14 :tz :ny}
-                   {:y 2018 :m 11}))
+  (is (tz/before=? {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+                   {:year 2018 :month 11}))
 
   (is (tz/after?
-       {:y 2018 :m 11}
-       {:y 2018 :m 5 :d 2 :h 14 :tz :ny}))
+       {:year 2018 :month 11}
+       {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
   (matcho/match
-   (tz/to-utc {:y 2018 :m 5 :d 2 :h 14 :tz :ny})
-   {:y 2018 :m 5 :d 2 :h 18})
+   (tz/to-utc {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
+   {:year 2018 :month 5 :day 2 :hour 18})
 
   (matcho/match
-   (tz/to-tz {:y 2018 :m 5 :d 2 :h 18} :ny)
-   {:y 2018 :m 5 :d 2 :h 14 :tz :ny})
+   (tz/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
+   {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
 
 
   (matcho/match
-   (tz/to-utc {:y 2018 :m 2 :d 2 :h 14 :tz :ny})
-   {:y 2018 :m 2 :d 2 :h 19})
+   (tz/to-utc {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
+   {:year 2018 :month 2 :day 2 :hour 19})
 
   (matcho/match
-   (tz/to-tz {:y 2018 :m 2 :d 2 :h 19} :ny)
-   {:y 2018 :m 2 :d 2 :h 14 :tz :ny})
+   (tz/to-tz {:year 2018 :month 2 :day 2 :hour 19} :ny)
+   {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
 
   )

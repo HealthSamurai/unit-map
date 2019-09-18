@@ -1,9 +1,16 @@
 (ns chrono.util)
 
+(def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
+
+(defn parse-int [x]
+  (when (string? x)
+    #?(:clj (Integer/parseInt x)
+       :cljs (js/parseInt  x))))
+
 (defn leap-year? [y]
-  (and (= 0 (rem y 4))
-       (or (not= 0 (rem y 100))
-           (= 0 (rem y 400)))))
+  (and (zero? (rem y 4))
+       (or (pos? (rem y 100))
+           (zero? (rem y 400)))))
 
 (defn- days-in-month [f]
   (case (:month f)

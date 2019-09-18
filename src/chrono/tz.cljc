@@ -28,13 +28,8 @@
 
 (def more-or-eq (memoize *more-or-eq))
 
-(def iso-fmt [:y "-" :m "-" :d "T" :hh ":" :mi ":" :s "." :ms])
+(def iso-fmt [:year "-" :month "-" :day "T" :hh ":" :min ":" :sec "." :ms])
 (defn from-utc [t tz])
-
-(defn parse-int [x]
-  (when (string? x)
-    #?(:clj (Integer/parseInt x)
-       :cljs (js/parseInt  x))))
 
 ;; iso is default
 (defn parse [s & [fmt]]
@@ -42,7 +37,7 @@
     (reduce (fn [acc [k v]]
               (if v (assoc acc k (parse-int v)) acc))
             {}
-            {:y y :m m :d d :h h :mi mi :s s :ms ms})))
+            {:year y :month m :day d :hour h :min mi :sec s :ms ms})))
 
 (defn gen-norm [k k-next del m]
   (fn [x]
@@ -55,11 +50,11 @@
           (assoc x k (+ del r) k-next (+ s ds -1))))
       x)))
 
-(def normalize-ms (gen-norm :ms :s 1000 0))
-(def normalize-s  (gen-norm :s :mi 60 0))
-(def normalize-mi (gen-norm :mi :h 60 0))
-(def normalize-h  (gen-norm :h :d 24 0))
-(def normalize-m  (gen-norm :m :y 12 1))
+(def normalize-ms (gen-norm :ms :sec 1000 0))
+(def normalize-s  (gen-norm :sec :min 60 0))
+(def normalize-mi (gen-norm :min :hour 60 0))
+(def normalize-h  (gen-norm :hour :day 24 0))
+(def normalize-m  (gen-norm :month :year 12 1))
 
 (defn days-and-months [y m d]
   (if (<= 1 d 27)
@@ -84,9 +79,9 @@
           (days-and-months ny nm dd))))))
 
 (defn normalize-d  [x]
-  (if (and (:y x) (:m x) (:d x))
-    (let [[y m d] (days-and-months (:y x) (:m x) (:d x))]
-      (assoc x :y y :m m :d d))
+  (if (and (:year x) (:month x) (:day x))
+    (let [[y m d] (days-and-months (:year x) (:month x) (:day x))]
+      (assoc x :year y :month m :day d))
     x))
 
 (defn init-plus [r i]
@@ -114,20 +109,20 @@
   (assert (> y 2006) "Not impl.")
   {:offset 5
    :ds -1
-   :in {:y y :m 3 :d (more-or-eq y 3 0 8) :h 2 :mi 0}
-   :out {:y y :m 11 :d (more-or-eq y 11 0 1) :h 2 :mi 0}})
+   :in {:year y :month 3 :day (more-or-eq y 3 0 8) :hour 2 :min 0}
+   :out {:year y :month 11 :day (more-or-eq y 11 0 1) :hour 2 :min 0}})
 
 (defn *day-saving-with-utc [tz y]
   (let [ds (day-saving tz y)]
     (assoc ds
-           :in-utc (plus (:in ds) {:h (:offset ds)})
-           :out-utc (plus (:out ds) {:h (+ (:offset ds) (:ds ds))}))))
+           :in-utc (plus (:in ds) {:hour (:offset ds)})
+           :out-utc (plus (:out ds) {:hour (+ (:offset ds) (:ds ds))}))))
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
-(def default-time {:y 0 :m 1 :d 1 :h 0 :mi 0 :s 0})
+(def default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0})
+(def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0]])
 
-(def defaults-units  [[:y 0] [:m 1] [:d 1] [:h 0] [:mi 0] [:s 0]])
 
 (defn after? [t t']
   (loop [[[p s] & ps] defaults-units]
@@ -137,37 +132,35 @@
         (= tp tp') (and (not (empty? ps)) (recur ps))
         :else false))))
 
-
 (defn eq? [t t']
   (let [t (merge default-time t)
         t' (merge default-time t')]
     (and
-     (= (:y t) (:y t'))
-     (= (:m t) (:m t'))
-     (= (:d t) (:d t'))
-     (= (:h t) (:h t'))
-     (= (:mi t) (:mi t'))
-     (= (:s t) (:s t')))))
+     (= (:year t) (:year t'))
+     (= (:month t) (:month t'))
+     (= (:day t) (:day t'))
+     (= (:hour t) (:hour t'))
+     (= (:min t) (:min t'))
+     (= (:sec t) (:sec t')))))
 
-(defn before=? [t t']
-  (not (after? t t')))
+(def before=? (complement after?))
 
 (defn to-utc [t]
-  (let [ds (day-saving-with-utc (:tz t) (:y t))
+  (let [ds (day-saving-with-utc (:tz t) (:year t))
         off (if (or (before=? t (:in ds)) (after? t (:out ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (plus (dissoc t :tz) {:h off})))
+    (plus (dissoc t :tz) {:hour off})))
 
 (defn to-tz [t tz]
-  (let [ds (day-saving-with-utc tz (:y t))
+  (let [ds (day-saving-with-utc tz (:year t))
         off (if (or (before=? t (:in-utc ds)) (after? t (:out-utc ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (assoc (plus t {:h (- off)}) :tz tz)))
+    (assoc (plus t {:hour (- off)}) :tz tz)))
 
 ;; iso is default
-(def default-time {:y 0 :m 1 :d 1 :h 0 :mi 0 :s 0})
+(def default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0})
 (defn format [t & [fmt-vec]]
   (str/join "" (mapv (fn [x] (if (keyword? x) (get t x) x)) fmt-vec)))
 
