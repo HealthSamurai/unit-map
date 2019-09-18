@@ -1,11 +1,6 @@
-(ns chrono.util
-  (:require [clojure.core :refer [format]]
-            #?(:cljs [goog.string :refer [format]])
-            #?(:cljs [goog.string.format])))
+(ns chrono.util)
 
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
-
-(def format #?(:clj  clojure.core/format, :cljs goog.string/format))
 
 (defn parse-int [x]
   (when (string? x)
