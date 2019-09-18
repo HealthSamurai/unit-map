@@ -96,25 +96,3 @@
    10 {:name  "October" :short "Oct"}
    11 {:name  "November" :short "Nov"}
    12 {:name  "December" :short "Dec"}})
-
-(defn today []
-  (let [now (#?(:clj  java.time.LocalDateTime/now
-                :cljs js/Date.))]
-    {:year  #?(:clj  (-> now .getYear)
-               :cljs (-> now .getFullYear))
-     :month #?(:clj  (-> now .getMonthValue)
-               :cljs (-> now .getMonth inc))
-     :day   #?(:clj  (-> now .getDayOfMonth)
-               :cljs (-> now .getDate))}))
-
-(defn utc-today []
-  (let [now #?(:clj  (java.time.LocalDateTime/ofInstant
-                      (java.time.Instant/now)
-                      java.time.ZoneOffset/UTC)
-               :cljs (js/Date.))]
-    {:year  #?(:clj  (-> now .getYear)
-               :cljs (-> now .getUTCFullYear))
-     :month #?(:clj  (-> now .getMonthValue)
-               :cljs (-> now .getUTCMonth inc))
-     :day   #?(:clj  (-> now .getDayOfMonth)
-               :cljs (-> now .getUTCDate))}))

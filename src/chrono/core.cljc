@@ -1,7 +1,7 @@
 (ns chrono.core
   (:require [chrono.util :as util]
-            [chrono.calendar :as cal]
             [chrono.tz :as tz]
+            [chrono.now :as now]
             [clojure.string :as str]))
 
 (defn datetime [t]
@@ -9,47 +9,6 @@
           :year 1900
           :month 1
           :day 1} t))
-
-(defn now []
-  (let [now (#?(:clj  java.time.LocalDateTime/now
-                :cljs js/Date.))]
-    {:year  #?(:clj  (-> now .getYear)
-               :cljs (-> now .getFullYear))
-     :month #?(:clj  (-> now .getMonthValue)
-               :cljs (-> now .getMonth inc))
-     :day   #?(:clj  (-> now .getDayOfMonth)
-               :cljs (-> now .getDate))
-     :hour  #?(:clj  (-> now .getHour)
-               :cljs (-> now .getHours))
-     :min   #?(:clj  (-> now .getMinute)
-               :cljs (-> now .getMinutes))
-     :sec   #?(:clj  (-> now .getSecond)
-               :cljs (-> now .getSeconds))
-     :ms    #?(:clj  (-> now .getNano (/ 1000000))
-               :cljs (-> now .getMilliseconds))}))
-
-(defn utc-now []
-  (let [now #?(:clj  (java.time.LocalDateTime/ofInstant
-                      (java.time.Instant/now)
-                      java.time.ZoneOffset/UTC)
-               :cljs (js/Date.))]
-    {:year  #?(:clj  (-> now .getYear)
-               :cljs (-> now .getUTCFullYear))
-     :month #?(:clj  (-> now .getMonthValue)
-               :cljs (-> now .getUTCMonth inc))
-     :day   #?(:clj  (-> now .getDayOfMonth)
-               :cljs (-> now .getUTCDate))
-     :hour  #?(:clj  (-> now .getHour)
-               :cljs (-> now .getUTCHours))
-     :min   #?(:clj  (-> now .getMinute)
-               :cljs (-> now .getUTCMinutes))
-     :sec   #?(:clj  (-> now .getSecond)
-               :cljs (-> now .getUTCSeconds))
-     :ms    #?(:clj  (-> now .getNano (/ 1000000))
-               :cljs (-> now .getUTCMilliseconds))}))
-
-(def today cal/today)
-(def utc-today cal/utc-today)
 
 (def ^{:private true} parse-patterns
   {:year  "\\d{1,4}"
