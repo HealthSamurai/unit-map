@@ -1,17 +1,17 @@
 (ns chrono.now
-  (:require [chrono.tz :as tz]))
+  (:require [chrono.ops :as ops]))
 
 (defn tz-offset []
   #?(:clj (-> (java.time.ZonedDateTime/now)
               .getOffset
               .getTotalSeconds
               (->> (hash-map :sec))
-              tz/normalize)
+              ops/normalize)
      :cljs (-> (js/Date.)
                .getTimezoneOffset
                -
                (->> (hash-map :min))
-               tz/normalize)))
+               ops/normalize)))
 
 (defn local []
   (let [now (#?(:clj  java.time.LocalDateTime/now

@@ -3,6 +3,24 @@
             [matcho.core :as matcho]
             [clojure.test :refer :all]))
 
+
+(deftest days-and-months
+  (is (= [2011 4 10] (sut/days-and-months 2011 1 100)))
+  (is (= [2011 2 1] (sut/days-and-months 2011 1 32)))
+
+  (is (= [2012 1 1] (sut/days-and-months 2011 1 366)))
+  (is (= [2013 1 1] (sut/days-and-months 2012 1 366)))
+
+  (is (= [2012 12 31] (sut/days-and-months 2013 1 0)))
+  (is (= [2012 12 30] (sut/days-and-months 2013 1 -1)))
+
+  (is (= [2013 1 1] (sut/days-and-months 2013 1 1)))
+  (is (= [2013 1 31] (sut/days-and-months 2013 1 31)))
+  (is (= [2013 2 1] (sut/days-and-months 2013 1 32)))
+
+  (is (= [2012 1 1] (sut/days-and-months 2013 1 -364)))
+  )
+
 (deftest comparsion-operators-test
   (testing "="
     (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0}))

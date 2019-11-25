@@ -48,21 +48,7 @@
   ;; (is (= 5 (sut/offset-for {:year 2010 :month 11 :day 7 :hour 2 :tz :ny })))
   ;; (is (= 5 (sut/offset-for {:year 2010 :month 11 :day 20 :hour 0 :tz :ny})))
   ;; (is (= 5 (sut/offset-for {:year 2010 :month 12 :day 1 :hour 0 :tz :ny})))
-
-  (is (= [2011 4 10] (sut/days-and-months 2011 1 100)))
-  (is (= [2011 2 1] (sut/days-and-months 2011 1 32)))
-
-  (is (= [2012 1 1] (sut/days-and-months 2011 1 366)))
-  (is (= [2013 1 1] (sut/days-and-months 2012 1 366)))
-
-  (is (= [2012 12 31] (sut/days-and-months 2013 1 0)))
-  (is (= [2012 12 30] (sut/days-and-months 2013 1 -1)))
-
-  (is (= [2013 1 1] (sut/days-and-months 2013 1 1)))
-  (is (= [2013 1 31] (sut/days-and-months 2013 1 31)))
-  (is (= [2013 2 1] (sut/days-and-months 2013 1 32)))
-
-  (is (= [2012 1 1] (sut/days-and-months 2013 1 -364))))
+  )
 
 (deftest test-timezones
   (matcho/match
