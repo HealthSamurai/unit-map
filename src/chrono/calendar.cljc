@@ -133,11 +133,6 @@
    5 {:name "Friday"}
    6 {:name "Saturday"}})
 
-(defn is-leap? [y]
-  (if (= 0 (rem y 100))
-    (= 0 (rem y 400))
-    (= 0 (rem y 4))))
-
 (defn number-of-days [y m]
   (cond
     (contains? #{4 6 9 11} m) 30
