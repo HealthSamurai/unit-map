@@ -12,11 +12,12 @@
        (or (pos? (rem y 100))
            (zero? (rem y 400)))))
 
-(defn- days-in-month [f]
-  (case (:month f)
-    2 (if (leap-year? (:year f)) 29 28)
-    (1 3 5 7 8 10 12) 31
-    30))
+(defn days-in-month [{m :month, y :year}]
+  (cond
+    (contains? #{4 6 9 11} m) 30
+    (= 2 m (leap-year? y)) 29
+    (= 2 m) 28
+    :else 31))
 
 (defn- simplify
   ([key acc] (simplify key nil acc))
