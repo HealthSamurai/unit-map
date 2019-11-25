@@ -21,8 +21,33 @@
 (def normalize tz/normalize)
 
 (def + tz/+)
-(def = tz/=)
-(def > tz/>)
-(def >= tz/>=)
-(def < tz/<)
-(def <= tz/<=)
+;; (def = tz/=)
+;; (def > tz/>)
+;; (def >= tz/>=)
+;; (def < tz/<)
+;; (def <= tz/<=)
+
+
+
+
+
+(def default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0})
+(defn eq? [t t']
+  (let [t (merge default-time t)
+        t' (merge default-time t')]
+    (and
+     (= (:year t) (:year t'))
+     (= (:month t) (:month t'))
+     (= (:day t) (:day t'))
+     (= (:hour t) (:hour t'))
+     (= (:min t) (:min t'))
+     (= (:sec t) (:sec t')))))
+
+(defn date-convertable? [value in out]
+  (eq?
+   (parse value in)
+   (parse (format (parse value in ) out) out)))
+
+(defn date-valid? [value fmt]
+  #?(:clj true
+     :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
