@@ -1,53 +1,32 @@
 (ns chrono.core
-  (:require [chrono.util :as util]
-            [chrono.tz :as tz]
-            [chrono.now :as now]
-            [chrono.io :as io]
-            [clojure.string :as str]))
+  (:require [chrono.tz :as tz]
+            [chrono.ops :as ops]
+            [chrono.io :as io])
+  (:refer-clojure :exclude [+ = > >= < <= not= format]))
 
 (defn datetime [t]
-  (merge {:type :datetime
-          :year 1900
+  (merge {:type  :datetime
+          :year  1900
           :month 1
-          :day 1} t))
+          :day   1} t))
 
 (def parse io/parse)
 (def format io/format)
 
-(defn timestamp [t])
+(defn timestamp [t]) ; TODO
 
-(defn diff [t t'])
+(defn diff [t t']) ; TODO
 
 (def normalize tz/normalize)
 
-(def + tz/+)
-;; (def = tz/=)
-;; (def > tz/>)
-;; (def >= tz/>=)
-;; (def < tz/<)
-;; (def <= tz/<=)
+(def date-convertable? io/date-convertable?)
+(def date-valid? io/date-valid?)
 
-
-
-
-
-(def default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0})
-(defn eq? [t t']
-  (let [t (merge default-time t)
-        t' (merge default-time t')]
-    (and
-     (= (:year t) (:year t'))
-     (= (:month t) (:month t'))
-     (= (:day t) (:day t'))
-     (= (:hour t) (:hour t'))
-     (= (:min t) (:min t'))
-     (= (:sec t) (:sec t')))))
-
-(defn date-convertable? [value in out]
-  (eq?
-   (parse value in)
-   (parse (format (parse value in ) out) out)))
-
-(defn date-valid? [value fmt]
-  #?(:clj true
-     :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
+(def + ops/plus)
+(def = ops/eq?)
+(def not= ops/not-eq?)
+(def eq? ops/eq?)
+(def > ops/gt)
+(def >= ops/gte)
+(def < ops/lt)
+(def <= ops/lte)

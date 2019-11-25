@@ -1,7 +1,6 @@
 (ns chrono.calendar
   (:require [clojure.pprint]))
 
-
 (defn datetime [t]
   (merge {:type :datetime
           :year 1900

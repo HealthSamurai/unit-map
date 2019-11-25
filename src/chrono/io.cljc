@@ -1,8 +1,10 @@
 (ns chrono.io
   (:require [chrono.util :as util]
+            [chrono.ops :as ops]
             [clojure.string :as str]
             #?(:cljs [goog.string])
-            #?(:cljs [goog.string.format])))
+            #?(:cljs [goog.string.format]))
+  (:refer-clojure :exclude [format]))
 
 (defn- format-str [fmt & args]
   (apply
@@ -62,3 +64,12 @@
                     (format-str (str "%0" (if (vector? x) (second x) (format-patterns x)) \d) v)
                     x))))
         str/join)))
+
+(defn date-convertable? [value in out]
+  (ops/eq?
+   (parse value in)
+   (parse (format (parse value in) out) out)))
+
+(defn date-valid? [value fmt]
+  #?(:clj true ; TODO
+     :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))

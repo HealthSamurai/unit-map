@@ -1,5 +1,7 @@
 (ns chrono.tz
-  (:require [chrono.calendar :as cal]))
+  (:require [chrono.calendar :as cal]
+            [chrono.ops :as ops]))
+
 
 ;; Rule  US   1967 2006  -   Oct lastSun  2:00  0    S
 ;; Rule  US   1967 1973  -   Apr lastSun  2:00  1:00 D
@@ -18,6 +20,9 @@
 ;; -5:00	US	E%sT
 
 ;; rules from tzdb like sun >= 8
+
+(defn from-utc [t tz])
+
 (defn *more-or-eq [y m dw d]
   (let [dw' (cal/day-of-week y m d)]
     (cond (= dw' dw) d
@@ -26,87 +31,6 @@
           (< dw' dw) (+ d (- dw dw')))))
 
 (def more-or-eq (memoize *more-or-eq))
-
-(defn from-utc [t tz])
-
-(defn gen-norm [k k-next del m]
-  (fn [x]
-    (if-let [z (get x k)]
-      (let [ds (int (/ z del))
-            s  (or (get x k-next) m)
-            r  (rem z del)]
-        (if (>= z m)
-          (assoc x k r k-next (+ s ds))
-          (assoc x k (+ del r) k-next (+ s ds -1))))
-      x)))
-
-(def normalize-ms (gen-norm :ms :sec 1000 0))
-(def normalize-s  (gen-norm :sec :min 60 0))
-(def normalize-mi (gen-norm :min :hour 60 0))
-(def normalize-h  (gen-norm :hour :day 24 0))
-(def normalize-m  (gen-norm :month :year 12 1))
-
-(defn days-and-months [y m d]
-  (if (<= 1 d 27)
-    [y m d]
-    (cond
-      (> d 0)
-      (let [num-days (cal/number-of-days y m)
-            dd (- d num-days)]
-        (if (<= d num-days)
-          [y m d]
-          (if (= m 12)
-            (days-and-months (inc y) 1 dd)
-            (days-and-months y (inc m) dd))))
-
-      (<= d 0)
-      (let [[num-days ny nm] (if (= m 1)
-                               [(cal/number-of-days (dec y) 12) (dec y) 12]
-                               [(cal/number-of-days y (dec m)) y (dec m)])
-            dd (+ num-days d)]
-        (if (< 0 dd)
-          [ny nm dd]
-          (days-and-months ny nm dd))))))
-
-(defn normalize-d  [x]
-  (if (and (:year x) (:month x) (:day x))
-    (let [[y m d] (days-and-months (:year x) (:month x) (:day x))]
-      (assoc x :year y :month m :day d))
-    x))
-
-(defn normalize [t]
-  (->> t
-       normalize-ms
-       normalize-s
-       normalize-mi
-       normalize-h
-       normalize-m
-       normalize-d
-       (remove (comp zero? val))
-       (into {})))
-
-(defn init-plus [r i]
-  (->>
-   (concat (keys (dissoc r :tz)) (keys i))
-   (into #{})
-   (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
-
-(defn- plus
-  "time & interval"
-  [t i]
-  (normalize (init-plus t i)))
-
-(def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0] [:ms 0]])
-
-(defn- after? [t t']
-  (loop [[[p s] & ps] defaults-units]
-    (let [tp (get t p s) tp' (get t' p s)]
-      (cond
-        (> tp tp') true
-        (= tp tp') (and (not (empty? ps)) (recur ps))
-        :else false))))
-
-(def ^{:private true} before=? (complement after?))
 
 (defmulti day-saving "[tz y]" (fn [tz _] tz))
 
@@ -122,24 +46,24 @@
 (defn *day-saving-with-utc [tz y]
   (let [ds (day-saving tz y)]
     (assoc ds
-           :in-utc (plus (:in ds) {:hour (:offset ds)})
-           :out-utc (plus (:out ds) {:hour (+ (:offset ds) (:ds ds))}))))
+           :in-utc (ops/plus (:in ds) {:hour (:offset ds)})
+           :out-utc (ops/plus (:out ds) {:hour (+ (:offset ds) (:ds ds))}))))
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
 (defn to-utc [t]
   (let [ds (day-saving-with-utc (:tz t) (:year t))
-        off (if (or (before=? t (:in ds)) (after? t (:out ds)))
+        off (if (or (ops/lte t (:in ds)) (ops/gt t (:out ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (plus (dissoc t :tz) {:hour off})))
+    (ops/plus (dissoc t :tz) {:hour off})))
 
 (defn to-tz [t tz]
   (let [ds (day-saving-with-utc tz (:year t))
-        off (if (or (before=? t (:in-utc ds)) (after? t (:out-utc ds)))
+        off (if (or (ops/lte t (:in-utc ds)) (ops/gt t (:out-utc ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (assoc (plus t {:hour (- off)}) :tz tz)))
+    (assoc (ops/plus t {:hour (- off)}) :tz tz)))
 
 ;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 ;; https://alcor.concordia.ca/~gpkatch/gdate-method.html
@@ -187,45 +111,3 @@
   (d (- (g 2018 1 1) 1))
   (d (+ (g 2017 12 31) 1))
   (d (+ (g 2017 12 31) 370)))
-
-(def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
-
-(defn +
-  ([] default-time)
-  ([x] x)
-  ([x y] (plus x y))
-  ([x y & more]
-   (reduce + (+ x y) more)))
-
-(defn = [& ts]
-  (apply clojure.core/= (map normalize ts)))
-
-(def not= (complement =))
-
-(defn >
-  ([x] true)
-  ([x y] (after? x y))
-  ([x y & more]
-   (if (> x y)
-     (if (next more)
-       (recur y (first more) (next more))
-       (> y (first more)))
-     false)))
-
-(defn >=
-  ([x] true)
-  ([x y] (or (> x y) (= x y)))
-  ([x y & more]
-   (if (>= x y)
-     (if (next more)
-       (recur y (first more) (next more))
-       (>= y (first more)))
-     false)))
-
-(defn <
-  ([x] true)
-  ([x & args] (apply (complement >=) x args)))
-
-(defn <=
-  ([x] true)
-  ([x & args] (apply (complement >) x args)))
