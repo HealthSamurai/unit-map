@@ -4,12 +4,12 @@
 (defn gen-norm [k k-next del m]
   (fn [x]
     (if-let [z (get x k)]
-      (let [ds (int (/ z del))
+      (let [ds (quot z del)
             s  (or (get x k-next) m)
             r  (rem z del)]
         (if (>= z m)
-          (assoc x k r k-next (+ s ds))
-          (assoc x k (+ del r) k-next (+ s ds -1))))
+          (assoc x k r, k-next (+ s ds))
+          (assoc x k (+ del r), k-next (+ s ds -1))))
       x)))
 
 (def normalize-ms (gen-norm :ms :sec 1000 0))

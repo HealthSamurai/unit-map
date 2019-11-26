@@ -221,7 +221,13 @@
 
     (matcho/match
      (sut/plus {:year 2011 :month 1 :day 1 :hour 23} {:hour -23 :min -30})
-     {:year 2010 :month 12 :day 31 :hour 23 :min 30}))
+     {:year 2010 :month 12 :day 31 :hour 23 :min 30})
+
+    (matcho/match
+     (sut/plus {:year 2019 :month 11 :day 1} {:month 1})
+     {:year 2019 :month 12 :day 1})
+
+    )
 
   (testing "-"
     (matcho/match
