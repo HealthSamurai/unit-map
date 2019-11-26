@@ -2,7 +2,7 @@
   (:require [chrono.tz :as tz]
             [chrono.ops :as ops]
             [chrono.io :as io])
-  (:refer-clojure :exclude [+ = > >= < <= not= format]))
+  (:refer-clojure :exclude [+ - = > >= < <= not= format]))
 
 (defn datetime [t]
   (merge {:type  :datetime
