@@ -23,6 +23,7 @@
 (def date-valid? io/date-valid?)
 
 (def + ops/plus)
+(def - ops/minus) ; TODO: add tests
 (def = ops/eq?)
 (def not= ops/not-eq?)
 (def eq? ops/eq?)

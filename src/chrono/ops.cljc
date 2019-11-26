@@ -114,3 +114,18 @@
 (defn lte
   ([_] true)
   ([x & args] (apply (complement gt) x args)))
+
+(defn invert [x]
+  (reduce
+   (fn [x k] (cond-> x
+              (contains? x k)
+              (update k -)))
+   x
+   [:year :month :day :hour :min :sec :ms]))
+
+(defn minus
+  ([] default-time)
+  ([x] x)
+  ([x y] (normalize (init-plus x (invert y))))
+  ([x y & more]
+   (reduce minus (minus x y) more)))
