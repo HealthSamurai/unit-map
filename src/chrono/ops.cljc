@@ -4,9 +4,10 @@
 (defn gen-norm [k k-next del m]
   (fn [x]
     (if-let [z (get x k)]
-      (let [ds (quot z del)
+      (let [ds (quot z (+ m del))
             s  (or (get x k-next) m)
-            r  (rem z del)]
+            r  (-> (rem z (+ m del))
+                   (as-> r (cond-> r (zero? r) (+ m r))))]
         (if (>= z m)
           (assoc x k r, k-next (+ s ds))
           (assoc x k (+ del r), k-next (+ s ds -1))))
