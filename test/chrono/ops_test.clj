@@ -241,8 +241,7 @@
 
     (matcho/match
      (sut/plus {:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911} {:hour 2})
-     {:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911})
-    )
+     {:year 2019, :month 12, :day 10, :hour 15, :min 17, :sec 50, :ms 911}))
 
   (testing "-"
     (matcho/match
