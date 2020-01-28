@@ -15,7 +15,7 @@
 (defn days-in-month [{m :month, y :year}]
   (cond
     (contains? #{4 6 9 11} m) 30
-    (= 2 m (leap-year? y)) 29
+    (and (leap-year? y) (= 2 m)) 29
     (= 2 m) 28
     :else 31))
 
