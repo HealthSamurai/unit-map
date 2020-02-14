@@ -10,7 +10,7 @@
                    (as-> r (cond-> r (zero? r) (+ m r))))]
         (if (>= z m)
           (assoc x k r, k-next (+ s ds))
-          (assoc x k (+ del r), k-next (+ s ds -1))))
+          (assoc x k (- (+ del r) m), k-next (+ s ds -1))))
       x)))
 
 (def normalize-ms (gen-norm :ms :sec 1000 0))
