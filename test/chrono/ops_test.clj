@@ -9,7 +9,7 @@
   (is (= [2011 2 1] (sut/days-and-months 2011 1 32)))
 
   (is (= [2012 1 1] (sut/days-and-months 2011 1 366)))
-  (is (= [2013 1 1] (sut/days-and-months 2012 1 366)))
+  (is (= [2013 1 1] (sut/days-and-months 2012 1 367)))
 
   (is (= [2012 12 31] (sut/days-and-months 2013 1 0)))
   (is (= [2012 12 30] (sut/days-and-months 2013 1 -1)))
@@ -18,7 +18,7 @@
   (is (= [2013 1 31] (sut/days-and-months 2013 1 31)))
   (is (= [2013 2 1] (sut/days-and-months 2013 1 32)))
 
-  (is (= [2012 1 1] (sut/days-and-months 2013 1 -364)))
+  (is (= [2012 1 1] (sut/days-and-months 2013 1 -365)))
   )
 
 (deftest comparsion-operators-test
