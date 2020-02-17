@@ -1,4 +1,26 @@
-(ns chrono.util)
+(ns chrono.util
+  (:require [clojure.string :as str]))
+
+(def parse-patterns
+  {:year  "\\d{1,4}"
+   :month "[01]?\\d"
+   :day   "[0-3]?\\d"
+   :hour  "(?:2[0-4]|[0-1]?\\d)"
+   :min   "[0-5]?\\d"
+   :sec   "[0-5]?\\d"
+   :ms    "\\d{1,3}"})
+
+(def format-patterns
+  {:year  4
+   :month 2
+   :day   2
+   :hour  2
+   :min   2
+   :sec   2
+   :ms    3})
+
+(defn sanitize [s]
+  (str/replace s #"[-.\+*?\[^\]$(){}=!<>|:\\]" #(str \\ %)))
 
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
