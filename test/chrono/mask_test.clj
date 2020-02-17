@@ -1,6 +1,7 @@
 (ns chrono.mask-test
   (:require [chrono.mask :as sut]
-            [clojure.test :as t]))
+            [clojure.test :as t]
+            [chrono.io :as io]))
 
 (t/deftest mask-test
   (let [facts {"2300"     "23:00"
@@ -15,4 +16,4 @@
                }
         chrono-fmt [:hour \: :min \: :sec]]
     (doseq [[inp res] facts]
-      (t/is (= res (sut/mask chrono-fmt inp))))))
+      (t/is (= res (io/format (sut/parse inp chrono-fmt) chrono-fmt))))))
