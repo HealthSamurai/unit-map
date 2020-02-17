@@ -15,7 +15,7 @@
                "2:2"      "02:02:"
                "2:2:"     "02:02:"
                "2:2:2"    "02:02:02"
-               #_#_"999999"   ""}
+               "999999"   "09:09:09"} ; TODO: make sure this is an intended behaviour
         chrono-fmt [:hour \: :min \: :sec]]
     (doseq [[inp res] facts]
       (t/is (= res (sut/resolve inp chrono-fmt))))))
