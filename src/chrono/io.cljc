@@ -42,16 +42,17 @@
      (loop [s            s
             [f & rest-f] fmt
             [p & rest-p] pat
-            acc          {}]
+            acc          nil]
        (if-not (and s f)
          acc
-         (let [ahead            "(.+)?"
-               pat              (re-pattern (str "(" p ")" ahead))
-               [_ cur-s rest-s] (re-matches pat s)]
-           (recur rest-s rest-f rest-p
-                  (cond-> acc
-                    (contains? parse-patterns f)
-                    (assoc f (util/parse-int cur-s))))))))))
+         (let [ahead "(.+)?"
+               pat   (re-pattern (str "(" p ")" ahead))
+               [match-s cur-s rest-s] (re-matches pat s)]
+           (when match-s
+             (recur rest-s rest-f rest-p
+                    (cond-> acc
+                      (contains? parse-patterns f)
+                      (assoc f (util/parse-int cur-s)))))))))))
 
 (defn format
   ([t] (format t util/iso-fmt))
