@@ -1,8 +1,17 @@
 (ns chrono.mask
-  (:require [chrono.util :as util]))
+  (:require [chrono.util :as util]
+            [clojure.string :as str]
+            #?(:cljs [goog.string])
+            #?(:cljs [goog.string.format])))
 
-(defn parse
-  [s fmt]
+(defn- format-str [fmt & args]
+  (apply
+   #?(:clj  clojure.core/format
+      :cljs goog.string/format)
+   fmt
+   args))
+
+(defn parse [s fmt]
   (let [fmts (map #(cond-> % (vector? %) first) fmt)
         pats (map #(or (util/parse-patterns %) (util/sanitize %)) fmts)]
     (loop [s            s
@@ -22,3 +31,22 @@
             (if-not (keyword? f)
               (recur (str f s)  fmts pats acc)
               acc)))))))
+
+
+(defn build [t fmt]
+  (reduce (fn [acc f]
+            (let [kw (cond-> f (vector? f) first)
+                  v  (get t kw)]
+              (cond
+                (not (contains? util/format-patterns kw))
+                (str acc f)
+
+                (some? v)
+                (str acc (format-str (str "%0" (if (vector? f) (second f) (util/format-patterns f)) \d) v))
+
+                :else (reduced acc))))
+          ""
+          fmt))
+
+(defn resolve [s fmt]
+  (build (parse s fmt) fmt))
