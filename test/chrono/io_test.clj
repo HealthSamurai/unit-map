@@ -6,6 +6,18 @@
 (deftest parse-format-test
   (testing "parse"
     (matcho/match
+     (sut/parse "2011-01-01")
+     {:year 2011 :month 1 :day 1})
+
+    (matcho/match
+     (sut/parse "2011-01-01T12:00")
+     {:year 2011 :month 1 :day 1 :hour 12 :min 0})
+
+    (matcho/match
+     (sut/parse "2011-01-01T12:00:00")
+     {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
+
+    (matcho/match
      (sut/parse "2011-01-01T12:04:05.100")
      {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100})
 
