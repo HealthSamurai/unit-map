@@ -2,7 +2,8 @@
   (:require [chrono.util :as util]
             [clojure.string :as str]
             #?(:cljs [goog.string])
-            #?(:cljs [goog.string.format])))
+            #?(:cljs [goog.string.format]))
+  (:refer-clojure :exclude [resolve]))
 
 (defn- format-str [fmt & args]
   (apply
@@ -12,17 +13,17 @@
    args))
 
 (defn parse [s fmt]
-  (let [fmts (map #(cond-> % (vector? %) first) fmt)
-        pats (map #(or (util/parse-patterns %) (util/sanitize %)) fmts)]
+  (let [fmt (map #(cond-> % (vector? %) first) fmt)
+        pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
     (loop [s            s
-           [f & rest-f :as fmts] fmts
-           [p & rest-p :as pats] pats
+           [f & rest-f :as fmts] fmt
+           [p & rest-p :as pats] pat
            acc          nil]
       (if-not (and s f)
         acc
         (let [ahead "(.+)?"
-              pat   (re-pattern (str "(" p ")" ahead))
-              [match-s cur-s rest-s] (re-matches pat s)]
+              re-pat   (re-pattern (str "(" p ")" ahead))
+              [match-s cur-s rest-s] (re-matches re-pat s)]
           (if match-s
             (recur rest-s rest-f rest-p
                    (cond-> acc
