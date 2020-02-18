@@ -24,11 +24,14 @@
             acc          nil]
        (if-not (and s f)
          acc
-         (let [ahead "(.+)?"
-               pat   (re-pattern (str "(" p ")" ahead))
-               [match-s cur-s rest-s] (re-matches pat s)]
+         (let [ahead           "(.+)?"
+               sub-s           (str/join (take (util/format-patterns f (count (str f))) s))
+               [match-s cur-s] (or (re-matches (re-pattern (str "(" p ")")) sub-s)
+                                   (re-matches (re-pattern (str "(" p ")" ahead)) sub-s))]
            (when match-s
-             (recur rest-s rest-f rest-p
+             (recur (str/join (drop (count cur-s) s))
+                    rest-f
+                    rest-p
                     (cond-> acc
                       (contains? util/parse-patterns f)
                       (assoc f (util/parse-int cur-s)))))))))))
