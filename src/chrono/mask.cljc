@@ -14,25 +14,34 @@
 
 (defn parse [s fmt]
   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-        pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-    (loop [s            s
+        pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)
+        drop-pat (-> (remove keyword? fmt)
+                     str/join
+                     (#(str \["^0-9" % \]))
+                     re-pattern)]
+    (loop [s (some-> s (str/replace drop-pat ""))
+
            [f & rest-f :as fmts] fmt
            [p & rest-p :as pats] pat
-           acc          nil]
+           acc                   {}]
       (if-not (and s f)
         acc
-        (let [ahead "(.+)?"
-              re-pat   (re-pattern (str "(" p ")" ahead))
-              [match-s cur-s rest-s] (re-matches re-pat s)]
-          (if match-s
-            (recur rest-s rest-f rest-p
-                   (cond-> acc
-                     (contains? util/parse-patterns f)
-                     (assoc f (util/parse-int cur-s))))
-            (if-not (keyword? f)
-              (recur (str f s)  fmts pats acc)
-              acc)))))))
+        (let [ahead                  "(.+)?"
+              pat                    (re-pattern (str "(" p ")" ahead))
+              [match-s cur-s rest-s] (re-matches pat s)
+              key?                   (contains? util/format-patterns f)
+              f-len                  (util/format-patterns f)]
+          (cond
+            (and match-s
+                 (or (not key?)
+                     (= f-len (count cur-s))
+                     (some? rest-s)
+                     (not (re-matches (re-pattern p) (str cur-s \0)))))
+            (recur rest-s rest-f rest-p (cond-> acc key? (assoc f (util/parse-int cur-s))))
 
+            (not (or match-s key?)) (recur (str f s) fmts pats acc)
+            (or match-s (= "0" s))  (assoc acc :not-parsed s)
+            :else                   acc))))))
 
 (defn build [t fmt]
   (reduce (fn [acc f]
@@ -50,4 +59,5 @@
           fmt))
 
 (defn resolve [s fmt]
-  (build (parse s fmt) fmt))
+  (let [{:keys [not-parsed] :as p} (parse s fmt)]
+    (str (build p fmt) not-parsed)))
