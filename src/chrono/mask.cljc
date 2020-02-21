@@ -58,6 +58,21 @@
           ""
           fmt))
 
+(defn clean-build [t fmt]
+  (let [clean-fmt
+        (reduce
+         (fn [acc f]
+           (cond
+             (not (keyword? f)) (update acc :buff conj f)
+             (some? (get t f))  (-> acc
+                                    (update :result concat (conj (:buff acc) f))
+                                    (assoc :buff []))
+             :else              (reduced (vec (:result acc)))))
+         {:result []
+          :buff   []}
+         fmt)]
+    (build t clean-fmt)))
+
 (defn resolve [s fmt]
   (let [{:keys [not-parsed] :as p} (parse s fmt)]
     (str (build p fmt) not-parsed)))
