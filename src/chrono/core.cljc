@@ -12,6 +12,7 @@
 
 (def parse io/parse)
 (def format io/format)
+(def strict-parse io/strict-parse)
 
 (defn timestamp [t]) ; TODO
 

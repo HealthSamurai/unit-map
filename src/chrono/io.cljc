@@ -20,12 +20,34 @@
          pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
      (loop [s            s
             [f & rest-f] fmt
+            acc          nil]
+       (if-not (and s f)
+         acc
+         (let [p   (or (util/parse-patterns f) (util/sanitize f))
+               pat (re-pattern (str "(" p ")" "(.+)?"))
+
+               [match-s cur-s rest-s] (re-matches pat s)]
+           (when match-s
+             (recur rest-s rest-f
+                    (cond-> acc
+                      (contains? util/parse-patterns f)
+                      (assoc f (util/parse-int cur-s)))))))))))
+
+(defn strict-parse
+  ([s] (strict-parse s util/iso-fmt))
+  ([s fmt]
+   (let [fmt (map #(cond-> % (vector? %) first) fmt)
+         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
+     (loop [s            s
+            [f & rest-f] fmt
             [p & rest-p] pat
             acc          nil]
        (if-not (and s f)
          acc
-         (let [ahead "(.+)?"
-               pat   (re-pattern (str "(" p ")" ahead))
+         (let [ahead (apply str rest-p)
+               pat   (->> (when (seq rest-p) (str \( ahead \) ))
+                          (str "(" p ")")
+                          re-pattern)
 
                [match-s cur-s rest-s] (re-matches pat s)]
            (when match-s
