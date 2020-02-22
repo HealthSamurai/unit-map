@@ -67,11 +67,11 @@
              (some? (get t f))  (-> acc
                                     (update :result concat (conj (:buff acc) f))
                                     (assoc :buff []))
-             :else              (reduced (vec (:result acc)))))
+             :else              (reduced acc)))
          {:result []
           :buff   []}
          fmt)]
-    (build t clean-fmt)))
+    (build t (vec (:result clean-fmt)))))
 
 (defn resolve [s fmt]
   (let [{:keys [not-parsed] :as p} (parse s fmt)]
