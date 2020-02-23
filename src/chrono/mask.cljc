@@ -51,8 +51,11 @@
                 (not (contains? util/format-patterns kw))
                 (str acc f)
 
-                (some? v)
+                (number? v)
                 (str acc (format-str (str "%0" (if (vector? f) (second f) (util/format-patterns f)) \d) v))
+
+                (string? v)
+                (str acc v)
 
                 :else (reduced acc))))
           ""
