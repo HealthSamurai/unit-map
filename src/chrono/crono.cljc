@@ -18,6 +18,12 @@
        (ch/+ (first assumptions) {every 1})
        (first (filter #(ch/< current-time %) assumptions))))))
 
+(defn now?
+  ([cfg] (now? (now/utc) cfg))
+  ([current-time {every :every until :until :as when}]
+   (let [utmost-time (merge (select-keys current-time (get needed-for every)) until)]
+     (ch/< current-time utmost-time))))
+
 (comment
 
   (= {:year 2020 :month 1 :day 1 :hour 12}
@@ -40,5 +46,11 @@
   (= {:year 2020 :month 1 :day 1 :hour 12}
      (next-time-2 {:year 2020 :month 1 :day 1 :hour 11 :min 43}
                   {:every :hour :at [{:min 0} {:min 30}]}))
+
+  (= true
+     (now? {:year 2020 :month 1 :day 1 :hour 12 :min 31}
+           {:every :day
+            :at {:hour 12}
+            :until {:hour 12 :min 30}}))
 
   )

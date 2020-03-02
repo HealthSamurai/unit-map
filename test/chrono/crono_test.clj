@@ -7,7 +7,7 @@
 
   (is (= {:year 2020 :month 1 :day 1 :hour 12}
          (sut/next-time {:year 2020 :month 1 :day 1 :hour 11}
-                    {:every :day :at {:hour 12}})))
+                  {:every :day :at {:hour 12}})))
 
   (is (= {:year 2020 :month 1 :day 2 :hour 12}
          (sut/next-time {:year 2020 :month 1 :day 1 :hour 12 :min 10}
@@ -56,6 +56,16 @@
                                        {:min 50}
                                        {:min 55}]})))
 
+  (is (= true
+         (sut/now? {:year 2020 :month 1 :day 1 :hour 12 :min 1}
+                   {:every :day
+                    :at {:hour 12}
+                    :until {:hour 12 :min 30}})))
 
+  (is (= false
+         (sut/now? {:year 2020 :month 1 :day 1 :hour 12 :min 31}
+                   {:every :day
+                    :at {:hour 12}
+                    :until {:hour 12 :min 30}})))
 
   )
