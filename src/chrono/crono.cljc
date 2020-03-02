@@ -21,8 +21,10 @@
 (defn now?
   ([cfg] (now? (now/utc) cfg))
   ([current-time {every :every until :until :as when}]
-   (let [utmost-time (merge (select-keys current-time (get needed-for every)) until)]
-     (ch/< current-time utmost-time))))
+   (if until
+     (let [utmost-time (merge (select-keys current-time (get needed-for every)) until)]
+       (ch/< current-time utmost-time))
+     true)))
 
 (comment
 

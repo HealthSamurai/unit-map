@@ -68,4 +68,9 @@
                     :at {:hour 12}
                     :until {:hour 12 :min 30}})))
 
+  (is (= true
+         (sut/now? {:year 2020 :month 1 :day 1 :hour 12 :min 31}
+                   {:every :day
+                    :at {:hour 12}})))
+
   )
