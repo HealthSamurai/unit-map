@@ -62,10 +62,10 @@
    (->> fmt-vec
         (mapv (fn [x]
                 (let [kw (cond-> x (vector? x) first)
-                      v  (get t kw 0)]
+                      v  (get t kw)]
                   (if (contains? util/format-patterns kw)
-                    (format-str (str "%0" (if (vector? x) (second x) (util/format-patterns x)) \d) v)
-                    x))))
+                    (format-str (str "%0" (if (vector? x) (second x) (util/format-patterns x)) \d) (or v 0))
+                    (or v x)))))
         str/join)))
 
 (defn date-convertable? [value in out]
