@@ -31,6 +31,9 @@ Pure clojure time made simple for clj & cljs
 (ch/format t [:day "/" :month "/" :year]) ;; => "29/01/2018"
 (ch/parse  "2018.01.29"  [:year "." :month "." :day]) ;; => {:year 2018, :month 1, :day 29}
 
+;You can specify leading zero padding width by passing pairs [keyword number] 
+(format {:hour 1 :min 0 :sec 5} [[:hour 1] \: [:min 1] \: [:sec 1]]) ;; => "1:0:5"
+
 (require '[chrono.tz :as tz])
 
 (-> t
