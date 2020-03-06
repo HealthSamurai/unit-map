@@ -2,7 +2,7 @@
 
 Pure clojure time made simple for clj & cljs
 
-![clock](clocks.png)
+<img src="clocks.png" height="384px" />
 
 ## Usage
 
