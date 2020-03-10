@@ -30,4 +30,22 @@
 
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
-      (matcho/match (sut/parse (sut/format t)) t))))
+      (matcho/match (sut/parse (sut/format t)) t)))
+
+  (testing "format with specified width"
+    (is
+      (=
+        "06.03.20"
+        (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
+    (is
+      (=
+        "06.03.2020"
+        (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
+    (is
+      (=
+        "2020.03.06"
+        (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
+    (is
+      (=
+        "20.03.06"
+        (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day])))))

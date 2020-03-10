@@ -6,12 +6,15 @@
             #?(:cljs [goog.string.format]))
   (:refer-clojure :exclude [format]))
 
-(defn- format-str [fmt & args]
-  (apply
-   #?(:clj  clojure.core/format
-      :cljs goog.string/format)
-   fmt
-   args))
+(defn- format-str [fmt val width]
+  (->>
+    (apply
+      #?(:clj  clojure.core/format
+         :cljs goog.string/format)
+      fmt
+      [val])
+    (take-last width)
+    (str/join)))
 
 (defn parse
   ([s] (parse s util/iso-fmt))
@@ -62,9 +65,13 @@
    (->> fmt-vec
         (mapv (fn [x]
                 (let [kw (cond-> x (vector? x) first)
-                      v  (get t kw)]
+                      v  (get t kw)
+                      width (if (vector? x) (second x) (util/format-patterns x))]
                   (if (contains? util/format-patterns kw)
-                    (format-str (str "%0" (if (vector? x) (second x) (util/format-patterns x)) \d) (or v 0))
+                    (format-str
+                      (str "%0" width \d)
+                      (or v 0)
+                      width)
                     (or v x)))))
         str/join)))
 
