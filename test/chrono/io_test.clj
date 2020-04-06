@@ -23,7 +23,25 @@
 
     (matcho/match
      (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
-     {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
+     {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1})
+
+    (matcho/match
+     (sut/parse "16 Jan 2019 23:59:01"
+                [:day \space :month \space :year \space :hour \: :min \: :sec])
+     {:day 16, :month 1, :year 2019, :hour 23, :min 59, :sec 1})
+
+    (matcho/match
+     (sut/parse "31 December 2023 13:30:19"
+                [:day \space :month \space :year \space :hour \: :min \: :sec])
+     {:day 31, :month 12, :year 2023, :hour 13, :min 30, :sec 19})
+    (matcho/match
+     (sut/parse "31 march 2023 13:30:19"
+                [:day \space :month \space :year \space :hour \: :min \: :sec])
+     {:day 31, :month 03, :year 2023, :hour 13, :min 30, :sec 19})
+    (matcho/match
+     (sut/parse "31 FEB 2023 13:30:19"
+                [:day \space :month \space :year \space :hour \: :min \: :sec])
+     {:day 31, :month 02, :year 2023, :hour 13, :min 30, :sec 19}))
 
   (testing "format"
     (is (= "12/01/2010" (sut/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year]))))
