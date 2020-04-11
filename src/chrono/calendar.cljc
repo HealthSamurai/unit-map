@@ -24,7 +24,9 @@
    5 {:name "Friday"}
    6 {:name "Saturday"}})
 
-(def month-names
+(defmulti month-names (fn[x] (get x :lang)))
+
+(def- month-names-en
   {1  {:name "January" :short "Jan"}
    2  {:name "February" :short "Feb"}
    3  {:name "March" :short "Mar"}
@@ -38,20 +40,8 @@
    11 {:name  "November" :short "Nov"}
    12 {:name  "December" :short "Dec"}})
 
-(def month-names-ru
-  {1  {:name "Январь"   :short "..."}
-   2  {:name "Февраль"  }
-   3  {:name "Март"     }
-   4  {:name "Апрель"   }
-   5  {:name "Май"      }
-   6  {:name "Июнь"     }
-   7  {:name "Июль"     }
-   8  {:name "Август"   }
-   9  {:name "Сентябрь" }
-   10 {:name "Октябрь"  }
-   11 {:name "Ноябрь"   }
-   12 {:name "Декабрь"  }})
-
+(defmethod month-names :en [_] month-names-en)
+(defmethod month-names :default [_] month-names-en)
 
 (defn shift-month [y m dir]
   (let [m (+ m (if (= :next dir) 1 -1))]
