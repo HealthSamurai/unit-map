@@ -34,7 +34,7 @@
              (recur rest-s rest-f
                     (cond-> acc
                       (contains? util/parse-patterns f)
-                      (assoc f (util/parse-int cur-s)))))))))))
+                      (assoc f (util/parse-val cur-s f)))))))))))
 
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
