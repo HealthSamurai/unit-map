@@ -16,3 +16,17 @@
   (is (not (sut/leap-year? 2100)))
   (is (sut/leap-year? 2000))
   (is (sut/leap-year? 2016)))
+
+(deftest parse-name-test
+  (testing "testing months parsing \n"
+    (let [cases {"jan" 1
+                 "FEB" 2
+                 "March" 3
+                 "april" 4
+                 "MaY." 5
+                 "JUNE" 6}
+          test-fn (fn [[inp res]]
+                    (testing (str "parsing: " inp)
+                      (is (= (sut/parse-name inp :month) res))))]
+      (doall
+       (map test-fn cases)))))
