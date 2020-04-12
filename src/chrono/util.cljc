@@ -26,10 +26,10 @@
 
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
-(defn parse-name [x f]
-  (-> (locale :en)
-      f
-      (->> (filter #(re-matches (-> % val :regex re-pattern) x)))
+(defn parse-name [name {lang :lang unit :unit}]
+  (-> (locale lang)
+      (get unit)
+      (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
       doall
       ffirst))
 

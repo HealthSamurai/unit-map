@@ -1,15 +1,22 @@
 (ns chrono.io
-  (:require [chrono.util :as util]
-            [chrono.ops :as ops]
-            [clojure.string :as str]
-            #?(:cljs [goog.string])
-            #?(:cljs [goog.string.format]))
-  (:refer-clojure :exclude [format]))
+  (:refer-clojure :exclude [format])
+  #?@
+   (:clj
+    [(:require
+      [chrono.ops :as ops]
+      [chrono.util :as util]
+      [clojure.string :as str])]
+    :cljs
+    [(:require
+      [chrono.ops :as ops]
+      [chrono.util :as util]
+      [clojure.string :as str]
+      goog.string)]))
 
 (defn- format-str [fmt val width]
   (->>
     (apply
-      #?(:clj  clojure.core/format
+     #?(:clj  clojure.core/format
          :cljs goog.string/format)
       fmt
       [val])
@@ -19,7 +26,8 @@
 (defn parse
   ([s] (parse s util/iso-fmt))
   ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) first) fmt)
+   (let [lang (-> fmt meta first)
+         fmt (map #(cond-> % (vector? %) first) fmt)
          pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
      (loop [s            s
             [f & rest-f] fmt
@@ -34,7 +42,8 @@
              (recur rest-s rest-f
                     (cond-> acc
                       (contains? util/parse-patterns f)
-                      (assoc f (util/parse-val cur-s f)))))))))))
+                      (assoc f (util/parse-val cur-s
+                                               {:unit f :lang lang})))))))))))
 
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
