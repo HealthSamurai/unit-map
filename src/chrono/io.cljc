@@ -16,48 +16,33 @@
     (take-last width)
     (str/join)))
 
-(defn parse
-  ([s] (parse s util/iso-fmt))
-  ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-     (loop [s            s
-            [f & rest-f] fmt
-            acc          nil]
-       (if-not (and s f)
-         acc
-         (let [p   (or (util/parse-patterns f) (util/sanitize f))
-               pat (re-pattern (str "(" p ")" "(.+)?"))
+(defn pv [{:keys [s acc strict?] :as res} f]
+  (let [f (cond-> f (vector? f) first)
+        patternize (fn [x] (str "(" x ")" "(.+)?"))
+        [match-s cur-s rest-s] (-> (or (util/parse-patterns f) (util/sanitize f))
+                                   patternize
+                                   re-pattern
+                                   (re-matches s))
+        res (-> res
+                (assoc :s rest-s)
+                (cond-> (keyword? f) (assoc-in [:acc f] (util/parse-int cur-s))))]
+    (if-not cur-s
+      (reduced nil)
+      (if rest-s
+        res
+        (reduced (if strict? nil res))))))
 
-               [match-s cur-s rest-s] (re-matches pat s)]
-           (when match-s
-             (recur rest-s rest-f
-                    (cond-> acc
-                      (contains? util/parse-patterns f)
-                      (assoc f (util/parse-int cur-s)))))))))))
+(defn priv-parse [s fmt {strict? :strict?}]
+  (let [{:keys [s acc]} (reduce pv {:s s :strict? strict?} fmt)]
+    (if (and s strict?) nil acc)))
+
+(defn parse
+  ([s] (priv-parse s util/iso-fmt {:strict? nil}))
+  ([s fmt] (priv-parse s fmt {:strict? nil})))
 
 (defn strict-parse
-  ([s] (strict-parse s util/iso-fmt))
-  ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-     (loop [s            s
-            [f & rest-f] fmt
-            [p & rest-p] pat
-            acc          nil]
-       (if-not (and s f)
-         acc
-         (let [ahead (apply str rest-p)
-               pat   (->> (when (seq rest-p) (str \( ahead \) ))
-                          (str "(" p ")")
-                          re-pattern)
-
-               [match-s cur-s rest-s] (re-matches pat s)]
-           (when match-s
-             (recur rest-s rest-f rest-p
-                    (cond-> acc
-                      (contains? util/parse-patterns f)
-                      (assoc f (util/parse-int cur-s)))))))))))
+  ([s] (priv-parse s util/iso-fmt {:strict? true}))
+  ([s fmt] (priv-parse s fmt {:strict? true})))
 
 (defn format
   ([t] (format t util/iso-fmt))
