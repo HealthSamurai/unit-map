@@ -61,13 +61,13 @@
      (sut/parse "2011-12" [:month "-" :year]) nil)))
 
 (deftest strict-parse-test
-  (testing "strict parse should return value when format is exactly match"
+  (testing "strict parse should return value when format exact match"
     (matcho/match
-     (sut/parse "2011-01-01")
+     (sut/strict-parse "2011-01-01" [:year \- :month \- :day])
      {:year 2011 :month 1 :day 1})
 
     (matcho/match
-     (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
+     (sut/strict-parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
      {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
 
   (testing "strict parse should return nil when format not strictly consistent"
