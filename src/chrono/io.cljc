@@ -16,33 +16,42 @@
     (take-last width)
     (str/join)))
 
-(defn pv [{:keys [s acc strict?] :as res} f]
-  (let [f (cond-> f (vector? f) first)
-        patternize (fn [x] (str "(" x ")" "(.+)?"))
-        [match-s cur-s rest-s] (-> (or (util/parse-patterns f) (util/sanitize f))
-                                   patternize
-                                   re-pattern
-                                   (re-matches s))
-        res (-> res
-                (assoc :s rest-s)
-                (cond-> (keyword? f) (assoc-in [:acc f] (util/parse-int cur-s))))]
-    (if-not cur-s
-      (reduced nil)
-      (if rest-s
-        res
-        (reduced (if strict? nil res))))))
-
-(defn priv-parse [s fmt {strict? :strict?}]
-  (let [{:keys [s acc]} (reduce pv {:s s :strict? strict?} fmt)]
-    (if (and s strict?) nil acc)))
+(defn priv-parse [process-fn {:keys [s f p] :as r}]
+  (loop
+      [[f & rest-f] f
+       s s
+       acc nil]
+    (let [[match? s rest-s] (process-fn f s)]
+      (if-not match? nil
+              (let [acc (cond-> acc (keyword? f) (assoc f s))]
+                (if (and rest-s rest-f)
+                  (recur rest-f rest-s acc)
+                  {:acc acc :f rest-f :s rest-s}))))))
 
 (defn parse
-  ([s] (priv-parse s util/iso-fmt {:strict? nil}))
-  ([s fmt] (priv-parse s fmt {:strict? nil})))
+  ([s] (parse s util/iso-fmt))
+  ([s fmt]
+   (letfn [(parsefn [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
+                              (#(str "(" % ")" "(.+)?"))
+                              re-pattern
+                              (re-matches s)))]
+     (some-> parsefn
+         (priv-parse {:s s :f fmt})
+         :acc
+         (#(zipmap (keys %) (map util/parse-int (vals %))))))))
 
 (defn strict-parse
-  ([s] (priv-parse s util/iso-fmt {:strict? true}))
-  ([s fmt] (priv-parse s fmt {:strict? true})))
+  ([s] (strict-parse s util/iso-fmt))
+  ([s fmt]
+   (letfn [(parsefn [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
+                              (#(str "(" % ")" "(.+)?"))
+                              re-pattern
+                              (re-matches s)))]
+     (let [res (priv-parse parsefn {:s s :f fmt})]
+       (if (and (nil? (:s res)) (nil? (:f res)))
+         (some-> res
+          :acc
+          (#(zipmap (keys %) (map util/parse-int (vals %))))))))))
 
 (defn format
   ([t] (format t util/iso-fmt))
