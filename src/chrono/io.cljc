@@ -39,7 +39,7 @@
                           (if (and rest-s rest-f)
                             (recur rest-f rest-s acc)
                             {:acc acc :f rest-f :s rest-s}))))))]
-    (let [lang (-> fmt meta first)
+    (let [lang (-> fmt meta ffirst)
           res (match-collection match {:s s :f fmt})]
       (if-not (and strict? (or (some? (:s res)) (some? (:f res))))
         (some-> res
