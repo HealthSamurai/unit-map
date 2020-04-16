@@ -1,5 +1,5 @@
 (ns chrono.locale-en
-  (:require [chrono.util :as locale]))
+  (:require [chrono.util :as util]))
 
 (def locale-en
   {:month
@@ -16,5 +16,5 @@
     11 {:name "November" :short "Nov" :regex "(?i)nov\\S*"}
     12 {:name "December" :short "Dec" :regex "(?i)dec\\S*"}}})
 
-(defmethod locale/locale :en [_] locale-en)
-(defmethod locale/locale :default [_] locale-en)
+(defmethod util/locale :en [_] locale-en)
+(defmethod util/locale :default [_] locale-en)
