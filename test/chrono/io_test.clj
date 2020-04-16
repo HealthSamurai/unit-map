@@ -5,43 +5,62 @@
 
 (deftest parse-format-test
   (testing "parse"
-    (matcho/match
-     (sut/parse "2011-01-01")
-     {:year 2011 :month 1 :day 1})
+    (testing "numeral representation of month"
+      (matcho/match
+       (sut/parse "2011-01-01")
+       {:year 2011 :month 1 :day 1})
 
-    (matcho/match
-     (sut/parse "2011-01-01T12:00")
-     {:year 2011 :month 1 :day 1 :hour 12 :min 0})
+      (matcho/match
+       (sut/parse "2011-01-01T12:00")
+       {:year 2011 :month 1 :day 1 :hour 12 :min 0})
 
-    (matcho/match
-     (sut/parse "2011-01-01T12:00:00")
-     {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
+      (matcho/match
+       (sut/parse "2011-01-01T12:00:00")
+       {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
 
-    (matcho/match
-     (sut/parse "2011-01-01T12:04:05.100")
-     {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100})
+      (matcho/match
+       (sut/parse "2011-01-01T12:04:05.100")
+       {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100})
 
-    (matcho/match
-     (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
-     {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1})
+      (matcho/match
+       (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
+       {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
+    (testing "literal representation of month"
+      (testing "default lang"
+        (matcho/match
+         (sut/parse "16 Jan 2019 23:59:01"
+                    [:day \space :month \space :year \space :hour \: :min \: :sec])
+         {:day 16, :month 1, :year 2019, :hour 23, :min 59, :sec 1})
 
-    (matcho/match
-     (sut/parse "16 Jan 2019 23:59:01"
-                [:day \space :month \space :year \space :hour \: :min \: :sec])
-     {:day 16, :month 1, :year 2019, :hour 23, :min 59, :sec 1})
-
-    (matcho/match
-     (sut/parse "31 December 2023 13:30:19"
-                [:day \space :month \space :year \space :hour \: :min \: :sec])
-     {:day 31, :month 12, :year 2023, :hour 13, :min 30, :sec 19})
-    (matcho/match
-     (sut/parse "31 march 2023 13:30:19"
-                [:day \space :month \space :year \space :hour \: :min \: :sec])
-     {:day 31, :month 03, :year 2023, :hour 13, :min 30, :sec 19})
-    (matcho/match
-     (sut/parse "31 FEB 2023 13:30:19"
-                [:day \space :month \space :year \space :hour \: :min \: :sec])
-     {:day 31, :month 02, :year 2023, :hour 13, :min 30, :sec 19}))
+        (matcho/match
+         (sut/parse "31 December 2023 13:30:19"
+                    [:day \space :month \space :year \space :hour \: :min \: :sec])
+         {:day 31, :month 12, :year 2023, :hour 13, :min 30, :sec 19})
+        (matcho/match
+         (sut/parse "31 march 2023 13:30:19"
+                    [:day \space :month \space :year \space :hour \: :min \: :sec])
+         {:day 31, :month 3, :year 2023, :hour 13, :min 30, :sec 19})
+        (matcho/match
+         (sut/parse "28 FEB 2023 13:30:19"
+                    [:day \space :month \space :year \space :hour \: :min \: :sec])
+         {:day 28, :month 2, :year 2023, :hour 13, :min 30, :sec 19})
+        (matcho/match
+         (sut/parse "jun. 28 9999" [:month \space :day \space :year])
+         {:day 28, :month 6, :year 9999}))
+      (testing "en"
+        (matcho/match
+         (sut/parse "sep. 19 2023" ^:en[:month \space :day \space :year])
+         {:day 19, :month 9, :year 2023}))
+      (testing "ru"
+        (matcho/match
+         (sut/parse "19 января" ^:ru[:day \space :month])
+         {:day 19 :month 1})
+        (matcho/match
+         (sut/parse "январь 19" ^:ru[:month \space :yead])
+         {:year 19 :month 1})
+        (matcho/match
+         (sut/parse "окт 9:36" ^:ru[:month \space :hour \: :min])
+         {:month 9 :hour 9 :min 36}))))
 
   (testing "format"
     (is (= "12/01/2010" (sut/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year]))))
