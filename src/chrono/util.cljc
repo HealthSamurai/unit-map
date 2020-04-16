@@ -37,11 +37,14 @@
   (when (string? x)
     (try
       #?(:clj (Integer/parseInt x)
-         :cljs (js/parseInt  x))
+         :cljs (js/parseInt x))
       (catch Exception e nil))))
 
 (defn parse-val [x f]
-  (or (parse-int x) (parse-name x f)))
+  (or (parse-int x)
+      (parse-name x f)
+      (throw
+       (Exception. (str "Can't parse string \"" x "\" with format " f)))))
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))
