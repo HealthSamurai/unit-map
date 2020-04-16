@@ -98,8 +98,12 @@
      nil))
 
   (testing "parsing invalid strings should return nil"
-    (matcho/match
+        (matcho/match
      (sut/strict-parse "2011-23" [:year "-" :month]) nil)
 
     (matcho/match
-     (sut/strict-parse "2011-12" [:month "-" :year]) nil)))
+     (sut/strict-parse "2011-12" [:month "-" :year]) nil))
+
+  (testing "strict parsing month names"
+    (matcho/match
+     (sut/strict-parse "2011-JUL" [:year "-" :month]) {:year 2011 :month 7})))
