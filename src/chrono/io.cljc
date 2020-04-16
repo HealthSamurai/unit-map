@@ -23,50 +23,46 @@
     (take-last width)
     (str/join)))
 
-(defn parse
-  ([s] (parse s util/iso-fmt))
-  ([s fmt]
-   (let [lang (-> fmt meta first)
-         fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-     (loop [s            s
-            [f & rest-f] fmt
-            acc          nil]
-       (if-not (and s f)
-         acc
-         (let [p   (or (util/parse-patterns f) (util/sanitize f))
-               pat (re-pattern (str "(" p ")" "(.+)?"))
+(defn process-parse [process-fn {:keys [s f p] :as r}]
+  (loop
+      [[f & rest-f] f
+       s s
+       acc nil]
+    (let [[match? s rest-s] (process-fn f s)]
+      (if-not match? nil
+              (let [acc (cond-> acc (keyword? f) (assoc f s))]
+                (if (and rest-s rest-f)
+                  (recur rest-f rest-s acc)
+                  {:acc acc :f rest-f :s rest-s}))))))
 
-               [match-s cur-s rest-s] (re-matches pat s)]
-           (when match-s
-             (recur rest-s rest-f
-                    (cond-> acc
-                      (contains? util/parse-patterns f)
-                      (assoc f (util/parse-val cur-s
-                                               {:unit f :lang lang})))))))))))
+(letfn [(parsefn [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
+                            (#(str "(" % ")" "(.+)?"))
+                            re-pattern
+                            (re-matches s)))]
+  (defn parse
+    ([s] (parse s util/iso-fmt))
+    ([s fmt]
+     (let [lang (-> fmt meta first)
+           res (process-parse parsefn {:s s :f fmt})]
+       (some-> res
+               :acc
+               (#(zipmap (keys %) (map (fn [x]
+                                         (util/parse-val
+                                          (val x)
+                                          {:unit (key x) :lang lang})) %)))))))
 
-(defn strict-parse
-  ([s] (strict-parse s util/iso-fmt))
-  ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-     (loop [s            s
-            [f & rest-f] fmt
-            [p & rest-p] pat
-            acc          nil]
-       (if-not (and s f)
-         acc
-         (let [ahead (apply str rest-p)
-               pat   (->> (when (seq rest-p) (str \( ahead \) ))
-                          (str "(" p ")")
-                          re-pattern)
-
-               [match-s cur-s rest-s] (re-matches pat s)]
-           (when match-s
-             (recur rest-s rest-f rest-p
-                    (cond-> acc
-                      (contains? util/parse-patterns f)
-                      (assoc f (util/parse-int cur-s)))))))))))
+  (defn strict-parse
+    ([s] (strict-parse s util/iso-fmt))
+    ([s fmt]
+     (let [lang (-> fmt meta first)
+           res (process-parse parsefn {:s s :f fmt})]
+       (if (and (nil? (:s res)) (nil? (:f res)))
+         (some-> res
+                 :acc
+                 (#(zipmap (keys %) (map (fn [x]
+                                           (util/parse-val
+                                            (val x)
+                                            {:unit (key x) :lang lang})) %)))))))))
 
 (defn format
   ([t] (format t util/iso-fmt))
