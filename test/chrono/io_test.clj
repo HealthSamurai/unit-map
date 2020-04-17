@@ -57,17 +57,17 @@
          (sut/parse "19 января" ^:ru[:day \space :month])
          {:day 19 :month 1})
         (matcho/match
-         (sut/parse "январь 19" ^:ru[:month \space :year])
-         {:year 19 :month 1})
+         (sut/parse "февраль 19" ^:ru[:month \space :year])
+         {:year 19 :month 2})
         (matcho/match
          (sut/parse "окт 9:36" ^:ru[:month \space :hour \: :min])
-         {:month 9 :hour 9 :min 36}))
+         {:month 10 :hour 9 :min 36}))
       (testing "invalid month name"
-        (matcho/match
-         (sut/parse "явнарь 19" ^:ru[:month \space :year]) nil))
+        (is (thrown? Exception
+                     (sut/parse "явнарь 19" ^:ru[:month \space :year]))))
       (testing "invalid locale name"
-        (matcho/match
-         (sut/parse "январь 19" ^:en[:month \space :year]) nil))))
+        (is (thrown? Exception
+                     (sut/parse "январь 19" ^:en[:month \space :year]))))))
 
   (testing "format"
     (is (= "12/01/2010" (sut/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year]))))
