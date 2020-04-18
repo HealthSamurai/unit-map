@@ -105,3 +105,31 @@
                (simplify :hour)
                first)
     t))
+
+(defn- format-str [v {:keys [kw width flag]} lang]
+  (cond
+    (not (keyword? kw)) (or v kw)
+    (and (= :month kw) (some? lang)) (if (= flag :short?)
+                                       (:short (locale lang))
+                                       (:name (locale lang)))
+    :else
+    (->>
+     (apply
+      #?(:clj  clojure.core/format
+         :cljs goog.string/format)
+      (str "%0" width \d)
+      [v])
+     (take-last width)
+     (str/join))))
+
+(defn destructructure-fmt [coll]
+  (let [kw (cond-> coll (vector? coll) first)
+        fmt (if (vector? coll) (rest coll))]
+    (->
+     {:kw kw
+      :width (or (first (filter integer? fmt))
+                 (format-patterns kw))
+      :padding (or (first (filter string? fmt)) \0)
+      :format (or (first (filter fn? fmt)) format-str)
+      :flag (first (filter keyword? fmt))}
+     (merge (first (filter map? fmt))))))

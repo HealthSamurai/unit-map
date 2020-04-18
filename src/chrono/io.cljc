@@ -13,16 +13,6 @@
       [clojure.string :as str]
       goog.string)]))
 
-(defn- format-str [fmt val width]
-  (->>
-    (apply
-     #?(:clj  clojure.core/format
-         :cljs goog.string/format)
-      fmt
-      [val])
-    (take-last width)
-    (str/join)))
-
 (defn- internal-parse [s fmt strict?]
   (letfn [(match [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
                            (#(str "(" % ")" "(.+)?"))
@@ -59,18 +49,17 @@
 (defn format
   ([t] (format t util/iso-fmt))
   ([t fmt-vec]
-   (->> fmt-vec
-        (mapv (fn [x]
-                (let [kw (cond-> x (vector? x) first)
-                      v  (get t kw)
-                      width (if (vector? x) (second x) (util/format-patterns x))]
-                  (if (contains? util/format-patterns kw)
-                    (format-str
-                      (str "%0" width \d)
-                      (or v 0)
-                      width)
-                    (or v x)))))
-        str/join)))
+   (let [lang (-> fmt-vec meta ffirst)]
+     (->> fmt-vec
+          (mapv
+           (fn [x]
+             (let [{:keys [kw format] :as fmt-struct}
+                   (util/destructructure-fmt x)
+                   v (get t kw)]
+               (format v fmt-struct lang))))
+          str/join))))
+
+
 
 (defn date-convertable? [value in out]
   (ops/eq?
