@@ -35,10 +35,8 @@
 
 (defn parse-int [x]
   (when (string? x)
-    (try
-      #?(:clj (Integer/parseInt x)
-         :cljs (js/parseInt x))
-      (catch Exception e nil))))
+    #?(:clj (try (Integer/parseInt x) (catch NumberFormatException e nil))
+       :cljs (js/parseInt x))))
 
 (defn parse-val [x f]
   (or (parse-int x)
