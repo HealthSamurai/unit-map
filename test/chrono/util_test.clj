@@ -30,3 +30,10 @@
                       (is (= (sut/parse-name inp {:unit :month :lang nil}) res))))]
       (doall
        (map test-fn cases)))))
+
+(deftest format-str-test
+  (testing "month names"
+    (is (= "November" (#'sut/format-str 11 {:kw :month} :en)))
+    (is (= "Март" (#'sut/format-str 3 {:kw :month} :ru)))
+    (is (= "Aug" (#'sut/format-str 8 {:kw :month :flag :short} :en)))
+    (is (= "Sep" (#'sut/format-str 9 {:kw :month :flag :short} :en)))))

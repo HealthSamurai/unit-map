@@ -70,7 +70,16 @@
                      (sut/parse "январь 19" ^:en[:month \space :year]))))))
 
   (testing "format"
-    (is (= "12/01/2010" (sut/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year]))))
+    (is (= "12/01/2010" (sut/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year])))
+    (testing "month-name"
+      (is (= "Октябрь 2009"
+             (sut/format {:year 2009 :month 10} ^:ru [:month \space :year])))
+      (is (= "Sep. 1"
+             (sut/format {:month 9 :day 1} ^:en [[:month :short] \. \space [:day 1]])))
+      (is (= "test"
+             (sut/format {:month 9 :day 1} [[:month (constantly "test")]])))
+      (is (= "3"
+             (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]])))))
 
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
