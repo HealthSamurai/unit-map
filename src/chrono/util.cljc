@@ -109,9 +109,9 @@
 (defn- format-str [v {:keys [kw width flag]} lang]
   (cond
     (not (keyword? kw)) (or v kw)
-    (and (= :month kw) (some? lang)) (if (= flag :short?)
-                                       (:short (locale lang))
-                                       (:name (locale lang)))
+    (and (= :month kw) (some? lang)) (-> (locale lang)
+                                         :month
+                                         (get-in [v (if (= flag :short) :short :name)]))
     :else
     (->>
      (apply
@@ -130,6 +130,6 @@
       :width (or (first (filter integer? fmt))
                  (format-patterns kw))
       :padding (or (first (filter string? fmt)) \0)
-      :format (or (first (filter fn? fmt)) format-str)
+      :format-fn (or (first (filter fn? fmt)) format-str)
       :flag (first (filter keyword? fmt))}
      (merge (first (filter map? fmt))))))

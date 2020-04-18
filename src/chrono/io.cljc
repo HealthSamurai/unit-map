@@ -53,13 +53,11 @@
      (->> fmt-vec
           (mapv
            (fn [x]
-             (let [{:keys [kw format] :as fmt-struct}
+             (let [{:keys [kw format-fn] :as fmt-struct}
                    (util/destructructure-fmt x)
                    v (get t kw)]
-               (format v fmt-struct lang))))
+               (format-fn v fmt-struct lang))))
           str/join))))
-
-
 
 (defn date-convertable? [value in out]
   (ops/eq?
