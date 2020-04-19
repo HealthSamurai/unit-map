@@ -46,17 +46,37 @@
   ([s] (strict-parse s util/iso-fmt))
   ([s fmt] (internal-parse s fmt true)))
 
+(defn- format-str [v [fmt & fmt-args] lang]
+  (if (and (some? lang) (contains? (util/locale lang) fmt))
+    (let [full? (empty? (filter #(= % :short) fmt-args))]
+      (-> (util/locale lang)
+          fmt
+          (get-in [v (if full? :name :short)])))
+
+    (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
+      (->>
+       (apply
+        #?(:clj  clojure.core/format
+           :cljs goog.string/format)
+        (str "%0" width \d)
+        [v])
+       (take-last width)
+       (str/join)))))
+
 (defn format
-  ([t] (format t util/iso-fmt))
-  ([t fmt-vec]
+  ([date-coll] (format date-coll util/iso-fmt))
+  ([date-coll fmt-vec]
    (let [lang (-> fmt-vec meta ffirst)]
      (->> fmt-vec
           (mapv
-           (fn [x]
-             (let [{:keys [kw format-fn] :as fmt-struct}
-                   (util/destructructure-fmt x)
-                   v (get t kw)]
-               (format-fn v fmt-struct lang))))
+           (fn [fmt]
+             (let [fmt (cond-> fmt (not (vector? fmt)) vector)
+                   f (first fmt)
+                   v (get date-coll f)
+                   format-fn (if (keyword? f)
+                               (or (first (filter fn? fmt)) format-str)
+                               (constantly (or v f)))]
+               (format-fn v fmt lang))))
           str/join))))
 
 (defn date-convertable? [value in out]

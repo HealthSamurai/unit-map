@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
             [chrono.io :as sut]
-            [chrono.locale-ru]))
+            [chrono.locale-ru]
+            [clojure.string :as str]))
 
 (deftest parse-format-test
   (testing "parse"
@@ -76,8 +77,9 @@
              (sut/format {:year 2009 :month 10} ^:ru [:month \space :year])))
       (is (= "Sep. 1"
              (sut/format {:month 9 :day 1} ^:en [[:month :short] \. \space [:day 1]])))
-      (is (= "test"
-             (sut/format {:month 9 :day 1} [[:month (constantly "test")]])))
+      (is (= "1:month:entest"
+             (sut/format {:month 1}
+                         ^:en[[:month (fn [v [kw _ s] lc] (str/join [v kw lc s])) "test"]])))
       (is (= "3"
              (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]])))))
 
