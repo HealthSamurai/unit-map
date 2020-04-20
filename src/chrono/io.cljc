@@ -1,17 +1,29 @@
 (ns chrono.io
-  (:refer-clojure :exclude [format])
-  #?@
-   (:clj
-    [(:require
-      [chrono.ops :as ops]
-      [chrono.util :as util]
-      [clojure.string :as str])]
-    :cljs
-    [(:require
-      [chrono.ops :as ops]
-      [chrono.util :as util]
-      [clojure.string :as str]
-      goog.string)]))
+  (:require [chrono.util :as util]
+            [chrono.ops :as ops]
+            [clojure.string :as str]
+            #?(:cljs [goog.string])
+            #?(:cljs [goog.string.format]))
+  (:refer-clojure :exclude [format]))
+
+(defn- format-str [v [fmt & fmt-args] lang]
+  (if (and (some? lang) (contains? (util/locale lang) fmt))
+    (let [full? (empty? (filter #(= % :short) fmt-args))]
+      (-> (util/locale lang)
+          fmt
+          (get-in [v (if full? :name :short)])))
+
+    (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
+      (if width
+        (->>
+         (apply
+          #?(:clj  clojure.core/format
+             :cljs goog.string/format)
+          (str "%0" width \d)
+          [v])
+         (take-last width)
+         (str/join))
+        (str v)))))
 
 (defn- internal-parse [s fmt strict?]
   (letfn [(match [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
@@ -45,25 +57,6 @@
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
   ([s fmt] (internal-parse s fmt true)))
-
-(defn- format-str [v [fmt & fmt-args] lang]
-  (if (and (some? lang) (contains? (util/locale lang) fmt))
-    (let [full? (empty? (filter #(= % :short) fmt-args))]
-      (-> (util/locale lang)
-          fmt
-          (get-in [v (if full? :name :short)])))
-
-    (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
-      (if width
-        (->>
-         (apply
-          #?(:clj  clojure.core/format
-             :cljs goog.string/format)
-          (str "%0" width \d)
-          [v])
-         (take-last width)
-         (str/join))
-        (str v)))))
 
 (defn format
   ([date-coll] (format date-coll util/iso-fmt))
