@@ -27,24 +27,25 @@
 
 (defn- internal-parse [s fmt strict?]
   (letfn [(match [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
-                           (#(str "(" % ")" "(.+)?"))
+                           (as-> $ (str "(" $ ")" "(.+)?"))
                            re-pattern
                            (re-matches s)))
-          (match-collection [process-fn {:keys [s f p] :as r} lang]
+          (match-collection [process s f lang]
             (loop
                 [[f & rest-f] f
                  s s
                  acc nil]
-              (let [[match? s rest-s] (process-fn f s)
-                    v (if (keyword? f) (util/parse-val s f lang) s)]
-                (if-not (and match? v) {:acc acc :f rest-f :s rest-s}
-                        (let [acc (cond-> acc (keyword? f) (assoc f v))]
-                          (if (and rest-s rest-f)
-                            (recur rest-f rest-s acc)
-                            {:acc acc :f rest-f :s rest-s}))))))]
+              (let [unit? (keyword? f)
+                    [match? s rest-s] (process f s)
+                    parsed-value (if unit? (util/parse-val s f lang))
+                    parsed? (or parsed-value (not unit?))
+                    acc (cond-> acc parsed-value (assoc f parsed-value))]
+                (if (and parsed? (some? rest-s) (some? rest-f))
+                  (recur rest-f rest-s acc)
+                  [acc rest-f rest-s]))))]
     (let [lang (-> fmt meta ffirst)
-          res (match-collection match {:s s :f fmt} lang)]
-      (if-not (and strict? (or (some? (:s res)) (some? (:f res)))) (:acc res)))))
+          [acc rest-f rest-s] (match-collection match s fmt lang)]
+      (if-not (and strict? (or (some? rest-s) (some? rest-f))) acc))))
 
 (defn parse
   ([s] (parse s util/iso-fmt))
