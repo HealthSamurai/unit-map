@@ -54,14 +54,16 @@
           (get-in [v (if full? :name :short)])))
 
     (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
-      (->>
-       (apply
-        #?(:clj  clojure.core/format
-           :cljs goog.string/format)
-        (str "%0" width \d)
-        [v])
-       (take-last width)
-       (str/join)))))
+      (if width
+        (->>
+         (apply
+          #?(:clj  clojure.core/format
+             :cljs goog.string/format)
+          (str "%0" width \d)
+          [v])
+         (take-last width)
+         (str/join))
+        (str v)))))
 
 (defn format
   ([date-coll] (format date-coll util/iso-fmt))
@@ -76,7 +78,7 @@
                    format-fn (if (keyword? f)
                                (or (first (filter fn? fmt)) format-str)
                                (constantly (or v f)))]
-               (format-fn v fmt lang))))
+               (format-fn (or v 0) fmt lang))))
           str/join))))
 
 (defn date-convertable? [value in out]
