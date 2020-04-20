@@ -81,7 +81,10 @@
              (sut/format {:month 1}
                          ^:en[[:month (fn [v [kw _ s] lc] (str/join [v kw lc s])) "test"]])))
       (is (= "3"
-             (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]])))))
+             (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]]))))
+    (testing "custom keys"
+      (is (= "5.000001234" (sut/format {:sec 5 :ns 1234} [[:sec 1] \. :ms [:ns 6]])))
+      (is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
 
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
