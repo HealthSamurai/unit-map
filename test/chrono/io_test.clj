@@ -64,11 +64,11 @@
          (sut/parse "окт 9:36" ^:ru[:month \space :hour \: :min])
          {:month 10 :hour 9 :min 36}))
       (testing "invalid month name"
-        (is (thrown? Exception
-                     (sut/parse "явнарь 19" ^:ru[:month \space :year]))))
+        (matcho/match (sut/parse "19 month" ^:ru[:year \space :month]) {:year 19})
+        (matcho/match (sut/parse "month 19" ^:ru[:month \space :year]) nil))
+
       (testing "invalid locale name"
-        (is (thrown? Exception
-                     (sut/parse "январь 19" ^:en[:month \space :year]))))))
+        (matcho/match (sut/parse "январь 19" ^:en[:month \space :year]) nil))))
 
   (testing "format"
     (is (= "12/01/2010" (sut/format {:year 2010 :month 12 :day 1} [:month "/" :day "/" :year])))
@@ -114,9 +114,9 @@
     (matcho/match
      (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]) {:year 2011 :month 1}))
 
-  (testing "parsing invalid strings should return nil"
+  (testing "parsing invalid strings should return only parsed part"
     (matcho/match
-     (sut/parse "2011-12" [:month "-" :year]) nil)))
+     (sut/parse "2020-12-ab" [:year "-" :month "-" :day]) {:year 2020 :month 12})))
 
 (deftest strict-parse-test
   (testing "strict parse should return value when format exact match"

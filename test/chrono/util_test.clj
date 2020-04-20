@@ -27,7 +27,7 @@
                  "JUNE" 6}
           test-fn (fn [[inp res]]
                     (testing (str "parsing: " inp)
-                      (is (= (sut/parse-name inp {:unit :month :lang nil}) res))))]
+                      (is (= (sut/parse-name inp :month nil) res))))]
       (doall
        (map test-fn cases)))))
 
