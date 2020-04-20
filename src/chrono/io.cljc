@@ -30,26 +30,22 @@
                            (#(str "(" % ")" "(.+)?"))
                            re-pattern
                            (re-matches s)))
-          (match-collection [process-fn {:keys [s f p] :as r}]
+          (match-collection [process-fn {:keys [s f p] :as r} lang]
             (loop
                 [[f & rest-f] f
                  s s
                  acc nil]
-              (let [[match? s rest-s] (process-fn f s)]
-                (if-not match? nil
-                        (let [acc (cond-> acc (keyword? f) (assoc f s))]
+              (let [[match? s rest-s] (process-fn f s)
+                    v (if (keyword? f) (util/parse-val s f lang) s)]
+                (if-not (and match? v) {:acc acc :f rest-f :s rest-s}
+                        (let [acc (cond-> acc (keyword? f) (assoc f v))]
                           (if (and rest-s rest-f)
                             (recur rest-f rest-s acc)
                             {:acc acc :f rest-f :s rest-s}))))))]
     (let [lang (-> fmt meta ffirst)
-          res (match-collection match {:s s :f fmt})]
-      (if-not (and strict? (or (some? (:s res)) (some? (:f res))))
-        (some-> res
-                :acc
-                (#(zipmap (keys %) (map (fn [x]
-                                          (util/parse-val
-                                           (val x)
-                                           {:unit (key x) :lang lang})) %))))))))
+          res (match-collection match {:s s :f fmt} lang)]
+      (if-not (and strict? (or (some? (:s res)) (some? (:f res)))) (:acc res)))))
+
 (defn parse
   ([s] (parse s util/iso-fmt))
   ([s fmt] (internal-parse s fmt false)))

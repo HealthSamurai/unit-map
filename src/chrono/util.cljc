@@ -26,7 +26,7 @@
 
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
-(defn parse-name [name {lang :lang unit :unit}]
+(defn parse-name [name unit lang]
   (-> (locale lang)
       (get unit)
       (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
@@ -38,11 +38,9 @@
     #?(:clj (try (Integer/parseInt x) (catch NumberFormatException e nil))
        :cljs (js/parseInt x))))
 
-(defn parse-val [x f]
+(defn parse-val [x unit lang]
   (or (parse-int x)
-      (parse-name x f)
-      (throw
-       (Exception. (str "Can't parse string \"" x "\" with format " f)))))
+      (parse-name x unit lang)))
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))
