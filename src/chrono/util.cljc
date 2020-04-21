@@ -104,11 +104,10 @@
                first)
     t))
 
-(defn zeropad
-  [string width]
-  (loop [[c & rest-c] (str/reverse string)
-         left width
-         result ""]
-    (if (> left 0)
-      (recur rest-c (dec left) (str (or c \0) result))
-      result)))
+(defn pad-str [p n s]
+  (->> s
+       (concat (repeat (- n (count s)) p))
+       (take-last n)
+       str/join))
+
+(def pad-zero (partial pad-str \0))

@@ -12,9 +12,8 @@
           (get-in [v (if short? :short :name)])))
 
     (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
-      (if width
-        (util/zeropad (str v) width)
-        (str v)))))
+      (cond->> (str v)
+        width (util/pad-zero width)))))
 
 (defn- internal-parse [s fmt strict?]
   (letfn [(match [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
