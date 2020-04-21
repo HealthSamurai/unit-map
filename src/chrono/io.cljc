@@ -1,9 +1,7 @@
 (ns chrono.io
   (:require [chrono.util :as util]
             [chrono.ops :as ops]
-            [clojure.string :as str]
-            #?(:cljs [goog.string])
-            #?(:cljs [goog.string.format]))
+            [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
 (defn- format-str [v [fmt & fmt-args] lang]
@@ -15,14 +13,7 @@
 
     (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
       (if width
-        (->>
-         (apply
-          #?(:clj  clojure.core/format
-             :cljs goog.string/format)
-          (str "%0" width \d)
-          [v])
-         (take-last width)
-         (str/join))
+        (util/zeropad (str v) width)
         (str v)))))
 
 (defn- internal-parse [s fmt strict?]
