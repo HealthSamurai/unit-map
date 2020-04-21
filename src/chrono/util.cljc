@@ -105,9 +105,9 @@
     t))
 
 (defn pad-str [p n s]
-  (->> s
-       (concat (repeat (- n (count s)) p))
-       (take-last n)
+  (->> (concat (reverse s) (repeat p))
+       (take n)
+       reverse
        str/join))
 
 (def pad-zero (partial pad-str \0))
