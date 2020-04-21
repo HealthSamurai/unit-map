@@ -30,3 +30,8 @@
                       (is (= (sut/parse-name inp :month nil) res))))]
       (doall
        (map test-fn cases)))))
+
+(deftest zeropad-test
+  (is (= "00321" (sut/zeropad "321" 5)))
+  (is (= "1"     (sut/zeropad "321" 1)))
+  (is (= "321"   (sut/zeropad "321" 3))))

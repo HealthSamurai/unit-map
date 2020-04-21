@@ -103,3 +103,12 @@
                (simplify :hour)
                first)
     t))
+
+(defn zeropad
+  [string width]
+  (loop [[c & rest-c] (str/reverse string)
+         left width
+         result ""]
+    (if (> left 0)
+      (recur rest-c (dec left) (str (or c \0) result))
+      result)))
