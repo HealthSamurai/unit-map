@@ -1,79 +1,66 @@
 (ns chrono.io
   (:require [chrono.util :as util]
             [chrono.ops :as ops]
-            [clojure.string :as str]
-            #?(:cljs [goog.string])
-            #?(:cljs [goog.string.format]))
+            [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
-(defn- format-str [fmt val width]
-  (->>
-    (apply
-      #?(:clj  clojure.core/format
-         :cljs goog.string/format)
-      fmt
-      [val])
-    (take-last width)
-    (str/join)))
+(defn- format-str [v [fmt & fmt-args] lang]
+  (if (and lang (contains? (util/locale lang) fmt))
+    (let [short? (not (empty? (filter #(= % :short) fmt-args)))]
+      (-> (util/locale lang)
+          fmt
+          (get-in [v (if short? :short :name)])))
+
+    (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
+      (if width
+        (util/zeropad (str v) width)
+        (str v)))))
+
+(defn- internal-parse [s fmt strict?]
+  (letfn [(match [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
+                           (as-> $ (str "(" $ ")" "(.+)?"))
+                           re-pattern
+                           (re-matches s)))
+          (match-collection [process s f lang]
+            (loop
+                [[f & rest-f] f
+                 s s
+                 acc nil]
+              (let [unit? (keyword? f)
+                    [match? s rest-s] (process f s)
+                    parsed-value (if unit? (util/parse-val s f lang))
+                    parsed? (or parsed-value (not unit?))
+                    acc (cond-> acc parsed-value (assoc f parsed-value))]
+                (if (and parsed? (some? rest-s) (some? rest-f))
+                  (recur rest-f rest-s acc)
+                  [acc rest-f rest-s]))))]
+    (let [lang (-> fmt meta ffirst)
+          [acc rest-f rest-s] (match-collection match s fmt lang)]
+      (if-not (and strict? (or (some? rest-s) (some? rest-f))) acc))))
 
 (defn parse
   ([s] (parse s util/iso-fmt))
-  ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-     (loop [s            s
-            [f & rest-f] fmt
-            acc          nil]
-       (if-not (and s f)
-         acc
-         (let [p   (or (util/parse-patterns f) (util/sanitize f))
-               pat (re-pattern (str "(" p ")" "(.+)?"))
-
-               [match-s cur-s rest-s] (re-matches pat s)]
-           (when match-s
-             (recur rest-s rest-f
-                    (cond-> acc
-                      (contains? util/parse-patterns f)
-                      (assoc f (util/parse-int cur-s)))))))))))
+  ([s fmt] (internal-parse s fmt false)))
 
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
-  ([s fmt]
-   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-         pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)]
-     (loop [s            s
-            [f & rest-f] fmt
-            [p & rest-p] pat
-            acc          nil]
-       (if-not (and s f)
-         acc
-         (let [ahead (apply str rest-p)
-               pat   (->> (when (seq rest-p) (str \( ahead \) ))
-                          (str "(" p ")")
-                          re-pattern)
-
-               [match-s cur-s rest-s] (re-matches pat s)]
-           (when match-s
-             (recur rest-s rest-f rest-p
-                    (cond-> acc
-                      (contains? util/parse-patterns f)
-                      (assoc f (util/parse-int cur-s)))))))))))
+  ([s fmt] (internal-parse s fmt true)))
 
 (defn format
-  ([t] (format t util/iso-fmt))
-  ([t fmt-vec]
-   (->> fmt-vec
-        (mapv (fn [x]
-                (let [kw (cond-> x (vector? x) first)
-                      v  (get t kw)
-                      width (if (vector? x) (second x) (util/format-patterns x))]
-                  (if (contains? util/format-patterns kw)
-                    (format-str
-                      (str "%0" width \d)
-                      (or v 0)
-                      width)
-                    (or v x)))))
-        str/join)))
+  ([date-coll] (format date-coll util/iso-fmt))
+  ([date-coll fmt-vec]
+   (let [lang (-> fmt-vec meta ffirst)]
+     (->> fmt-vec
+          (mapv
+           (fn [fmt]
+             (let [fmt (cond-> fmt (not (vector? fmt)) vector)
+                   f (first fmt)
+                   v (get date-coll f)
+                   format-fn (if (keyword? f)
+                               (or (first (filter fn? fmt)) format-str)
+                               (constantly (or v f)))]
+               (format-fn (or v 0) fmt lang))))
+          str/join))))
 
 (defn date-convertable? [value in out]
   (ops/eq?

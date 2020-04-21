@@ -1,9 +1,11 @@
 (ns chrono.util
   (:require [clojure.string :as str]))
 
+(defmulti locale (fn[x] x))
+
 (def parse-patterns
   {:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
-   :month "(?:1[0-2]|0[1-9]|[1-9])"
+   :month "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}++\\.?)"
    :day   "(?:3[0-1]|[1-2]\\d|0[1-9]|[1-9])"
    :hour  "(?:2[0-3]|[0-1]\\d|\\d)"
    :min   "(?:[0-5]\\d|\\d)"
@@ -24,10 +26,21 @@
 
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
+(defn parse-name [name unit lang]
+  (-> (locale lang)
+      (get unit)
+      (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
+      doall
+      ffirst))
+
 (defn parse-int [x]
   (when (string? x)
-    #?(:clj (Integer/parseInt x)
-       :cljs (js/parseInt  x))))
+    #?(:clj (try (Integer/parseInt x) (catch NumberFormatException e nil))
+       :cljs (js/parseInt x))))
+
+(defn parse-val [x unit lang]
+  (or (parse-int x)
+      (parse-name x unit lang)))
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))
@@ -90,3 +103,12 @@
                (simplify :hour)
                first)
     t))
+
+(defn zeropad
+  [string width]
+  (loop [[c & rest-c] (str/reverse string)
+         left width
+         result ""]
+    (if (> left 0)
+      (recur rest-c (dec left) (str (or c \0) result))
+      result)))
