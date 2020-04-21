@@ -130,3 +130,9 @@
   ([x y] (normalize (init-plus x (invert y))))
   ([x y & more]
    (reduce minus (minus x y) more)))
+
+(defn cmp [x y]
+  (cond
+    (eq? x y) 0
+    (gt x y)  1
+    (lt x y)  -1))
