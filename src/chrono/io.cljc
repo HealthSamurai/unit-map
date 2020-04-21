@@ -7,11 +7,11 @@
   (:refer-clojure :exclude [format]))
 
 (defn- format-str [v [fmt & fmt-args] lang]
-  (if (and (some? lang) (contains? (util/locale lang) fmt))
-    (let [full? (empty? (filter #(= % :short) fmt-args))]
+  (if (and lang (contains? (util/locale lang) fmt))
+    (let [short? (not (empty? (filter #(= % :short) fmt-args)))]
       (-> (util/locale lang)
           fmt
-          (get-in [v (if full? :name :short)])))
+          (get-in [v (if short? :short :name)])))
 
     (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
       (if width
