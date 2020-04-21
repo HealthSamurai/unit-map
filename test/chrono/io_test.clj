@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
             [chrono.io :as sut]
+            [chrono.locale-en]
             [chrono.locale-ru]
             [clojure.string :as str]))
 
