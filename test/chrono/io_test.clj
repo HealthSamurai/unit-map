@@ -147,3 +147,10 @@
   (testing "strict parsing month names"
     (matcho/match
      (sut/strict-parse "2011-JUL" [:year "-" :month]) {:year 2011 :month 7})))
+
+(deftest format-str-test
+  (testing "month names"
+    (is (= "November" (#'sut/format-str 11 [:month] :en)))
+    (is (= "Март" (#'sut/format-str 3 [:month] :ru)))
+    (is (= "Aug" (#'sut/format-str 8 [:month :short] :en)))
+    (is (= "09" (#'sut/format-str 9 [:month :short] nil)))))
