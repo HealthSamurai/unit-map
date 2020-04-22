@@ -7,7 +7,12 @@
             [clojure.string :as str]))
 
 (deftest parse-format-test
+  (testing "nil safe"
+    (matcho/match (sut/parse nil) nil)
+    (matcho/match (sut/format nil [:day]) "00"))
+
   (testing "parse"
+
     (testing "numeral representation of month"
       (matcho/match
        (sut/parse "2011-01-01")
@@ -93,31 +98,31 @@
 
   (testing "format with specified width"
     (is
-      (=
-        "06.03.20"
-        (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
+     (=
+      "06.03.20"
+      (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
     (is
-      (=
-        "06.03.2020"
-        (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
+     (=
+      "06.03.2020"
+      (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
     (is
-      (=
-        "2020.03.06"
-        (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
+     (=
+      "2020.03.06"
+      (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
     (is
-      (=
-        "20.03.06"
-        (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day]))))
+     (=
+      "20.03.06"
+      (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day]))))
   (testing "parse should return parsed value even if format not strictly cosistent"
     (matcho/match
      (sut/parse "2011-01-01" [:year "-" :month]) {:year 2011 :month 1})
 
     (matcho/match
-     (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]) {:year 2011 :month 1}))
+     (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]) {:year 2011 :month 1})))
 
-  (testing "parsing invalid strings should return only parsed part"
-    (matcho/match
-     (sut/parse "2020-12-ab" [:year "-" :month "-" :day]) {:year 2020 :month 12})))
+(testing "parsing invalid strings should return only parsed part"
+  (matcho/match
+   (sut/parse "2020-12-ab" [:year "-" :month "-" :day]) {:year 2020 :month 12}))
 
 (deftest strict-parse-test
   (testing "strict parse should return value when format exact match"

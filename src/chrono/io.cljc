@@ -39,7 +39,7 @@
 
 (defn parse
   ([s] (parse s util/iso-fmt))
-  ([s fmt] (internal-parse s fmt false)))
+  ([s fmt] (some-> s (internal-parse fmt false))))
 
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
