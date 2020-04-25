@@ -70,3 +70,20 @@
 (defn date-valid? [value fmt]
   #?(:clj true ; TODO
      :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
+
+(def epoch {:year 1970 :day 1 :month 1})
+
+(defn from-epoch [e]
+  (ops/plus {:sec e} epoch))
+
+(defn to-epoch [date]
+  (let [years (range (:year epoch) (:year date))
+        months (range 1 (:month date))]
+    (-> date
+        (dissoc :year :month)
+        (update :day #(reduce (fn [days year]
+                                (+ days (if (util/leap-year? year) 366 365))) % years))
+        (update :day #(reduce (fn [days month]
+                                (+ days (util/days-in-month
+                                         {:month month :year (:year date)}))) % months))
+        util/seconds)))

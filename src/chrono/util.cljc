@@ -111,3 +111,9 @@
        str/join))
 
 (def pad-zero (partial pad-str \0))
+
+(defn seconds [d]
+  (+ (* (dec (:day d)) 60 60 24)
+     (* (:hour d) 60 60)
+     (* (:min d) 60)
+     (:sec d)))
