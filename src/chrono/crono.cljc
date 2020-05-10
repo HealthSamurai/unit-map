@@ -6,14 +6,22 @@
   {:month [:yaer :month]
    :day [:year :month :day]
    :hour [:year :month :day :hour]
-   :min [:year :month :day :hour :min]})
+   :min [:year :month :day :hour :min]
+   :sec [:year :month :day :hour :min :sec]})
+
+(def default-at
+  {:hour {:min 0}
+   :min {:sec 0}})
 
 (defn next-time-assumption [current-time {every :every at :at}])
 
 (defn next-time
   ([cfg] (next-time (now/utc) cfg))
   ([current-time {every :every at :at :as when}]
-   (let [assumptions (map #(merge (select-keys current-time (get needed-for every)) %) (if (map? at) [at] at))]
+   (let [at (or at (get default-at every))
+         _ (if (nil? every) (throw (ex-info ":every must be specified" {})))
+         _ (if (nil? at) (throw (ex-info ":at must be specified" {})))
+         assumptions (map #(merge (select-keys current-time (get needed-for every)) %) (if (map? at) [at] at))]
      (if (nil? (first (filter #(ch/< current-time %) assumptions)))
        (ch/+ (first assumptions) {every 1})
        (first (filter #(ch/< current-time %) assumptions))))))
