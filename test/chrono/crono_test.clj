@@ -90,5 +90,21 @@
                    {:every :day
                     :at {:hour 12}})))
 
+  (is (= {:year 2020 :month 1 :day 1 :hour 12}
+         (sut/next-time {:year 2020 :month 1 :day 1 :hour 11}
+                        {:every "day" :at {:hour 12}})))
+
+  (is (= {:year 2020 :month 5 :day 18 :hour 10}
+         (sut/next-time {:year 2020 :month 5 :day 17 :hour 9}
+                        {:every "monday" :at {:hour 10}})))
+
+  (is (= {:year 2020 :month 5 :day 18 :hour 10}
+         (sut/next-time {:year 2020 :month 5 :day 18 :hour 9}
+                        {:every "monday" :at {:hour 10}})))
+
+  (is (= {:year 2020 :month 5 :day 26 :hour 10}
+         (sut/next-time {:year 2020 :month 5 :day 19 :hour 11}
+                        {:every "tuesday" :at {:hour 10}})))
+
 
   )
