@@ -106,5 +106,8 @@
          (sut/next-time {:year 2020 :month 5 :day 19 :hour 11}
                         {:every "tuesday" :at {:hour 10}})))
 
+  (is (= {:year 2020 :month 5 :day 19 :hour 10}
+         (sut/next-time {:year 2020 :month 5 :day 18 :hour 11}
+                        {:every "tuesday" :at {:hour 10}})))
 
   )
