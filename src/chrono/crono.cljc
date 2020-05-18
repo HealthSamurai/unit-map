@@ -1,6 +1,7 @@
 (ns chrono.crono
   (:require [chrono.core :as ch]
-            [chrono.now :as now]))
+            [chrono.now :as now]
+            [chrono.calendar :as cal]))
 
 (def needed-for
   {:month [:yaer :month]
@@ -15,6 +16,20 @@
 
 (defn next-time-assumption [current-time {every :every at :at}])
 
+(def days-of-week [:sunday :monday :tuesday :wednesday :thursday :friday :saturday])
+
+(defn nearest-week-day [current-time day-of-week]
+  (first
+   (filter
+    #(= (.indexOf days-of-week day-of-week)
+        (cal/day-of-week (:year %) (:month %) (:day %)))
+    (map
+     #(ch/+ current-time {:day %})
+     (range 7)))))
+
+(defn every-month? [every]
+  (contains? (set days-of-week) every))
+
 (defn next-time
   ([cfg] (next-time (now/utc) cfg))
   ([current-time {every :every at :at :as when}]
@@ -23,9 +38,10 @@
          _ (if (nil? every) (throw (ex-info ":every must be specified" {:when when})))
          _ (if (nil? at) (throw (ex-info ":at must be specified" {:when when})))
          at (if (map? at) [at] at)
-         assumptions (map #(merge (select-keys current-time (get needed-for every)) %) at)]
+         current-time (if (every-month? every) (nearest-week-day current-time every) current-time)
+         assumptions (map #(merge (select-keys current-time (get needed-for (if (every-month? every) :day every))) %) at)]
      (if (nil? (first (filter #(ch/< current-time %) assumptions)))
-       (ch/+ (first assumptions) {every 1})
+       (ch/+ (first assumptions) (if (every-month? every) {:day 7} {every 1}))
        (first (filter #(ch/< current-time %) assumptions))))))
 
 (defn now?
