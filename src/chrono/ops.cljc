@@ -70,9 +70,9 @@
 (defn normalize [t]
   (let [rules (ordered-rules t)
         normalized-time (reduce (fn [t unit] (normalize-rule unit t)) t rules)]
-    (->> normalized-time
-         (remove (comp zero? val))
-         (into {}))))
+    (into {}
+          (remove (comp zero? val))
+          normalized-time)))
 
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
