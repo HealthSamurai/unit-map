@@ -49,18 +49,12 @@
 
 (defmulti normalize-rule (fn [unit _] unit))
 (defmethod normalize-rule :default [_ t] t)
-(defmethod normalize-rule :ms [_ t]
-  (normalize-ms t))
-(defmethod normalize-rule :sec [_ t]
-  (normalize-s t))
-(defmethod normalize-rule :min [_ t]
-  (normalize-mi t))
-(defmethod normalize-rule :hour [_ t]
-  (normalize-h t))
-(defmethod normalize-rule :day [_ t]
-  (normalize-d t))
-(defmethod normalize-rule :month [_ t]
-  (normalize-m t))
+(defmethod normalize-rule :ms [_ t] (normalize-ms t))
+(defmethod normalize-rule :sec [_ t] (normalize-s t))
+(defmethod normalize-rule :min [_ t] (normalize-mi t))
+(defmethod normalize-rule :hour [_ t] (normalize-h t))
+(defmethod normalize-rule :day [_ t] (normalize-d t))
+(defmethod normalize-rule :month [_ t] (normalize-m t))
 
 (def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0] [:ms 0]])
 (defn custom-units [t]
