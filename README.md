@@ -53,6 +53,14 @@ Pure clojure time made simple for clj & cljs
 (ch/= (ch/+ (now/utc) (now/tz-offset))
       (now/local)) ;; => true
 
+;; using custom units
+;; Add custom normalization method. Example for nanoseconds:
+(def normalize-ns (sut/gen-norm :ns :ms 1000000 0))
+(defmethod sut/normalize-rule :ns [_ t] (normalize-ns t))
+
+(sut/normalize {:ns 1000000000})  ;; => {:sec 1}
+(sut/plus {:ns 999999999} {:ns 1}) ;; => {:sec 1}
+(sut/plus {:ns 9999999} {:ns 999000001}) ;; => {:sec 1 :ms 9}
 
 ```
 
