@@ -61,7 +61,7 @@
   (normalize-d t))
 (defmethod normalize-rule :month [_ t]
   (normalize-m t))
-  
+
 (def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0] [:ms 0]])
 (defn custom-units [t]
   (let [units-to-ignore (into #{} (conj (map first defaults-units) :tz))
@@ -71,16 +71,14 @@
 (defn ordered-rules [t]
   (let [init [:ms :sec :min :hour :month]
         with-custom (apply conj (custom-units t) init)]
-    (conj with-custom :day)
-    ))
+    (conj with-custom :day)))
 
 (defn normalize [t]
   (let [rules (ordered-rules t)
         normalized-time (reduce (fn [t unit] (normalize-rule unit t)) t rules)]
     (->> normalized-time
          (remove (comp zero? val))
-         (into {})
-    )))
+         (into {}))))
 
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
