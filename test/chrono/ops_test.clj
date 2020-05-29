@@ -34,6 +34,13 @@
     (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0}
                  {:year 2011 :month 1 :day 1 :hour 0}
                  {:year 2011 :month 1 :day 1 :hour 0})))
+  (testing "= with utc-offset"
+    (is (sut/eq? {:hour 10 :min 10} {:hour 13 :min 10 :utc 3}))
+    (is (not (sut/eq? {:hour 13 :min 10} {:hour 13 :min 10 :utc 3})))
+    (is (sut/eq? {:hour 210 :min 10} {:hour 213 :min 10 :utc 3}))
+    (is (sut/eq? {:hour 15 :min 10} {:hour 13 :min 10 :utc -2}))
+    (is (sut/eq? {:hour 12 :min 10 :utc 2} {:hour 13 :min 10 :utc 3}))
+    (is (sut/eq? {:hour 10 :min 10} {:hour 12 :min 10 :utc 2})))
   (testing "not="
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0})))
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0}
