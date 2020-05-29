@@ -1,8 +1,7 @@
 (ns chrono.io
   (:require [chrono.util :as util]
             [chrono.ops :as ops]
-            [clojure.string :as str]
-            [chrono.locale-en])
+            [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
 (defn- format-str [v [fmt & fmt-args] lang]
