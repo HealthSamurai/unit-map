@@ -78,7 +78,8 @@
   (if (and hour utc)
     (-> t
         (update :hour #(- % utc))
-        (dissoc :utc))
+        (dissoc :utc)
+        normalize)
     t))
 
 (defn normalize+to-utc [t]
