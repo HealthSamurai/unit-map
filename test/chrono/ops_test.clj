@@ -25,9 +25,9 @@
                 (sut/to-utc {:hour 13 :min 10 :utc 3}))
   (matcho/match {:hour 10 :min 10}
                 (sut/to-utc {:hour 7 :min 10 :utc -3}))
-  (matcho/match {:day -1 :hour 23}
+  (matcho/match {:hour -1}
                 (sut/to-utc {:hour 1 :utc 2}))
-  (matcho/match {:day 1 :hour 1}
+  (matcho/match {:hour 25}
                 (sut/to-utc {:hour 23 :utc -2})))
 
 (deftest comparsion-operators-test
