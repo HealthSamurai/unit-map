@@ -100,6 +100,14 @@
     (is (sut/gt {:year 2011 :month 1 :day 2 :hour 0}
                 {:year 2011 :month 1 :day 1 :hour 1}
                 {:year 2011 :month 1 :day 1 :hour 0})))
+  (testing "> with utc-offset"
+    (is (sut/gt {:hour 13} {:hour 13 :utc 3}))
+    (is (not (sut/gt {:hour 13 :utc 3} {:hour 13})))
+    (is (sut/gt {:hour 13 :utc -3} {:hour 13}))
+    (is (not (sut/gt {:hour 13} {:hour 13 :utc -3})))
+    (is (sut/gt {:hour 13 :utc -3} {:hour 13 :utc -2}))
+    (is (not (sut/gt {:hour 13 :utc -2} {:hour 13 :utc -3})))
+    (is (not (sut/gt {:hour 10 :min 10} {:hour 13 :min 10 :utc 3}))))
   (testing "<"
     (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0}))
     (is (not (sut/lt {:year 2011 :month 1 :day 2 :hour 0}

@@ -87,7 +87,12 @@
 
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
-    (let [tp (get t p s) tp' (get t' p s)]
+    (let [tp (-> t
+                 to-utc
+                 (get p s))
+          tp' (-> t'
+                  to-utc
+                  (get p s))]
       (cond
         (> tp tp') true
         (= tp tp') (and (seq ps) (recur ps))
