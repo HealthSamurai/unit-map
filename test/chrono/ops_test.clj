@@ -22,13 +22,35 @@
 
 (deftest to-utc-test
   (matcho/match {:hour 10 :min 10}
+                (sut/to-utc {:hour 10 :min 10}))
+  (matcho/match {:hour 10 :min 10}
                 (sut/to-utc {:hour 13 :min 10 :utc 3}))
   (matcho/match {:hour 10 :min 10}
                 (sut/to-utc {:hour 7 :min 10 :utc -3}))
+  (matcho/match {:hour -2 :min 130}
+                (sut/to-utc {:min 130 :utc 2}))
   (matcho/match {:hour -1}
                 (sut/to-utc {:hour 1 :utc 2}))
   (matcho/match {:hour 25}
                 (sut/to-utc {:hour 23 :utc -2})))
+
+(deftest to-normalized-utc-test
+  (matcho/match {:hour 10 :min 10}
+                (sut/to-normalized-utc {:hour 13 :min 10 :utc 3}))
+  (matcho/match {:hour 11 :min 10}
+                (sut/to-normalized-utc {:hour 13 :min 70 :utc 3}))
+  (matcho/match {:min 10}
+                (sut/to-normalized-utc {:min 130 :utc 2}))
+  (matcho/match {:day -1 :hour 22 :min 10}
+                (sut/to-normalized-utc {:min 10 :utc 2}))
+  (matcho/match {:day -1 :hour 23 :min 10}
+                (sut/to-normalized-utc {:hour 1 :min 10 :utc 2}))
+  (matcho/match {:day 1 :hour 1 :min 10}
+                (sut/to-normalized-utc {:hour 23 :min 10 :utc -2}))
+  (matcho/match {:day -1 :hour 1 :min 10}
+                (sut/to-normalized-utc {:hour 1 :min 130 :utc 2}))
+  (matcho/match {:day 1 :hour 3 :min 10}
+                (sut/to-normalized-utc {:hour 23 :min 130 :utc -2})))
 
 (deftest comparsion-operators-test
   (testing "="
