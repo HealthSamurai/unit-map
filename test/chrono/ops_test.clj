@@ -20,6 +20,42 @@
 
   (is (= [2012 1 1] (sut/days-and-months 2013 1 -365))))
 
+(deftest tz-operations-test
+  (testing "to-utc"
+    (matcho/match {:hour 10 :min 10}
+                  (sut/to-utc {:hour 10 :min 10}))
+
+    (matcho/match {:hour 10 :min 10}
+                  (sut/to-utc {:hour 13 :min 10 :tz 3}))
+
+    (matcho/match {:hour 10 :min 10}
+                  (sut/to-utc {:hour 7 :min 10 :tz -3}))
+
+    (matcho/match (sut/to-utc {:min 130 :tz 2})
+                  {:min 10})
+
+    (matcho/match (sut/to-utc {:hour 1 :tz 2})
+                  {:day -1 :hour 23})
+
+    (matcho/match (sut/to-utc {:hour 23 :tz -2})
+                  {:day 1 :hour 1}))
+
+  (testing "to-tz"
+    (matcho/match {:hour 10 :min 10}
+                  (sut/to-tz {:hour 10 :min 10} nil))
+
+    (matcho/match {:hour 13 :min 10 :tz 3}
+                  (sut/to-tz {:hour 10 :min 10} 3))
+
+    (matcho/match {:hour 7 :min 10 :tz -3}
+                  (sut/to-tz {:hour 10 :min 10} -3))
+
+    (matcho/match (sut/to-tz {:min 10} 2)
+                  {:hour 2 :min 10 :tz 2})
+
+    (matcho/match (sut/to-tz {:day 1 :hour 1} -2)
+                  {:hour 23 :tz -2})))
+
 (deftest comparsion-operators-test
   (testing "="
     (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0}))
@@ -85,6 +121,14 @@
     (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0}
                 {:year 2011 :month 1 :day 1 :hour 1}
                 {:year 2011 :month 1 :day 2 :hour 0})))
+  (testing "< with utc-offset"
+    (is (sut/lt {:hour 13 :tz 3} {:hour 13}))
+    (is (not (sut/lt {:hour 13} {:hour 13 :tz 3})))
+    (is (sut/lt {:hour 13} {:hour 13 :tz -3}))
+    (is (not (sut/lt {:hour 13 :tz -3} {:hour 13})))
+    (is (sut/lt {:hour 13 :tz -2} {:hour 13 :tz -3}))
+    (is (not (sut/lt {:hour 13 :tz -3} {:hour 13 :tz -2})))
+    (is (not (sut/lt {:hour 13 :min 10 :tz 3} {:hour 10 :min 10}))))
   (testing "<="
     (is (sut/lte {:year 2011 :month 1 :day 1 :hour 0}))
     (is (sut/lte {:year 2011 :month 1 :day 1 :hour 0}

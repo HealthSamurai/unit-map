@@ -51,14 +51,7 @@
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
-(defmulti to-utc (fn [{:keys [tz]}] (type tz)))
-
-(defmethod to-utc
-  nil
-  [t]
-  t)
-
-(defmethod to-utc
+(defmethod ops/to-utc
   clojure.lang.Keyword
   [t]
   (let [ds (day-saving-with-utc (:tz t) (:year t))
@@ -69,22 +62,7 @@
         (dissoc :tz)
         (ops/plus {:hour off}))))
 
-(defmethod to-utc
-  Long
-  [{:keys [hour tz] :as t}]
-  (let [minus-nils (fnil - 0 0)]
-    (-> t
-        (dissoc :tz)
-        (ops/minus {:hour tz}))))
-
-(defmulti to-tz "[t tz]" (fn [_ tz] (type tz)))
-
-(defmethod to-tz
-  nil
-  [t & _]
-  t)
-
-(defmethod to-tz
+(defmethod ops/to-tz
   clojure.lang.Keyword
   [t tz]
   (let [ds (day-saving-with-utc tz (:year t))
@@ -94,13 +72,6 @@
     (-> t
         (ops/plus {:hour (- off)})
         (assoc :tz tz))))
-
-(defmethod to-tz
-  Long
-  [t tz]
-  (-> t
-      (ops/plus {:hour tz})
-      (assoc :tz tz)))
 
 ;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 ;; https://alcor.concordia.ca/~gpkatch/gdate-method.html

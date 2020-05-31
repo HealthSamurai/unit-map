@@ -74,15 +74,6 @@
           (remove (comp zero? val))
           normalized-time)))
 
-(defn- after? [t t']
-  (loop [[[p s] & ps] defaults-units]
-    (let [tp (get t p s)
-          tp' (get t' p s)]
-      (cond
-        (> tp tp') true
-        (= tp tp') (and (seq ps) (recur ps))
-        :else false))))
-
 (def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
 (defn- init-plus [r i]
@@ -98,8 +89,68 @@
   ([x y & more]
    (reduce plus (plus x y) more)))
 
+(defn invert [x]
+  (reduce
+   (fn [x k] (cond-> x
+               (contains? x k)
+               (update k -)))
+   x
+   [:year :month :day :hour :min :sec :ms]))
+
+(defn minus
+  ([] default-time)
+  ([x] x)
+  ([x y] (normalize (init-plus x (invert y))))
+  ([x y & more]
+   (reduce minus (minus x y) more)))
+
+(defmulti to-utc (fn [{:keys [tz]}] (type tz)))
+
+(defmethod to-utc
+  nil
+  [t]
+  t)
+
+(defmethod to-utc
+  Long
+  [{:keys [hour tz] :as t}]
+  (-> t
+      (minus {:hour tz})
+      (dissoc :tz)))
+
+(defmulti to-tz "[t tz]" (fn [_ tz] (type tz)))
+
+(defmethod to-tz
+  nil
+  [t & _]
+  t)
+
+(defmethod to-tz
+  Long
+  [t tz]
+  (-> t
+      (plus {:hour tz})
+      (assoc :tz tz)))
+
+(defn to-normalized-utc [t]
+  (-> t
+      to-utc
+      normalize))
+
+(defn- after? [t t']
+  (loop [[[p s] & ps] defaults-units]
+    (let [t->tp #(cond-> %
+                   (not (keyword? (:tz %))) to-utc
+                   :always (get p s))
+          tp (t->tp t)
+          tp' (t->tp t')]
+      (cond
+        (> tp tp') true
+        (= tp tp') (and (seq ps) (recur ps))
+        :else false))))
+
 (defn eq? [& ts]
-  (apply = (map normalize ts)))
+  (apply = (map to-normalized-utc ts)))
 
 (def not-eq? (complement eq?))
 
@@ -130,21 +181,6 @@
 (defn lte
   ([_] true)
   ([x & args] (apply (complement gt) x args)))
-
-(defn invert [x]
-  (reduce
-   (fn [x k] (cond-> x
-              (contains? x k)
-              (update k -)))
-   x
-   [:year :month :day :hour :min :sec :ms]))
-
-(defn minus
-  ([] default-time)
-  ([x] x)
-  ([x y] (normalize (init-plus x (invert y))))
-  ([x y & more]
-   (reduce minus (minus x y) more)))
 
 (defn cmp [x y]
   (cond
