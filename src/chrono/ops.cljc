@@ -74,25 +74,10 @@
           (remove (comp zero? val))
           normalized-time)))
 
-(defn to-utc [{:keys [hour utc] :as t}]
-  (let [minus-nils (fnil - 0 0)]
-    (-> t
-        (update :hour #(minus-nils % utc))
-        (dissoc :utc))))
-
-(defn to-normalized-utc [t]
-  (-> t
-      to-utc
-      normalize))
-
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
-    (let [tp (-> t
-                 to-utc
-                 (get p s))
-          tp' (-> t'
-                  to-utc
-                  (get p s))]
+    (let [tp (get t p s)
+          tp' (get t' p s)]
       (cond
         (> tp tp') true
         (= tp tp') (and (seq ps) (recur ps))
@@ -114,7 +99,7 @@
    (reduce plus (plus x y) more)))
 
 (defn eq? [& ts]
-  (apply = (map to-normalized-utc ts)))
+  (apply = (map normalize ts)))
 
 (def not-eq? (complement eq?))
 

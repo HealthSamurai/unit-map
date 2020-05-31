@@ -20,38 +20,6 @@
 
   (is (= [2012 1 1] (sut/days-and-months 2013 1 -365))))
 
-(deftest to-utc-test
-  (matcho/match {:hour 10 :min 10}
-                (sut/to-utc {:hour 10 :min 10}))
-  (matcho/match {:hour 10 :min 10}
-                (sut/to-utc {:hour 13 :min 10 :utc 3}))
-  (matcho/match {:hour 10 :min 10}
-                (sut/to-utc {:hour 7 :min 10 :utc -3}))
-  (matcho/match {:hour -2 :min 130}
-                (sut/to-utc {:min 130 :utc 2}))
-  (matcho/match {:hour -1}
-                (sut/to-utc {:hour 1 :utc 2}))
-  (matcho/match {:hour 25}
-                (sut/to-utc {:hour 23 :utc -2})))
-
-(deftest to-normalized-utc-test
-  (matcho/match {:hour 10 :min 10}
-                (sut/to-normalized-utc {:hour 13 :min 10 :utc 3}))
-  (matcho/match {:hour 11 :min 10}
-                (sut/to-normalized-utc {:hour 13 :min 70 :utc 3}))
-  (matcho/match {:min 10}
-                (sut/to-normalized-utc {:min 130 :utc 2}))
-  (matcho/match {:day -1 :hour 22 :min 10}
-                (sut/to-normalized-utc {:min 10 :utc 2}))
-  (matcho/match {:day -1 :hour 23 :min 10}
-                (sut/to-normalized-utc {:hour 1 :min 10 :utc 2}))
-  (matcho/match {:day 1 :hour 1 :min 10}
-                (sut/to-normalized-utc {:hour 23 :min 10 :utc -2}))
-  (matcho/match {:day -1 :hour 1 :min 10}
-                (sut/to-normalized-utc {:hour 1 :min 130 :utc 2}))
-  (matcho/match {:day 1 :hour 3 :min 10}
-                (sut/to-normalized-utc {:hour 23 :min 130 :utc -2})))
-
 (deftest comparsion-operators-test
   (testing "="
     (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0}))
@@ -66,12 +34,12 @@
                  {:year 2011 :month 1 :day 1 :hour 0}
                  {:year 2011 :month 1 :day 1 :hour 0})))
   (testing "= with utc-offset"
-    (is (sut/eq? {:hour 10 :min 10} {:hour 13 :min 10 :utc 3}))
-    (is (not (sut/eq? {:hour 13 :min 10} {:hour 13 :min 10 :utc 3})))
-    (is (sut/eq? {:hour 210 :min 10} {:hour 213 :min 10 :utc 3}))
-    (is (sut/eq? {:hour 15 :min 10} {:hour 13 :min 10 :utc -2}))
-    (is (sut/eq? {:hour 12 :min 10 :utc 2} {:hour 13 :min 10 :utc 3}))
-    (is (sut/eq? {:hour 10 :min 10} {:hour 12 :min 10 :utc 2})))
+    (is (sut/eq? {:hour 10 :min 10} {:hour 13 :min 10 :tz 3}))
+    (is (not (sut/eq? {:hour 13 :min 10} {:hour 13 :min 10 :tz 3})))
+    (is (sut/eq? {:hour 210 :min 10} {:hour 213 :min 10 :tz 3}))
+    (is (sut/eq? {:hour 15 :min 10} {:hour 13 :min 10 :tz -2}))
+    (is (sut/eq? {:hour 12 :min 10 :tz 2} {:hour 13 :min 10 :tz 3}))
+    (is (sut/eq? {:hour 10 :min 10} {:hour 12 :min 10 :tz 2})))
   (testing "not="
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0})))
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0}
@@ -85,12 +53,12 @@
                      {:year 2011 :month 1 :day 2 :hour 0}
                      {:year 2011 :month 1 :day 1 :hour 0})))
   (testing "not= with utc-offset"
-    (is (not (sut/not-eq? {:hour 10 :min 10} {:hour 13 :min 10 :utc 3})))
-    (is (sut/not-eq? {:hour 13 :min 10} {:hour 13 :min 10 :utc 3}))
-    (is (not (sut/not-eq? {:hour 210 :min 10} {:hour 213 :min 10 :utc 3})))
-    (is (not (sut/not-eq? {:hour 15 :min 10} {:hour 13 :min 10 :utc -2})))
-    (is (not (sut/not-eq? {:hour 12 :min 10 :utc 2} {:hour 13 :min 10 :utc 3})))
-    (is (not (sut/not-eq? {:hour 10 :min 10} {:hour 12 :min 10 :utc 2}))))
+    (is (not (sut/not-eq? {:hour 10 :min 10} {:hour 13 :min 10 :tz 3})))
+    (is (sut/not-eq? {:hour 13 :min 10} {:hour 13 :min 10 :tz 3}))
+    (is (not (sut/not-eq? {:hour 210 :min 10} {:hour 213 :min 10 :tz 3})))
+    (is (not (sut/not-eq? {:hour 15 :min 10} {:hour 13 :min 10 :tz -2})))
+    (is (not (sut/not-eq? {:hour 12 :min 10 :tz 2} {:hour 13 :min 10 :tz 3})))
+    (is (not (sut/not-eq? {:hour 10 :min 10} {:hour 12 :min 10 :tz 2}))))
   (testing ">"
     (is (sut/gt {:year 2011 :month 1 :day 1 :hour 0}))
     (is (not (sut/gt {:year 2011 :month 1 :day 1 :hour 0}
@@ -101,13 +69,13 @@
                 {:year 2011 :month 1 :day 1 :hour 1}
                 {:year 2011 :month 1 :day 1 :hour 0})))
   (testing "> with utc-offset"
-    (is (sut/gt {:hour 13} {:hour 13 :utc 3}))
-    (is (not (sut/gt {:hour 13 :utc 3} {:hour 13})))
-    (is (sut/gt {:hour 13 :utc -3} {:hour 13}))
-    (is (not (sut/gt {:hour 13} {:hour 13 :utc -3})))
-    (is (sut/gt {:hour 13 :utc -3} {:hour 13 :utc -2}))
-    (is (not (sut/gt {:hour 13 :utc -2} {:hour 13 :utc -3})))
-    (is (not (sut/gt {:hour 10 :min 10} {:hour 13 :min 10 :utc 3}))))
+    (is (sut/gt {:hour 13} {:hour 13 :tz 3}))
+    (is (not (sut/gt {:hour 13 :tz 3} {:hour 13})))
+    (is (sut/gt {:hour 13 :tz -3} {:hour 13}))
+    (is (not (sut/gt {:hour 13} {:hour 13 :tz -3})))
+    (is (sut/gt {:hour 13 :tz -3} {:hour 13 :tz -2}))
+    (is (not (sut/gt {:hour 13 :tz -2} {:hour 13 :tz -3})))
+    (is (not (sut/gt {:hour 10 :min 10} {:hour 13 :min 10 :tz 3}))))
   (testing "<"
     (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0}))
     (is (not (sut/lt {:year 2011 :month 1 :day 2 :hour 0}

@@ -82,6 +82,20 @@
    (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
    {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
 
+  (matcho/match {:hour 10 :min 10}
+                (sut/to-tz {:hour 10 :min 10} nil))
+
+  (matcho/match {:hour 13 :min 10 :tz 3}
+   (sut/to-tz {:hour 10 :min 10} 3))
+
+  (matcho/match {:hour 7 :min 10 :tz -3}
+   (sut/to-tz {:hour 10 :min 10} -3))
+
+  (matcho/match (sut/to-tz {:min 10} 2)
+                {:hour 2 :min 10 :tz 2})
+
+  (matcho/match (sut/to-tz {:day 1 :hour 1} -2)
+                {:hour 23 :tz -2})
 
   (matcho/match
    (sut/to-utc {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
@@ -89,4 +103,22 @@
 
   (matcho/match
    (sut/to-tz {:year 2018 :month 2 :day 2 :hour 19} :ny)
-   {:year 2018 :month 2 :day 2 :hour 14 :tz :ny}))
+   {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
+
+  (matcho/match {:hour 10 :min 10}
+                (sut/to-utc {:hour 10 :min 10}))
+
+  (matcho/match {:hour 10 :min 10}
+                (sut/to-utc {:hour 13 :min 10 :tz 3}))
+
+  (matcho/match {:hour 10 :min 10}
+                (sut/to-utc {:hour 7 :min 10 :tz -3}))
+
+  (matcho/match (sut/to-utc {:min 130 :tz 2})
+                {:min 10})
+
+  (matcho/match (sut/to-utc {:hour 1 :tz 2})
+                {:day -1 :hour 23})
+
+  (matcho/match (sut/to-utc {:hour 23 :tz -2})
+                {:day 1 :hour 1}))
