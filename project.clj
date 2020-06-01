@@ -5,4 +5,4 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.10.0-alpha4"]]
   :profiles {:dev {:source-paths  ["test"]
-                   :dependencies [[matcho "0.1.0-RC6"]]}})
+                   :dependencies [[healthsamurai/matcho "0.3.7"]]}})

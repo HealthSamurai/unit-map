@@ -60,25 +60,8 @@
       (> m 12) [(inc y) 1]
       :else [y m])))
 
-(defn day-of-week
-  "m 1-12; y > 1752"
-  [y m d & [fmt]]
-  (let [t [nil 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
-        y (- y (if (< m 3) 1 0))
-        dow (rem (+ y
-                    (int (/ y 4))
-                    (- (int (/ y 100)))
-                    (int (/ y 400))
-                    (nth t m)
-                    d) 7)]
-
-    (if (= :ru fmt)
-      (let [dow (- dow 1)]
-        (if (< dow 0) 6 dow))
-      dow)))
-
 (defn for-month [y m & [fmt {today :today active :active}]]
-  (let [start-day (day-of-week y m 1 fmt)
+  (let [start-day (util/day-of-week y m 1 fmt)
         start-month (if (= 1 m) 12 (dec m))
         pm-num-days (util/days-in-month {:year (if (= 1 m) (dec y) y), :month start-month})
         pm-last-day {:month start-month :day pm-num-days}

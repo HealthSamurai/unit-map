@@ -3,4 +3,4 @@
         org.clojure/clojurescript {:mvn/version "1.10.238"}}
 
  :aliases {:dev {:extra-paths ["test"]
-                 :extra-deps {matcho {:mvn/version "0.1.0-RC6"}}}}}
+                 :extra-deps {matcho {:mvn/version "0.3.7"}}}}}
