@@ -142,7 +142,7 @@
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
     (let [t->tp #(cond-> %
-                   (not (keyword? (:tz %))) to-utc
+                   (not (keyword? (:tz %))) to-normalized-utc
                    :always (get p s))
           tp (t->tp t)
           tp' (t->tp t')]
