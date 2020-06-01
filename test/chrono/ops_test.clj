@@ -103,6 +103,7 @@
     (is (not (sut/not-eq? {:hour 10 :min 10} {:hour 12 :min 10 :tz 2}))))
   (testing ">"
     (is (sut/gt {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (sut/gt {:min 120} {:hour 1}))
     (is (not (sut/gt {:year 2011 :month 1 :day 1 :hour 0}
                      {:year 2011 :month 1 :day 2 :hour 0})))
     (is (sut/gt {:year 2011 :month 1 :day 2 :hour 0}
@@ -120,6 +121,7 @@
     (is (not (sut/gt {:hour 10 :min 10} {:hour 13 :min 10 :tz 3}))))
   (testing "<"
     (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0}))
+    (is (sut/lt {:hour 1} {:min 120}))
     (is (not (sut/lt {:year 2011 :month 1 :day 2 :hour 0}
                      {:year 2011 :month 1 :day 1 :hour 0})))
     (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0}
@@ -240,7 +242,6 @@
     (matcho/match
      (sut/plus {:year 2018 :month 3 :day 31} {:day 1})
      {:year 2018 :month 4 :day 1})
-
 
     (matcho/match
      (sut/plus {:ms 100} {:ms 300})
