@@ -5,3 +5,6 @@ repl:
 
 test:
 	clj -A:test:kaocha
+
+ci-test:
+	clojure -A:test:kaocha:ci

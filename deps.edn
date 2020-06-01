@@ -12,6 +12,9 @@
             :jvm-opts    ^:replace ["-XX:-OmitStackTraceInFastThrow"]
             :main-opts   ["-m" "kaocha.runner" "--config-file" "test/test.edn"]}
 
+           :ci
+           {:main-opts   ["-m" "kaocha.runner" "--profile" ":ci" "--config-file" "test/test.edn"]}
+
            :nrepl
            {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.0-SNAPSHOT"}
                          refactor-nrepl    {:mvn/version "2.5.0"}
