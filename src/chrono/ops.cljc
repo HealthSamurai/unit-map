@@ -141,9 +141,7 @@
 
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
-    (let [t->tp #(cond-> %
-                   (not (keyword? (:tz %))) to-normalized-utc
-                   :always (get p s))
+    (let [t->tp #(get % p s)
           tp (t->tp t)
           tp' (t->tp t')]
       (cond
@@ -158,12 +156,22 @@
 
 (defn gt
   ([_] true)
-  ([x y] (after? x y))
+  ([x y] (after? (to-normalized-utc x) (to-normalized-utc y)))
   ([x y & more]
    (if (gt x y)
      (if (next more)
        (recur y (first more) (next more))
        (gt y (first more)))
+     false)))
+
+(defn denormalised-gt
+  ([_] true)
+  ([x y] (after? x y))
+  ([x y & more]
+   (if (denormalised-gt x y)
+     (if (next more)
+       (recur y (first more) (next more))
+       (denormalised-gt y (first more)))
      false)))
 
 (defn gte
@@ -183,6 +191,10 @@
 (defn lte
   ([_] true)
   ([x & args] (apply (complement gt) x args)))
+
+(defn denormalised-lte
+  ([_] true)
+  ([x & args] (apply (complement denormalised-gt) x args)))
 
 (defn cmp [x y]
   (cond
@@ -224,7 +236,7 @@
   clojure.lang.Keyword
   [t]
   (let [ds (day-saving-with-utc (:tz t) (:year t))
-        off (if (or (lte t (:in ds)) (gt t (:out ds)))
+        off (if (or (denormalised-lte t (:in ds)) (denormalised-gt t (:out ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
     (-> t
@@ -235,7 +247,7 @@
   clojure.lang.Keyword
   [t tz]
   (let [ds (day-saving-with-utc tz (:year t))
-        off (if (or (lte t (:in-utc ds)) (gt t (:out-utc ds)))
+        off (if (or (denormalised-lte t (:in-utc ds)) (denormalised-gt t (:out-utc ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
     (-> t
