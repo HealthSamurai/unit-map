@@ -1,8 +1,7 @@
 (ns chrono.io
   (:require [chrono.util :as util]
             [chrono.ops :as ops]
-            [clojure.string :as str]
-            [chrono.locale-en])
+            [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
 (defn- format-str [v [fmt & fmt-args] lang]
@@ -36,11 +35,16 @@
                   [acc rest-f rest-s]))))]
     (let [lang (-> fmt meta ffirst)
           [acc rest-f rest-s] (match-collection match s fmt lang)]
-      (if-not (and strict? (or (some? rest-s) (some? rest-f))) acc))))
+      (when (or (not strict?)
+                (and (nil? rest-s)
+                     (nil? rest-f)))
+        acc))))
 
 (defn parse
   ([s] (parse s util/iso-fmt))
-  ([s fmt] (some-> s (internal-parse fmt false))))
+  ([s fmt]
+   (when (string? s)
+     (internal-parse s fmt false))))
 
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
