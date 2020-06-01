@@ -68,23 +68,28 @@
     (conj with-custom :day)))
 
 (defmulti to-utc (fn [{:keys [tz]}] (type tz)))
+(defmulti to-tz "[t tz]" (fn [_ tz] (type tz)))
 
 (defn normalize [t]
-  (let [rules (ordered-rules t)
+  (let [tz              (:tz t)
+        rules           (ordered-rules t)
         normalized-time (reduce (fn [t unit] (normalize-rule unit t)) (to-utc t) rules)]
-    (into {}
-          (remove (comp zero? val))
-          normalized-time)))
+    (to-tz (into {}
+                 (remove (comp zero? val))
+                 normalized-time)
+           tz)))
 
-(def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
+(def ^:private default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
 (defn- init-plus [r i]
-  (let [r-utc (to-utc r)
+  (let [r-tz  (:tz r)
+        r-utc (to-utc r)
         i-utc (to-utc i)]
-    (->>
-     (concat (keys r-utc) (keys i-utc))
-     (into #{})
-     (reduce (fn [acc k] (assoc acc k (+ (get r-utc k 0) (get i-utc k 0)))) {}))))
+    (to-tz
+     (into {}
+           (map (fn [k] {k (+ (get r-utc k 0) (get i-utc k 0))}))
+           (distinct (concat (keys r-utc) (keys i-utc))))
+     r-tz)))
 
 (defn plus
   ([] default-time)
@@ -120,7 +125,6 @@
       (dissoc :tz)
       (minus {:hour tz})))
 
-(defmulti to-tz "[t tz]" (fn [_ tz] (type tz)))
 
 (defmethod to-tz
   nil
