@@ -38,7 +38,10 @@
                   {:day -1 :hour 23})
 
     (matcho/match (sut/to-utc {:hour 23 :tz -2})
-                  {:day 1 :hour 1}))
+                  {:day 1 :hour 1})
+
+    (matcho/match (sut/to-utc {:hour 1 :tz 1})
+                  {}))
 
   (testing "to-tz"
     (matcho/match (sut/to-tz {:hour 10 :min 10} nil)
@@ -54,7 +57,10 @@
                   {:hour 2 :min 10 :tz 2})
 
     (matcho/match (sut/to-tz {:day 1 :hour 1} -2)
-                  {:hour 23 :tz -2})))
+                  {:hour 23 :tz -2})
+
+    (matcho/match (sut/to-tz {:hour 1} -1)
+                  {})))
 
 (deftest comparsion-operators-test
   (testing "="
@@ -309,6 +315,14 @@
      {:year 2019, :month 12, :day 10, :hour 15, :min 17, :sec 50, :ms 911})
 
     (matcho/match
+     (sut/plus {:hour 1 :tz 2} {:hour 1})
+     {})
+
+    (matcho/match
+     (sut/plus {:hour 23 :tz -2} {:hour 1})
+     {:day 1 :hour 2})
+
+    (matcho/match
      (sut/plus {:hour 1 :tz -2} {:hour 1})
      {:hour 4})
 
@@ -342,4 +356,7 @@
      {:year 2015, :month 12, :day 31, :hour 23, :min 30})
     (matcho/match
      (sut/minus {:hour 1 :tz -2} {:hour 1})
-     {:hour 2})))
+     {:hour 2})
+    (matcho/match
+     (sut/minus {:hour 3 :tz 2} {:hour 1})
+     {})))
