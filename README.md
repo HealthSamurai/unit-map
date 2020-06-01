@@ -31,15 +31,18 @@ Pure clojure time made simple for clj & cljs
 (ch/format t [:day "/" :month "/" :year]) ;; => "29/01/2018"
 (ch/parse  "2018.01.29"  [:year "." :month "." :day]) ;; => {:year 2018, :month 1, :day 29}
 
-;You can specify leading zero padding width by passing pairs [keyword number] 
+;You can specify leading zero padding width by passing pairs [keyword number]
 (format {:hour 1 :min 0 :sec 5} [[:hour 1] \: [:min 1] \: [:sec 1]]) ;; => "1:0:5"
 
-(require '[chrono.tz :as tz])
-
 (-> t
-    (tz/to-tz :ny) ;; => {:min 30, :day 29, :hour 5, :month 1, :year 2018, :sec 15, :tz :ny}
-    (tz/to-utc))   ;; => {:min 30, :day 29, :hour 10, :month 1, :year 2018, :sec 15}
-;; implement your tz with defmethod tz/day-saving :<your-tz>
+    (ch/to-tz :ny) ;; => {:min 30, :day 29, :hour 5, :month 1, :year 2018, :sec 15, :tz :ny}
+    (ch/to-utc))   ;; => {:min 30, :day 29, :hour 10, :month 1, :year 2018, :sec 15}
+;; implement your tz with defmethod ch/day-saving :<your-tz>
+
+;; You can use number as utc-offset
+(-> t
+    (ch/to-tz 3) ;; => {:min 30, :day 29, :hour 13, :month 1, :year 2018, :sec 15, :tz 3}
+    (ch/to-utc))   ;; => {:min 30, :day 29, :hour 10, :month 1, :year 2018, :sec 15}
 
 (require '[chrono.now :as now])
 
