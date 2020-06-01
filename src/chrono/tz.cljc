@@ -21,49 +21,14 @@
 
 ;; rules from tzdb like sun >= 8
 
-(defn from-utc [t tz])
-
-(defn *more-or-eq [y m dw d]
-  (let [dw' (util/day-of-week y m d)]
-    (cond (= dw' dw) d
-          ;; if wed vs sun
-          (> dw' dw) (+ d (- 7 dw') dw)
-          (< dw' dw) (+ d (- dw dw')))))
-
-(def more-or-eq (memoize *more-or-eq))
-
-(defmulti day-saving "[tz y]" (fn [tz _] tz))
-
-(defmethod day-saving
+(defmethod ops/day-saving
   :ny
   [_ y]
   (assert (> y 2006) "Not impl.")
   {:offset 5
    :ds -1
-   :in {:year y :month 3 :day (more-or-eq y 3 0 8) :hour 2 :min 0}
-   :out {:year y :month 11 :day (more-or-eq y 11 0 1) :hour 2 :min 0}})
-
-(defn *day-saving-with-utc [tz y]
-  (let [ds (day-saving tz y)]
-    (assoc ds
-           :in-utc (ops/plus (:in ds) {:hour (:offset ds)})
-           :out-utc (ops/plus (:out ds) {:hour (+ (:offset ds) (:ds ds))}))))
-
-(def day-saving-with-utc (memoize *day-saving-with-utc))
-
-(defn to-utc [t]
-  (let [ds (day-saving-with-utc (:tz t) (:year t))
-        off (if (or (ops/lte t (:in ds)) (ops/gt t (:out ds)))
-              (:offset ds)
-              (+ (:offset ds) (:ds ds)))]
-    (ops/plus (dissoc t :tz) {:hour off})))
-
-(defn to-tz [t tz]
-  (let [ds (day-saving-with-utc tz (:year t))
-        off (if (or (ops/lte t (:in-utc ds)) (ops/gt t (:out-utc ds)))
-              (:offset ds)
-              (+ (:offset ds) (:ds ds)))]
-    (assoc (ops/plus t {:hour (- off)}) :tz tz)))
+   :in {:year y :month 3 :day (util/more-or-eq y 3 0 8) :hour 2 :min 0}
+   :out {:year y :month 11 :day (util/more-or-eq y 11 0 1) :hour 2 :min 0}})
 
 ;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 ;; https://alcor.concordia.ca/~gpkatch/gdate-method.html

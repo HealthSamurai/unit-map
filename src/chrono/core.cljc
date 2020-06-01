@@ -19,6 +19,9 @@
 (defn diff [t t']) ; TODO
 
 (def normalize ops/normalize)
+(def to-utc ops/to-utc)
+(def to-tz ops/to-tz)
+(def to-normalized-utc ops/to-normalized-utc)
 
 (def date-convertable? io/date-convertable?)
 (def date-valid? io/date-valid?)

@@ -152,3 +152,12 @@
       (let [dow (- dow 1)]
         (if (< dow 0) 6 dow))
       dow)))
+
+(defn *more-or-eq [y m dw d]
+  (let [dw' (day-of-week y m d)]
+    (cond (= dw' dw) d
+          ;; if wed vs sun
+          (> dw' dw) (+ d (- 7 dw') dw)
+          (< dw' dw) (+ d (- dw dw')))))
+
+(def more-or-eq (memoize *more-or-eq))
