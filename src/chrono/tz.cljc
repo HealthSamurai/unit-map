@@ -1,6 +1,6 @@
 (ns chrono.tz
-  (:require [chrono.calendar :as cal]
-            [chrono.ops :as ops]))
+  (:require [chrono.ops :as ops]
+            [chrono.util :as util]))
 
 
 ;; Rule  US   1967 2006  -   Oct lastSun  2:00  0    S
@@ -24,7 +24,7 @@
 (defn from-utc [t tz])
 
 (defn *more-or-eq [y m dw d]
-  (let [dw' (cal/day-of-week y m d)]
+  (let [dw' (util/day-of-week y m d)]
     (cond (= dw' dw) d
           ;; if wed vs sun
           (> dw' dw) (+ d (- 7 dw') dw)
@@ -51,27 +51,19 @@
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
-(defmethod ops/to-utc
-  clojure.lang.Keyword
-  [t]
+(defn to-utc [t]
   (let [ds (day-saving-with-utc (:tz t) (:year t))
         off (if (or (ops/lte t (:in ds)) (ops/gt t (:out ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (-> t
-        (dissoc :tz)
-        (ops/plus {:hour off}))))
+    (ops/plus (dissoc t :tz) {:hour off})))
 
-(defmethod ops/to-tz
-  clojure.lang.Keyword
-  [t tz]
+(defn to-tz [t tz]
   (let [ds (day-saving-with-utc tz (:year t))
         off (if (or (ops/lte t (:in-utc ds)) (ops/gt t (:out-utc ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (-> t
-        (ops/plus {:hour (- off)})
-        (assoc :tz tz))))
+    (assoc (ops/plus t {:hour (- off)}) :tz tz)))
 
 ;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 ;; https://alcor.concordia.ca/~gpkatch/gdate-method.html

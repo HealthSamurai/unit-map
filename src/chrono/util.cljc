@@ -117,3 +117,20 @@
      (* (:hour d) 60 60)
      (* (:min d) 60)
      (:sec d)))
+
+(defn day-of-week
+  "m 1-12; y > 1752"
+  [y m d & [fmt]]
+  (let [t [nil 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+        y (- y (if (< m 3) 1 0))
+        dow (rem (+ y
+                    (int (/ y 4))
+                    (- (int (/ y 100)))
+                    (int (/ y 400))
+                    (nth t m)
+                    d) 7)]
+
+    (if (= :ru fmt)
+      (let [dow (- dow 1)]
+        (if (< dow 0) 6 dow))
+      dow)))

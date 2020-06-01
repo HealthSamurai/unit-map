@@ -1,8 +1,26 @@
 (ns chrono.util-test
   (:require [clojure.test :refer :all]
-            [chrono.util :as sut]))
+            [chrono.util :as sut])
+  (:import [java.util Date]))
 
 (deftest leap-year-test
+
+  (.getDay (Date. (- 2018 1900) 0 1))
+
+  (sut/day-of-week 2018 1 1)
+
+  (.getDay (Date. (- 2000 1900) 0 2))
+
+  (sut/day-of-week 2000 1 2)
+
+  (doseq [m (range 1 13)
+          y (range 100)]
+    (doseq [d (range 1 (inc (sut/days-in-month {:year (+ 2000 y), :month m})))]
+      (let [y (+ 2000 y)
+            ref (.getDay (Date. (- y 1900) (dec m) d))
+            sam (sut/day-of-week y m d)]
+        (when-not (= sam ref)
+          (throw (Exception. (pr-str y "-" m "-" d " " "sam" sam " ref " ref)))))))
 
   (is (=  31 (sut/days-in-month {:year 2018, :month 1})))
   (is (=  28 (sut/days-in-month {:year 2018, :month 2})))

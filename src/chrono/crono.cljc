@@ -1,7 +1,7 @@
 (ns chrono.crono
   (:require [chrono.core :as ch]
             [chrono.now :as now]
-            [chrono.calendar :as cal]))
+            [chrono.util :as util]))
 
 (def needed-for
   {:month [:yaer :month]
@@ -43,7 +43,7 @@
    (if (contains? (set days-of-week) (keyword (:every cfg)))
      (first
       (filter
-       #(= (cal/day-of-week (:year %) (:month %) (:day %))
+       #(= (util/day-of-week (:year %) (:month %) (:day %))
            (.indexOf days-of-week (keyword (:every cfg))))
        (drop 1 (iterate
                 (fn [current-time] (*next-time current-time (assoc cfg :every :day)))
