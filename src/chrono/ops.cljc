@@ -202,17 +202,6 @@
     (gt x y)  1
     (lt x y)  -1))
 
-(defn from-utc [t tz])
-
-(defn *more-or-eq [y m dw d]
-  (let [dw' (u/day-of-week y m d)]
-    (cond (= dw' dw) d
-          ;; if wed vs sun
-          (> dw' dw) (+ d (- 7 dw') dw)
-          (< dw' dw) (+ d (- dw dw')))))
-
-(def more-or-eq (memoize *more-or-eq))
-
 (defmulti day-saving "[tz y]" (fn [tz _] tz))
 
 (defmethod day-saving
@@ -221,8 +210,8 @@
   (assert (> y 2006) "Not impl.")
   {:offset 5
    :ds -1
-   :in {:year y :month 3 :day (more-or-eq y 3 0 8) :hour 2 :min 0}
-   :out {:year y :month 11 :day (more-or-eq y 11 0 1) :hour 2 :min 0}})
+   :in {:year y :month 3 :day (u/more-or-eq y 3 0 8) :hour 2 :min 0}
+   :out {:year y :month 11 :day (u/more-or-eq y 11 0 1) :hour 2 :min 0}})
 
 (defn *day-saving-with-utc [tz y]
   (let [ds (day-saving tz y)]
@@ -253,50 +242,3 @@
     (-> t
         (plus {:hour (- off)})
         (assoc :tz tz))))
-
-;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
-;; https://alcor.concordia.ca/~gpkatch/gdate-method.html
-
-(defn *ddd [y]
-  (+ (* 365 y)
-     (quot y 4)
-     (quot y -100)
-     (quot y 400)))
-
-(defn *mmm [m]
-  (->
-   (* 306 m)
-   (+ 5)
-   (quot 10)))
-
-(defn g [y m d]
-  (let [m (rem (+ m 9) 12)
-        y (- y (quot m 10))]
-    (+ (*ddd y) (*mmm m) (dec d))))
-
-
-(defn d [g]
-  (let [y (-> (* 10000 g)
-              (+ 14780)
-              (quot 3652425))
-        ddd (- g (*ddd y))
-        y   (if (< ddd 0) (dec y) y)
-        ddd (if (< ddd 0) (- g (*ddd y)) ddd)
-        mi (-> (* 100 ddd)
-               (+ 52)
-               (quot 3060))
-        mm (-> (+ mi 2)
-               (rem 12)
-               (+ 1))
-        y (+ y (-> (+ mi 2) (quot 12)))
-        dd  (+ ddd (- (*mmm mi)) 1)]
-    [y mm dd]))
-
-(comment
-  (g 2018 3 1)
-  (d (g 2018 1 1))
-  (d (g 2018 3 5))
-  (d (g 2018 7 2))
-  (d (- (g 2018 1 1) 1))
-  (d (+ (g 2017 12 31) 1))
-  (d (+ (g 2017 12 31) 370)))
