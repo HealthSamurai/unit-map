@@ -1,6 +1,5 @@
 (ns chrono.tz-test
   (:require [chrono.tz :as sut]
-            [chrono.ops :as ops]
             [clojure.test :refer :all]
             [matcho.core :as matcho])
   (:import [java.util Date]))
@@ -76,17 +75,18 @@
     :out {:month 11 :day 3}})
 
   (matcho/match
-   (ops/to-utc {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
+   (sut/to-utc {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
    {:year 2018 :month 5 :day 2 :hour 18})
 
   (matcho/match
-   (ops/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
+   (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
    {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
 
+
   (matcho/match
-   (ops/to-utc {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
+   (sut/to-utc {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
    {:year 2018 :month 2 :day 2 :hour 19})
 
   (matcho/match
-   (ops/to-tz {:year 2018 :month 2 :day 2 :hour 19} :ny)
+   (sut/to-tz {:year 2018 :month 2 :day 2 :hour 19} :ny)
    {:year 2018 :month 2 :day 2 :hour 14 :tz :ny}))
