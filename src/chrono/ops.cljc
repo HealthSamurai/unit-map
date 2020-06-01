@@ -74,13 +74,17 @@
           (remove (comp zero? val))
           normalized-time)))
 
+(defmulti to-utc (fn [{:keys [tz]}] (type tz)))
+
 (def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
 (defn- init-plus [r i]
-  (->>
-   (concat (keys (dissoc r :tz)) (keys i))
-   (into #{})
-   (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
+  (let [r-utc (to-utc r)
+        i-utc (to-utc i)]
+    (->>
+     (concat (keys r-utc) (keys i-utc))
+     (into #{})
+     (reduce (fn [acc k] (assoc acc k (+ (get r-utc k 0) (get i-utc k 0)))) {}))))
 
 (defn plus
   ([] default-time)
@@ -104,8 +108,6 @@
   ([x y & more]
    (reduce minus (minus x y) more)))
 
-(defmulti to-utc (fn [{:keys [tz]}] (type tz)))
-
 (defmethod to-utc
   nil
   [t]
@@ -115,8 +117,8 @@
   Long
   [{:keys [hour tz] :as t}]
   (-> t
-      (minus {:hour tz})
-      (dissoc :tz)))
+      (dissoc :tz)
+      (minus {:hour tz})))
 
 (defmulti to-tz "[t tz]" (fn [_ tz] (type tz)))
 

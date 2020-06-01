@@ -41,14 +41,14 @@
                   {:day 1 :hour 1}))
 
   (testing "to-tz"
-    (matcho/match {:hour 10 :min 10}
-                  (sut/to-tz {:hour 10 :min 10} nil))
+    (matcho/match (sut/to-tz {:hour 10 :min 10} nil)
+                  {:hour 10 :min 10})
 
-    (matcho/match {:hour 13 :min 10 :tz 3}
-                  (sut/to-tz {:hour 10 :min 10} 3))
+    (matcho/match (sut/to-tz {:hour 10 :min 10} 3)
+                  {:hour 13 :min 10 :tz 3})
 
-    (matcho/match {:hour 7 :min 10 :tz -3}
-                  (sut/to-tz {:hour 10 :min 10} -3))
+    (matcho/match (sut/to-tz {:hour 10 :min 10} -3)
+                  {:hour 7 :min 10 :tz -3})
 
     (matcho/match (sut/to-tz {:min 10} 2)
                   {:hour 2 :min 10 :tz 2})
@@ -308,6 +308,10 @@
      (sut/plus {:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911} {:hour 2})
      {:year 2019, :month 12, :day 10, :hour 15, :min 17, :sec 50, :ms 911})
 
+    (matcho/match
+     (sut/plus {:hour 1 :tz -2} {:hour 1})
+     {:hour 4})
+
     (testing "with custom units"
      (def normalize-ns (sut/gen-norm :ns :ms 1000000 0))
      (defmethod sut/normalize-rule :ns [_ t] (normalize-ns t))
@@ -335,4 +339,7 @@
 
     (matcho/match
      (sut/minus {:year 2016 :month 12 :day 31 :hour 23 :min 30} {:day 366})
-     {:year 2015, :month 12, :day 31, :hour 23, :min 30})))
+     {:year 2015, :month 12, :day 31, :hour 23, :min 30})
+    (matcho/match
+     (sut/minus {:hour 1 :tz -2} {:hour 1})
+     {:hour 2})))
