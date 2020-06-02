@@ -18,8 +18,8 @@
   (is (= [2013 1 31] (sut/days-and-months 2013 1 31)))
   (is (= [2013 2 1] (sut/days-and-months 2013 1 32)))
 
-  (is (= [2012 1 1] (sut/days-and-months 2013 1 -365)))
-  )
+  (is (= [2012 1 1] (sut/days-and-months 2013 1 -365))))
+
 
 (deftest comparsion-operators-test
   (testing "="
@@ -261,7 +261,28 @@
       
      (matcho/match
       (sut/plus {:year 2019 :month 12 :day 31 :hour 23 :min 59 :sec 59 :ns 999999999} {:ns 1})
-      {:year 2020 :month 1 :day 1})))
+      {:year 2020 :month 1 :day 1}))
+
+    (testing "with utc"
+      (matcho/match
+        (sut/plus {:hour 2 :utc 1} {:hour 2 :utc 1})
+        {:hour 4 :utc 1})
+
+      (matcho/match
+        (sut/plus {:hour 2 :utc 1} {:hour 2 :utc 2})
+        {:hour 5 :utc 1})
+
+      (matcho/match
+        (sut/plus {:hour 2 :utc 1} {:hour 2 :utc -1})
+        {:hour 2 :utc 1})
+
+      (matcho/match
+        (sut/plus {:hour 2 :utc 1} {:hour 2})
+        {:hour 3 :utc 1})
+
+      (matcho/match
+        (sut/plus {:hour 2} {:hour 2 :utc 1})
+        {:hour 5})))
 
   (testing "-"
     (matcho/match

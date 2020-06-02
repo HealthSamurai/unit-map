@@ -74,6 +74,14 @@
           (remove (comp zero? val))
           normalized-time)))
 
+(defn to-utc
+  ([t] (to-utc t 0))
+  ([t target-utc]
+   (let [utc-addend (- (get t :utc 0) target-utc)
+         new-hour (+ (get t :hour 0) utc-addend)]
+     (-> t
+         (assoc :hour new-hour)
+         (assoc :utc target-utc)))))
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
     (let [tp (get t p s) tp' (get t' p s)]
@@ -85,10 +93,13 @@
 (def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
 (defn- init-plus [r i]
-  (->>
-   (concat (keys (dissoc r :tz)) (keys i))
-   (into #{})
-   (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i k 0)))) {})))
+  (let [r-utc (get r :utc 0)
+        i-in-r-utc (to-utc i r-utc)]
+    (assoc (->>
+            (concat (keys (dissoc r :tz)) (keys i))
+            (into #{})
+            (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i-in-r-utc k 0)))) {}))
+      :utc r-utc)))
 
 (defn plus
   ([] default-time)
