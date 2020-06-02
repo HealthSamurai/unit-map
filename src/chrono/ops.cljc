@@ -84,12 +84,13 @@
          (assoc :utc target-utc)))))
 
 (defn- after? [t t']
-  (loop [[[p s] & ps] defaults-units]
-    (let [tp (get t p s) tp' (get t' p s)]
-      (cond
-        (> tp tp') true
-        (= tp tp') (and (seq ps) (recur ps))
-        :else false))))
+  (let [t'-in-t-utc (to-utc t' (get t :utc 0))]
+    (loop [[[p s] & ps] defaults-units]
+      (let [tp (get t p s) tp' (get t'-in-t-utc p s)]
+        (cond
+          (> tp tp') true
+          (= tp tp') (and (seq ps) (recur ps))
+          :else false)))))
 
 (def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
