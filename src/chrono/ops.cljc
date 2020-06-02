@@ -82,6 +82,7 @@
      (-> t
          (assoc :hour new-hour)
          (assoc :utc target-utc)))))
+
 (defn- after? [t t']
   (loop [[[p s] & ps] defaults-units]
     (let [tp (get t p s) tp' (get t' p s)]
@@ -109,7 +110,7 @@
    (reduce plus (plus x y) more)))
 
 (defn eq? [& ts]
-  (apply = (map normalize ts)))
+  (apply = (map (fn [t] (normalize (to-utc t))) ts)))
 
 (def not-eq? (complement eq?))
 

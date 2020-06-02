@@ -33,7 +33,13 @@
                       {:year 2011 :month 1 :day 1 :hour 0})))
     (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0}
                  {:year 2011 :month 1 :day 1 :hour 0}
-                 {:year 2011 :month 1 :day 1 :hour 0})))
+                 {:year 2011 :month 1 :day 1 :hour 0}))
+
+    (testing "with utc"
+      (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0 :utc 2}
+               {:year 2011 :month 1 :day 1 :hour 1 :utc 1}
+               {:year 2011 :month 1 :day 1 :hour 3 :utc -1}))))
+
   (testing "not="
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0})))
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0}
