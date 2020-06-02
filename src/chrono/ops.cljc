@@ -78,10 +78,15 @@
   ([t] (to-utc t 0))
   ([t target-utc]
    (let [utc-addend (- (get t :utc 0) target-utc)
-         new-hour (+ (get t :hour 0) utc-addend)]
+         new-hour (- (get t :hour 0) utc-addend)]
      (-> t
          (assoc :hour new-hour)
          (assoc :utc target-utc)))))
+
+(comment
+  (to-utc {:year 2011 :month 1 :day 1 :hour 0 :utc -2})
+  (to-utc {:year 2011 :month 1 :day 1 :hour 3 :utc 1})
+  (to-utc {:hour 17 :utc 3} 0))
 
 (defn- after? [t t']
   (let [t'-in-t-utc (to-utc t' (get t :utc 0))]

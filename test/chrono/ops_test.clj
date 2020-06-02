@@ -36,9 +36,9 @@
                  {:year 2011 :month 1 :day 1 :hour 0}))
 
     (testing "with utc"
-      (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0 :utc 2}
-               {:year 2011 :month 1 :day 1 :hour 1 :utc 1}
-               {:year 2011 :month 1 :day 1 :hour 3 :utc -1}))))
+      (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0 :utc -2}
+                   {:year 2011 :month 1 :day 1 :hour 3 :utc 1}
+                   {:year 2011 :month 1 :day 1 :hour 4 :utc 2}))))
 
   (testing "not="
     (is (not (sut/not-eq? {:year 2011 :month 1 :day 1 :hour 0})))
@@ -63,12 +63,12 @@
                 {:year 2011 :month 1 :day 1 :hour 0}))
 
     (testing "with utc"
-      (is (sut/gt {:year 2011 :month 1 :day 1 :hour 0 :utc 2}
+      (is (sut/gt {:year 2011 :month 1 :day 1 :hour 0 :utc -2}
                   {:year 2011 :month 1 :day 1 :hour 0 :utc 1}
-                  {:year 2011 :month 1 :day 1 :hour 0 :utc -1}))
-      (is (not (sut/gt {:year 2011 :month 1 :day 1 :hour 0 :utc -1}
+                  {:year 2011 :month 1 :day 1 :hour 0 :utc 2}))
+      (is (not (sut/gt {:year 2011 :month 1 :day 1 :hour 0 :utc 2}
                        {:year 2011 :month 1 :day 1 :hour 0 :utc 1}
-                       {:year 2011 :month 1 :day 1 :hour 0 :utc 2})))))
+                       {:year 2011 :month 1 :day 1 :hour 0 :utc -2})))))
 
   (testing "<"
     (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0}))
@@ -81,12 +81,12 @@
                 {:year 2011 :month 1 :day 2 :hour 0}))
 
     (testing "with utc"
-      (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0 :utc -1}
+      (is (sut/lt {:year 2011 :month 1 :day 1 :hour 0 :utc 2}
                   {:year 2011 :month 1 :day 1 :hour 0 :utc 1}
-                  {:year 2011 :month 1 :day 1 :hour 0 :utc 2}))
-      (is (not (sut/lt {:year 2011 :month 1 :day 1 :hour 0 :utc 2}
+                  {:year 2011 :month 1 :day 1 :hour 0 :utc -2}))
+      (is (not (sut/lt {:year 2011 :month 1 :day 1 :hour 0 :utc -2}
                        {:year 2011 :month 1 :day 1 :hour 0 :utc 1}
-                       {:year 2011 :month 1 :day 1 :hour 0 :utc -1})))))
+                       {:year 2011 :month 1 :day 1 :hour 0 :utc 2})))))
   (testing "<="
     (is (sut/lte {:year 2011 :month 1 :day 1 :hour 0}))
     (is (sut/lte {:year 2011 :month 1 :day 1 :hour 0}
@@ -293,19 +293,19 @@
 
       (matcho/match
         (sut/plus {:hour 2 :utc 1} {:hour 2 :utc 2})
-        {:hour 5 :utc 1})
-
-      (matcho/match
-        (sut/plus {:hour 2 :utc 1} {:hour 2 :utc -1})
-        {:hour 2 :utc 1})
-
-      (matcho/match
-        (sut/plus {:hour 2 :utc 1} {:hour 2})
         {:hour 3 :utc 1})
 
       (matcho/match
+        (sut/plus {:hour 2 :utc 1} {:hour 2 :utc -1})
+        {:hour 6 :utc 1})
+
+      (matcho/match
+        (sut/plus {:hour 2 :utc 1} {:hour 2})
+        {:hour 5 :utc 1})
+
+      (matcho/match
         (sut/plus {:hour 2} {:hour 2 :utc 1})
-        {:hour 5})))
+        {:hour 3})))
 
   (testing "-"
     (matcho/match
