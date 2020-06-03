@@ -301,7 +301,7 @@
 
       (matcho/match
         (sut/plus {:hour 2 :utc 1} {:hour 2})
-        {:hour 5 :utc 1})
+        {:hour 4 :utc 1})
 
       (matcho/match
         (sut/plus {:hour 2} {:hour 2 :utc 1})

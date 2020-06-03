@@ -69,10 +69,12 @@
 
 (defn normalize [t]
   (let [rules (ordered-rules t)
-        normalized-time (reduce (fn [t unit] (normalize-rule unit t)) t rules)]
-    (into {}
-          (remove (comp zero? val))
-          normalized-time)))
+        normalized-time (reduce (fn [t unit] (normalize-rule unit t)) t rules)
+        normalized-time-without-zeros (into {} (remove (comp zero? val)) normalized-time)
+        utc (:utc normalized-time)]
+    (if utc
+      (assoc normalized-time-without-zeros :utc utc)
+      normalized-time-without-zeros)))
 
 (defn to-utc
   ([t] (to-utc t 0))
@@ -82,11 +84,6 @@
      (-> t
          (assoc :hour new-hour)
          (assoc :utc target-utc)))))
-
-(comment
-  (to-utc {:year 2011 :month 1 :day 1 :hour 0 :utc -2})
-  (to-utc {:year 2011 :month 1 :day 1 :hour 3 :utc 1})
-  (to-utc {:hour 17 :utc 3} 0))
 
 (defn- after? [t t']
   (let [t'-in-t-utc (to-utc t' (get t :utc 0))]
@@ -100,13 +97,18 @@
 (def ^{:private true} default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
 (defn- init-plus [r i]
-  (let [r-utc (get r :utc 0)
-        i-in-r-utc (to-utc i r-utc)]
-    (assoc (->>
-            (concat (keys (dissoc r :tz)) (keys i))
-            (into #{})
-            (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get i-in-r-utc k 0)))) {}))
-      :utc r-utc)))
+  (let [r-utc (:utc r)
+        i-utc (:utc i)
+        prepared-i (if (and r-utc (not i-utc))
+                     (assoc i :utc r-utc)
+                     (to-utc i (get r :utc 0)))
+        result (->>
+                 (concat (keys (dissoc r :tz)) (keys i))
+                 (into #{})
+                 (reduce (fn [acc k] (assoc acc k (+ (get r k 0) (get prepared-i k 0)))) {}))]
+    (if r-utc
+      (assoc result :utc r-utc)
+      (dissoc result :utc))))
 
 (defn plus
   ([] default-time)
