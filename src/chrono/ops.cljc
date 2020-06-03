@@ -67,8 +67,8 @@
         with-custom (apply conj (custom-units t) init)]
     (conj with-custom :day)))
 
-(defmulti to-utc (fn [{:keys [tz]}] (type tz)))
-(defmulti to-tz "[t tz]" (fn [_ tz] (type tz)))
+(declare to-utc)
+(declare to-tz)
 
 (defn normalize [{:keys [tz] :as t}]
   (let [rules           (ordered-rules t)
@@ -104,19 +104,6 @@
   ([x]          x)
   ([x y]        (normalize (init-plus x (invert y))))
   ([x y & more] (reduce minus (minus x y) more)))
-
-(defmethod to-tz nil [t _] t)
-
-(defmethod to-tz
-  Long
-  [{:keys [tz] :as t} dtz]
-  (if tz
-    (let [d (- dtz tz)]
-      (-> (cond-> (dissoc t :tz)
-            (not (zero? d))
-            (plus {:hour d}))
-          (assoc :tz dtz)))
-    (assoc t :tz dtz)))
 
 (def to-normalized-utc (comp normalize #(to-tz % 0)))
 
@@ -202,11 +189,7 @@
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
-(defmethod to-utc :default [t] (to-tz t 0))
-
-(defmethod to-utc
-  clojure.lang.Keyword
-  [t]
+(defn kw-tz->utc0 [t]
   (let [ds (day-saving-with-utc (:tz t) (:year t))
         off (if (or (denormalised-lte t (:in ds)) (denormalised-gt t (:out ds)))
               (:offset ds)
@@ -215,9 +198,7 @@
         (dissoc :tz)
         (plus {:hour off}))))
 
-(defmethod to-tz ;; TODO: handle timezoned t
-  clojure.lang.Keyword
-  [t tz]
+(defn utc0->kw-tz [t tz]
   (let [ds (day-saving-with-utc tz (:year t))
         off (if (or (denormalised-lte t (:in-utc ds)) (denormalised-gt t (:out-utc ds)))
               (:offset ds)
@@ -225,3 +206,18 @@
     (-> t
         (plus {:hour (- off)})
         (assoc :tz tz))))
+
+(defn to-tz [{:keys [tz] :as t} dtz]
+  (cond
+    (nil? dtz)    (dissoc t :tz)
+    (nil? tz)     (assoc t :tz dtz)
+    :else (let [*t   (cond-> t (keyword? tz) kw-tz->utc0)
+                *tz  (if (keyword? tz)  0 tz)
+                *dtz (if (keyword? dtz) 0 dtz)
+                d    (- *dtz *tz)]
+            (-> (cond-> (dissoc *t :tz)
+                  (not (zero? d)) (plus {:hour d})
+                  (keyword? dtz)  (utc0->kw-tz dtz))
+                (assoc :tz dtz)))))
+
+(defn to-utc [t] (to-tz t 0))

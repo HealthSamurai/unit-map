@@ -357,13 +357,19 @@
                  :out {:month 11 :day 3}})
 
   (is (= (sut/to-utc {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
-         {:year 2018 :month 5 :day 2 :hour 18}))
+         {:year 2018 :month 5 :day 2 :hour 18 :tz 0}))
 
-  (is (= (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
+  (is (= (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18 :tz 0} :ny)
          {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
+  (is (= (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
+         {:year 2018 :month 5 :day 2 :hour 18 :tz :ny}))
+
   (is (= (sut/to-utc {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
-         {:year 2018 :month 2 :day 2 :hour 19}))
+         {:year 2018 :month 2 :day 2 :hour 19 :tz 0}))
+
+  (is (= (sut/to-tz {:year 2018 :month 2 :day 2 :hour 19 :tz 0} :ny)
+         {:year 2018 :month 2 :day 2 :hour 14 :tz :ny}))
 
   (is (= (sut/to-tz {:year 2018 :month 2 :day 2 :hour 19} :ny)
-         {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})))
+         {:year 2018 :month 2 :day 2 :hour 19 :tz :ny})))
