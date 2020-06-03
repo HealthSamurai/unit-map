@@ -189,35 +189,34 @@
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
-(defn kw-tz->utc0 [t]
+(defn kw-tz->utc0 [t] ;; TODO: make this work for any utc offset
   (let [ds (day-saving-with-utc (:tz t) (:year t))
         off (if (or (denormalised-lte t (:in ds)) (denormalised-gt t (:out ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (-> t
-        (dissoc :tz)
+    (-> (dissoc t :tz)
         (plus {:hour off}))))
 
-(defn utc0->kw-tz [t tz]
+(defn utc0->kw-tz [t tz] ;; TODO: make this work for any utc offset
   (let [ds (day-saving-with-utc tz (:year t))
         off (if (or (denormalised-lte t (:in-utc ds)) (denormalised-gt t (:out-utc ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (-> t
-        (plus {:hour (- off)})
+    (-> (plus t {:hour (- off)})
         (assoc :tz tz))))
 
 (defn to-tz [{:keys [tz] :as t} dtz]
   (cond
-    (nil? dtz)    (dissoc t :tz)
-    (nil? tz)     (assoc t :tz dtz)
-    :else (let [*t   (cond-> t (keyword? tz) kw-tz->utc0)
-                *tz  (if (keyword? tz)  0 tz)
-                *dtz (if (keyword? dtz) 0 dtz)
-                d    (- *dtz *tz)]
-            (-> (cond-> (dissoc *t :tz)
-                  (not (zero? d)) (plus {:hour d})
-                  (keyword? dtz)  (utc0->kw-tz dtz))
-                (assoc :tz dtz)))))
+    (nil? dtz) (dissoc t :tz)
+    (nil? tz)  (assoc t :tz dtz)
+    :else
+    (let [d (- (if (keyword? dtz) 0 dtz)
+               (if (keyword? tz)  0 tz))]
+      (cond-> t
+        (keyword? tz)   kw-tz->utc0
+        :always         (dissoc :tz)
+        (not (zero? d)) (plus {:hour d})
+        (keyword? dtz)  (utc0->kw-tz dtz)
+        :always         (assoc :tz dtz)))))
 
 (defn to-utc [t] (to-tz t 0))
