@@ -18,8 +18,8 @@ Pure clojure time made simple for clj & cljs
    :sec   15
    :tz    :utc})
 
-(ch/+ t {:min 100}) ;; => {:min 40, :day 29, :hour 11, :second 15, :month 1, :year 2018, :minutes 30}
-(ch/+ t {:min -100}) ;; => {:min 20, :day 29, :hour 8, :second 15, :month 1, :year 2018, :minutes 30}
+(ch/+ t {:min 100}) ;; => {:min 40, :day 29, :hour 11, :second 15, :month 1, :year 2018, :min 30}
+(ch/+ t {:min -100}) ;; => {:min 20, :day 29, :hour 8, :second 15, :month 1, :year 2018, :min 30}
 ;; also there is = not= > >= < <=
 
 (ch/normalize {:min 100}) ;; => {:min 40, :hour 1}
