@@ -4,7 +4,7 @@
             [chrono.util :as util]))
 
 (def needed-for
-  {:month [:yaer :month]
+  {:month [:year :month]
    :day [:year :month :day]
    :hour [:year :month :day :hour]
    :min [:year :month :day :hour :min]
@@ -67,9 +67,9 @@
     (prn (another-next-time n  cfg)))
 
 
-  (= {:year 2020 :month 5 :day 18 :hour 18})
-  (next-time #_(now/utc) {:year 2020 :month 5 :day 18 :hour 18 :min 44}
-             {:every "tuesday" :at {:hour 12 :min 10}})
+  (= {:year 2020 :month 5 :day 18 :hour 18}
+     (next-time #_(now/utc) {:year 2020 :month 5 :day 18 :hour 18 :min 44}
+                {:every "tuesday" :at {:hour 12 :min 10}}))
 
   (= {:year 2020 :month 1 :day 1 :hour 12}
      (next-time {:year 2020 :month 1 :day 1 :hour 11}
