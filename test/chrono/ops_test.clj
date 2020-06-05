@@ -314,7 +314,7 @@
     (is (= (sut/minus {:hour 3 :tz 2} {:hour 1 :tz 2})
            {:hour 2 :tz 2}))))
 
-(deftest ^:kaocha/pending test-timezones
+(deftest test-timezones
   (testing "tz comparsion"
     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
                  {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
