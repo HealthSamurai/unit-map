@@ -298,6 +298,15 @@
            (sut/plus #::cd{:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911}
                      #::ci{:hour 2})))
 
+    (is (= #::cd{:hour 14 :tz 2}
+           (sut/plus #::cd{:hour 4 :tz 2} #::ci{:hour 10})))
+
+    (is (= #::cd{:day 1 :tz -2}
+           (sut/plus #::cd{:hour 23 :tz -2} #::ci{:hour 1})))
+
+    (is (= #::cd{:hour 2 :tz -2}
+           (sut/plus #::cd{:hour 1 :tz -2} #::ci{:hour 1 :tz 3})))
+
     (testing "with custom units"
       (def normalize-cd-ns (sut/gen-norm ::cd/ns ::cd/ms 1000000 0))
       (def normalize-ci-ns (sut/gen-norm ::ci/ns ::ci/ms 1000000 0))
@@ -328,9 +337,9 @@
                       #::ci{:day 366})))
     (is (= #::cd{:tz -2}
            (sut/minus #::cd{:hour 2 :tz -2} #::ci{:hour 2})))
-    (is (= #::ci{:day 2 :hour 2}
+    (is (= #::ci{:day 2 :hour 1}
            (sut/minus #::cd{:year 2020 :month 6 :day 7 :hour 15 :min 30 :tz 3}
-                      #::cd{:year 2020 :month 6 :day 5 :hour 13 :min 30 :tz 3})))))
+                      #::cd{:year 2020 :month 6 :day 5 :hour 13 :min 30 :tz 2})))))
 
 ;; (deftest arithmetic-operations-test
 ;;   (testing "+"

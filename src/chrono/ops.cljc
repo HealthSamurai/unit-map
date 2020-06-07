@@ -138,15 +138,19 @@
 (defn init-plus2 [a b]
   (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
         {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
+        tz (or (:tz a-ch) (:tz b-ch))
         result-namespace (if (or a-ch b-ch)
                            "chrono.datetime"
                            "chrono.interval")]
     (if (and a-ch b-ch)
       (throw (Exception. "Can't add 2 dates."))
-      (-> (merge-with +
-                      (or a-ch a-ci)
-                      (or b-ch b-ci))
-          (append-prefix-to-keys result-namespace)))))
+      (cond-> (merge-with +
+                          (or a-ch a-ci)
+                          (or b-ch b-ci))
+        true (append-prefix-to-keys result-namespace)
+        true (dissoc ::cd/tz)
+        (and (some? tz)
+             (or a-ch b-ch)) (assoc ::cd/tz tz)))))
 
 (defn plus
   ([]           default-time)
@@ -165,11 +169,15 @@
 (defn init-minus [a b]
   (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
         {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
+        tz (:tz a-ch)
+        b-ch (when (some? b-ch)
+               (-> (to-tz b tz)
+                   group-keys
+                   :chrono.datetime))
         result-namespace (if (or (and a-ch b-ch)
                                  (and a-ci b-ci))
                            "chrono.interval"
-                           "chrono.datetime")
-        tz (::cd/tz a)]
+                           "chrono.datetime")]
     (if (and a-ci b-ch)
       (throw (Exception. "Can't subtract a date from an interval."))
       (cond-> (merge-with +
