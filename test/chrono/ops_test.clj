@@ -307,6 +307,9 @@
     (is (= #::cd{:hour 2 :tz -2}
            (sut/plus #::cd{:hour 1 :tz -2} #::ci{:hour 1 :tz 3})))
 
+    (is (= #::cd{:hour 2 :tz -2}
+           (sut/plus #::ci{:hour 1 :tz 3} #::cd{:hour 1 :tz -2})))
+
     (testing "with custom units"
       (def normalize-cd-ns (sut/gen-norm ::cd/ns ::cd/ms 1000000 0))
       (def normalize-ci-ns (sut/gen-norm ::ci/ns ::ci/ms 1000000 0))
