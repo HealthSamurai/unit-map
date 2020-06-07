@@ -1,5 +1,5 @@
 (ns chrono.ops-test
-  (:require [chrono.core :as ch]
+  (:require [chrono.datetime :as cd]
             [chrono.interval :as ci]
             [chrono.ops :as sut]
             [clojure.test :refer :all]
@@ -175,20 +175,20 @@
 (deftest arithmetic-operations-test
   (testing "+"
     (def t
-      {::ch/year  2018
-       ::ch/month 1
-       ::ch/day   1
-       ::ch/hour  12
-       ::ch/min   30
-       ::ch/sec   30
-       ::ch/ms    500})
+      {::cd/year  2018
+       ::cd/month 1
+       ::cd/day   1
+       ::cd/hour  12
+       ::cd/min   30
+       ::cd/sec   30
+       ::cd/ms    500})
 
     (matcho/match (sut/plus t {::ci/ms 200})
-                  {::ch/ms 700})
+                  {::cd/ms 700})
 
     (matcho/match (sut/plus t {::ci/ms 600})
-                  {::ch/ms  100
-                   ::ch/sec 31})))
+                  {::cd/ms  100
+                   ::cd/sec 31})))
 
 ;; (deftest arithmetic-operations-test
 ;;   (testing "+"

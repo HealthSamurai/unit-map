@@ -1,5 +1,7 @@
 (ns chrono.ops
-  (:require [chrono.util :as u]))
+  (:require [chrono.datetime :as cd]
+            [chrono.interval :as ci]
+            [chrono.util :as u]))
 
 (defn- group-keys [m]
   (reduce-kv (fn [result k v]
@@ -23,11 +25,11 @@
           (assoc x k (- (+ del r) m), k-next (+ s ds -1))))
       x)))
 
-(def normalize-ms (gen-norm :chrono.core/ms :chrono.core/sec 1000 0))
-(def normalize-s  (gen-norm :chrono.core/sec :chrono.core/min 60 0))
-(def normalize-mi (gen-norm :chrono.core/min :chrono.core/hour 60 0))
-(def normalize-h  (gen-norm :chrono.core/hour :chrono.core/day 24 0))
-(def normalize-m  (gen-norm :chrono.core/month :chrono.core/year 12 1))
+(def normalize-ms (gen-norm ::cd/ms    ::cd/sec  1000 0))
+(def normalize-s  (gen-norm ::cd/sec   ::cd/min  60   0))
+(def normalize-mi (gen-norm ::cd/min   ::cd/hour 60   0))
+(def normalize-h  (gen-norm ::cd/hour  ::cd/day  24   0))
+(def normalize-m  (gen-norm ::cd/month ::cd/year 12   1))
 
 (defn days-and-months [y m d]
   (if (<= 1 d 27)
@@ -59,42 +61,39 @@
 
 (defmulti normalize-rule (fn [unit _] unit))
 (defmethod normalize-rule :default [_ t] t)
-(defmethod normalize-rule :chrono.core/ms [_ t] (normalize-ms t))
-(defmethod normalize-rule :chrono.core/sec [_ t] (normalize-s t))
-(defmethod normalize-rule :chrono.core/min [_ t] (normalize-mi t))
-(defmethod normalize-rule :chrono.core/hour [_ t] (normalize-h t))
-(defmethod normalize-rule :chrono.core/day [_ t] (normalize-d t))
-(defmethod normalize-rule :chrono.core/month [_ t] (normalize-m t))
+(defmethod normalize-rule ::cd/ms [_ t] (normalize-ms t))
+(defmethod normalize-rule ::cd/sec [_ t] (normalize-s t))
+(defmethod normalize-rule ::cd/min [_ t] (normalize-mi t))
+(defmethod normalize-rule ::cd/hour [_ t] (normalize-h t))
+(defmethod normalize-rule ::cd/day [_ t] (normalize-d t))
+(defmethod normalize-rule ::cd/month [_ t] (normalize-m t))
 
-(def defaults-units  [[:chrono.core/year 0]
-                      [:chrono.core/month 1]
-                      [:chrono.core/day 1]
-                      [:chrono.core/hour 0]
-                      [:chrono.core/min 0]
-                      [:chrono.core/sec 0]
-                      [:chrono.core/ms 0]])
+(def defaults-units  [[::cd/year 0]
+                      [::cd/month 1]
+                      [::cd/day 1]
+                      [::cd/hour 0]
+                      [::cd/min 0]
+                      [::cd/sec 0]
+                      [::cd/ms 0]])
 
 (defn custom-units [t]
   (let [units-to-ignore (into #{} (conj (map first defaults-units) :tz))
         current-units (into #{} (keys t))]
     (into [] (remove units-to-ignore current-units))))
 
-(defn- to-dt [k]
-  (keyword "chrono.core" (name k)))
-
 (defn ordered-rules [t]
-  (let [init (map to-dt [:ms :sec :min :hour :month])
+  (let [init [::cd/ms ::cd/sec ::cd/min ::cd/hour ::cd/month]
         with-custom (apply conj (custom-units t) init)]
-    (conj with-custom :chrono.core/day)))
+    (conj with-custom ::cd/day)))
 
 (declare to-utc)
 (declare to-tz)
 
-(defn normalize [{:chrono.core/keys [tz] :as t}]
+(defn normalize [{::cd/keys [tz] :as t}]
   (let [rules           (ordered-rules t)
         normalized-time (reduce (fn [t unit] (normalize-rule unit t)) t rules)]
     (into {}
-          (remove (every-pred (comp not #{:tz} key) (comp zero? val)))
+          (remove (every-pred (comp not #{::cd/tz} key) (comp zero? val)))
           normalized-time)))
 
 (def ^:private default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
@@ -106,10 +105,10 @@
           (disj (set (concat (keys r) (keys i-r-tz))) :tz))))
 
 (defn init-plus2 [a b]
-  (let [{a-ch :chrono.core a-ci :chrono.interval} (group-keys a)
-        {b-ch :chrono.core b-ci :chrono.interval} (group-keys b)
+  (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
+        {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
         result-namespace (if (or a-ch b-ch)
-                           "chrono.core"
+                           "chrono.datetime"
                            "chrono.interval")]
     (if (and a-ch b-ch)
       (throw (Exception. "Can't add 2 dates."))
