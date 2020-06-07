@@ -475,62 +475,62 @@
 ;;     (is (= (sut/minus {:hour 3 :tz 2} {:hour 1 :tz 2})
 ;;            {:hour 2 :tz 2}))))
 
-;; (deftest test-timezones
-;;   (testing "tz comparison"
-;;     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
-;;                  {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
+(deftest test-timezones
+  (testing "tz comparison"
+    (is (sut/lte #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+                 #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
-;;     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
-;;                  {:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}))
+    (is (sut/lte #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+                 #::cd{:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}))
 
-;;     (is (sut/gt {:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}
-;;                 {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
+    (is (sut/gt #::cd{:year 2018 :month 5 :day 2 :hour 14 :sec 1 :tz :ny}
+                #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
-;;     (is (sut/gt {:year 2018 :month 5 :day 2 :hour 13 :min 120 :tz :ny}
-;;                 {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
+    (is (sut/gt #::cd{:year 2018 :month 5 :day 2 :hour 13 :min 120 :tz :ny}
+                #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
-;;     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
-;;                  {:year 2018 :month 5 :day 2 :hour 13 :min 120 :tz :ny}))
+    (is (sut/lte #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+                 #::cd{:year 2018 :month 5 :day 2 :hour 13 :min 120 :tz :ny}))
 
-;;     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
-;;                  {:year 2018 :month 11}))
+    (is (sut/lte #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+                 #::cd{:year 2018 :month 11}))
 
-;;     (is (sut/gt {:year 2018 :month 11}
-;;                 {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})))
+    (is (sut/gt #::cd{:year 2018 :month 11}
+                #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny})))
 
-;;   (matcho/match (sut/day-saving :ny 2017)
-;;                 {:in  {:month 3 :day 12 :hour 2 :min 0}
-;;                  :out {:month 11 :day 5 :hour 2}})
+  (matcho/match (sut/day-saving :ny 2017)
+                {:in  #::cd{:month 3 :day 12 :hour 2 :min 0}
+                 :out #::cd{:month 11 :day 5 :hour 2}})
 
-;;   (matcho/match (sut/day-saving-with-utc :ny 2017)
-;;                 {:in     {:month 3 :day 12 :hour 2 :min 0}
-;;                  :in-utc {:month 3 :day 12 :hour 7}
+  (matcho/match (sut/day-saving-with-utc :ny 2017)
+                {:in     #::cd{:month 3 :day 12 :hour 2 :min 0}
+                 :in-utc #::cd{:month 3 :day 12 :hour 7}
 
-;;                  :out     {:month 11 :day 5 :hour 2}
-;;                  :out-utc {:month 11 :day 5 :hour 6}})
+                 :out     #::cd{:month 11 :day 5 :hour 2}
+                 :out-utc #::cd{:month 11 :day 5 :hour 6}})
 
-;;   (matcho/match (sut/day-saving-with-utc :ny 2018)
-;;                 {:in  {:month 3 :day 11}
-;;                  :out {:month 11 :day 4}})
+  (matcho/match (sut/day-saving-with-utc :ny 2018)
+                {:in  #::cd{:month 3 :day 11}
+                 :out #::cd{:month 11 :day 4}})
 
-;;   (matcho/match (sut/day-saving-with-utc :ny 2019)
-;;                 {:in  {:month 3 :day 10}
-;;                  :out {:month 11 :day 3}})
+  (matcho/match (sut/day-saving-with-utc :ny 2019)
+                {:in  #::cd{:month 3 :day 10}
+                 :out #::cd{:month 11 :day 3}})
 
-;;   (is (= (sut/to-utc {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})
-;;          {:year 2018 :month 5 :day 2 :hour 18 :tz 0}))
+  (is (= #::cd{:year 2018 :month 5 :day 2 :hour 18 :tz 0}
+         (sut/to-utc #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny})))
 
-;;   (is (= (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18 :tz 0} :ny)
-;;          {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
+  (is (= #::cd{:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
+         (sut/to-tz #::cd{:year 2018 :month 5 :day 2 :hour 18 :tz 0} :ny)))
 
-;;   (is (= (sut/to-tz {:year 2018 :month 5 :day 2 :hour 18} :ny)
-;;          {:year 2018 :month 5 :day 2 :hour 18 :tz :ny}))
+  (is (= #::cd{:year 2018 :month 5 :day 2 :hour 18 :tz :ny}
+         (sut/to-tz #::cd{:year 2018 :month 5 :day 2 :hour 18} :ny)))
 
-;;   (is (= (sut/to-utc {:year 2018 :month 2 :day 2 :hour 14 :tz :ny})
-;;          {:year 2018 :month 2 :day 2 :hour 19 :tz 0}))
+  (is (= #::cd{:year 2018 :month 2 :day 2 :hour 19 :tz 0}
+         (sut/to-utc #::cd{:year 2018 :month 2 :day 2 :hour 14 :tz :ny})))
 
-;;   (is (= (sut/to-tz {:year 2018 :month 2 :day 2 :hour 19 :tz 0} :ny)
-;;          {:year 2018 :month 2 :day 2 :hour 14 :tz :ny}))
+  (is (= #::cd{:year 2018 :month 2 :day 2 :hour 14 :tz :ny}
+         (sut/to-tz #::cd{:year 2018 :month 2 :day 2 :hour 19 :tz 0} :ny)))
 
-;;   (is (= (sut/to-tz {:year 2018 :month 2 :day 2 :hour 19} :ny)
-;;          {:year 2018 :month 2 :day 2 :hour 19 :tz :ny})))
+  (is (= #::cd{:year 2018 :month 2 :day 2 :hour 19 :tz :ny}
+         (sut/to-tz #::cd{:year 2018 :month 2 :day 2 :hour 19} :ny))))

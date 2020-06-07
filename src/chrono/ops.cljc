@@ -259,45 +259,45 @@
   (assert (> y 2006) "Not impl.")
   {:offset 5
    :ds -1
-   :in {:year y :month 3 :day (u/more-or-eq y 3 0 8) :hour 2 :min 0}
-   :out {:year y :month 11 :day (u/more-or-eq y 11 0 1) :hour 2 :min 0}})
+   :in #::cd{:year y :month 3 :day (u/more-or-eq y 3 0 8) :hour 2 :min 0}
+   :out #::cd{:year y :month 11 :day (u/more-or-eq y 11 0 1) :hour 2 :min 0}})
 
 (defn *day-saving-with-utc [tz y]
   (let [ds (day-saving tz y)]
     (assoc ds
-           :in-utc (plus (:in ds) {:hour (:offset ds)})
-           :out-utc (plus (:out ds) {:hour (+ (:offset ds) (:ds ds))}))))
+           :in-utc (plus (:in ds) {::ci/hour (:offset ds)})
+           :out-utc (plus (:out ds) {::ci/hour (+ (:offset ds) (:ds ds))}))))
 
 (def day-saving-with-utc (memoize *day-saving-with-utc))
 
 (defn kw-tz->utc0 [t] ;; TODO: make this work for any utc offset
-  (let [ds (day-saving-with-utc (:tz t) (:year t))
+  (let [ds (day-saving-with-utc (::cd/tz t) (::cd/year t))
         off (if (or (denormalised-lte t (:in ds)) (denormalised-gt t (:out ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (-> (dissoc t :tz)
-        (plus {:hour off}))))
+    (-> (dissoc t ::cd/tz)
+        (plus {::ci/hour off}))))
 
 (defn utc0->kw-tz [t tz] ;; TODO: make this work for any utc offset
-  (let [ds (day-saving-with-utc tz (:year t))
+  (let [ds (day-saving-with-utc tz (::cd/year t))
         off (if (or (denormalised-lte t (:in-utc ds)) (denormalised-gt t (:out-utc ds)))
               (:offset ds)
               (+ (:offset ds) (:ds ds)))]
-    (-> (plus t {:hour (- off)})
-        (assoc :tz tz))))
+    (-> (plus t {::ci/hour (- off)})
+        (assoc ::cd/tz tz))))
 
-(defn to-tz [{:keys [tz] :as t} dtz]
+(defn to-tz [{::cd/keys [tz] :as t} dtz]
   (cond
-    (nil? dtz) (dissoc t :tz)
-    (nil? tz)  (assoc t :tz dtz)
+    (nil? dtz) (dissoc t ::cd/tz)
+    (nil? tz)  (assoc t ::cd/tz dtz)
     :else
     (let [d (- (if (keyword? dtz) 0 dtz)
                (if (keyword? tz)  0 tz))]
       (cond-> t
         (keyword? tz)   kw-tz->utc0
-        :always         (dissoc :tz)
-        (not (zero? d)) (plus {:hour d})
+        :always         (dissoc ::cd/tz)
+        (not (zero? d)) (plus {::ci/hour d})
         (keyword? dtz)  (utc0->kw-tz dtz)
-        :always         (assoc :tz dtz)))))
+        :always         (assoc ::cd/tz dtz)))))
 
 (defn to-utc [t] (to-tz t 0))
