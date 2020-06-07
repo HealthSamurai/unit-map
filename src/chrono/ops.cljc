@@ -1,6 +1,16 @@
 (ns chrono.ops
   (:require [chrono.util :as u]))
 
+(defn- group-keys [m]
+  (reduce-kv (fn [result k v]
+               (let [key-namespace (-> k namespace keyword)
+                     normalized-key (-> k name keyword)]
+                 (assoc-in result
+                           [key-namespace normalized-key]
+                           v)))
+             {}
+             m))
+
 (defn gen-norm [k k-next del m]
   (fn [x]
     (if-let [z (get x k)]
@@ -85,10 +95,25 @@
           (map (fn [k] {k (+ (get r k 0) (get i-r-tz k 0))}))
           (disj (set (concat (keys r) (keys i-r-tz))) :tz))))
 
+(defn init-plus2 [a b]
+  (let [{a-ch :chrono.core a-ci :chrono.interval} (group-keys a)
+        {b-ch :chrono.core b-ci :chrono.interval} (group-keys b)
+        result-namespace (if (or a-ch b-ch)
+                           "chrono.core"
+                           "chrono.interval")]
+    (if (and a-ch b-ch)
+      (throw (Exception. "Can't add 2 dates."))
+      (->> (merge-with +
+                       (or a-ch a-ci)
+                       (or b-ch b-ci))
+           (reduce-kv (fn [r k v]
+                        (assoc r (keyword result-namespace (name k)) v))
+                      {})))))
+
 (defn plus
   ([]           default-time)
   ([x]          x)
-  ([x y]        (normalize (init-plus x y)))
+  ([x y]        (normalize (init-plus2 x y)))
   ([x y & more] (reduce plus (plus x y) more)))
 
 (defn invert [x]
