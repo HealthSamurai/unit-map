@@ -58,10 +58,13 @@
           [ny nm dd]
           (days-and-months ny nm dd))))))
 
-(defn normalize-cd-d  [x]
-  (if (and (:year x) (:month x) (:day x))
-    (let [[y m d] (days-and-months (:year x) (:month x) (:day x))]
-      (assoc x :year y :month m :day d))
+(defn normalize-cd-d [{::cd/keys [year month day] :as x}]
+  (if (and year month day)
+    (let [[y m d] (days-and-months year month day)]
+      (assoc x
+             ::cd/year y
+             ::cd/month m
+             ::cd/day d))
     x))
 
 (defmulti normalize-rule (fn [unit _] unit))

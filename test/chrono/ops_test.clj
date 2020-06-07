@@ -192,7 +192,111 @@
 
     (is (= {::ci/ms  500
             ::ci/sec 1}
-           (sut/plus {::ci/ms 600} {::ci/ms 600} {::ci/ms 300})))))
+           (sut/plus {::ci/ms 600} {::ci/ms 600} {::ci/ms 300})))
+
+    (matcho/match (sut/plus t {::ci/sec 20})
+                  {::cd/sec 50})
+
+    (matcho/match (sut/plus t {::ci/sec 20})
+                  {::cd/sec 50})
+
+    (matcho/match (sut/plus t {::ci/min 20})
+                  {::cd/hour 12
+                   ::cd/min  50})
+
+    (matcho/match (sut/plus t {::ci/min 30})
+                  {::cd/hour 13})
+
+    (is (= #::cd{:year 2019 :month 1 :day 1}
+           (sut/plus #::cd{:year 2018 :month 12 :day 31}
+                     #::ci{:day 1})))
+
+    (is (= #::cd{:year 2018 :month 2 :day 1}
+           (sut/plus #::cd{:year 2018 :month 1 :day 1}
+                     #::ci{:day 31})))
+
+    (is (= #::cd{:year 2020 :month 1 :day 1}
+           (sut/plus #::cd{:year 2018 :month 12 :day 31}
+                     #::ci{:day 366})))
+
+    (is (= #::cd{:year 2018 :month 3 :day 1}
+           (sut/plus #::cd{:year 2018 :month 2 :day 28}
+                     #::ci{:day 1})))
+
+    (is (= #::cd{:year 2018 :month 3 :day 31}
+           (sut/plus #::cd{:year 2018 :month 3 :day 30}
+                     #::ci{:day 1})))
+
+    (is (= #::cd{:year 2018 :month 4 :day 1}
+           (sut/plus #::cd{:year 2018 :month 3 :day 31}
+                     #::ci{:day 1})))
+
+    (is (= #::ci{:ms 400}
+           (sut/plus #::ci{:ms 100} #::ci{:ms 300})))
+
+    (is (= #::ci{:ms 200 :sec 1}
+           (sut/plus #::ci{:ms 900} #::ci{:ms 300})))
+
+    (is (= #::ci{:sec 30 :min 1}
+           (sut/plus #::ci{:sec 40} #::ci{:sec 50})))
+
+    (is (= #::ci{:min 30 :hour 1}
+           (sut/plus #::ci{:min 40} #::ci{:min 50})))
+
+    (is (= #::ci{:hour 3 :day 1}
+           (sut/plus #::ci{:hour 13} #::ci{:hour 14})))
+
+    (is (= #::cd{:year 2011 :month 1 :day 2 :hour 4}
+           (sut/plus #::cd{:year 2011 :month 1 :day 1 :hour 23}
+                     #::ci{:hour 5})))
+
+    (is (= #::cd{:year 2011 :month 2 :day 2}
+           (sut/plus #::cd{:year 2011 :month 1 :day 30}
+                     #::ci{:day 3})))
+
+    (is (= #::cd{:year 2012 :month 1 :day 1}
+           (sut/plus #::cd{:year 2011 :month 1 :day 1}
+                     #::ci{:day 365})))
+
+    (is (= #::cd{:year 2012 :month 1 :day 1 :hour 4}
+           (sut/plus #::cd{:year 2011 :month 12 :day 31 :hour 23}
+                     #::ci{:hour 5})))
+
+    (is (= #::cd{:year 2010 :month 12 :day 31 :hour 23}
+           (sut/plus #::cd{:year 2011 :month 1 :day 1 :hour 0}
+                     #::ci{:hour -1})))
+
+    (is (= #::cd{:year 2010 :month 12 :day 31 :hour 23 :min 59 :sec 59}
+           (sut/plus #::cd{:year 2011 :month 1 :day 1 :hour 0}
+                     #::ci{:sec -1})))
+
+    (is (= #::cd{:year 2010 :month 12 :day 31 :hour 23 :min 59 :sec 59 :ms 999}
+           (sut/plus #::cd{:year 2011 :month 1 :day 1 :hour 0}
+                     #::ci{:ms -1})))
+
+    (is (= #::cd{:year 2010 :month 12 :day 31 :hour 23 :min 30}
+           (sut/plus #::cd{:year 2011 :month 1 :day 1 :hour 23}
+                     #::ci{:hour -23 :min -30})))
+
+    (is (= #::cd{:year 2019 :month 12 :day 1}
+           (sut/plus #::cd{:year 2019 :month 11 :day 1}
+                     #::ci{:month 1})))
+
+    (is (= #::cd{:year 2020 :month 1 :day 1}
+           (sut/plus #::cd{:year 2019 :month 11 :day 1}
+                     #::ci{:month 2})))
+
+    (is (= #::cd{:year 2020 :month 1 :day 1}
+           (sut/plus #::cd{:year 2019 :month 12 :day 1}
+                     #::ci{:month 1})))
+
+    (is (= #::cd{:year 2020 :month 1 :day 1}
+           (sut/plus #::cd{:year 2019 :month 11 :day 32}
+                     #::ci{:month 1})))
+
+    (is (= #::cd{:year 2019, :month 12, :day 10, :hour 15, :min 17, :sec 50, :ms 911}
+           (sut/plus #::cd{:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911}
+                     #::ci{:hour 2})))))
 
 ;; (deftest arithmetic-operations-test
 ;;   (testing "+"
