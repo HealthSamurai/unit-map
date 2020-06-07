@@ -1,5 +1,6 @@
 (ns chrono.tz
-  (:require [chrono.ops :as ops]
+  (:require [chrono.datetime :as cd]
+            [chrono.ops :as ops]
             [chrono.util :as util]))
 
 
@@ -27,8 +28,8 @@
   (assert (> y 2006) "Not impl.")
   {:offset 5
    :ds -1
-   :in {:year y :month 3 :day (util/more-or-eq y 3 0 8) :hour 2 :min 0}
-   :out {:year y :month 11 :day (util/more-or-eq y 11 0 1) :hour 2 :min 0}})
+   :in #::cd{:year y :month 3 :day (util/more-or-eq y 3 0 8) :hour 2 :min 0}
+   :out #::cd{:year y :month 11 :day (util/more-or-eq y 11 0 1) :hour 2 :min 0}})
 
 ;; https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 ;; https://alcor.concordia.ca/~gpkatch/gdate-method.html

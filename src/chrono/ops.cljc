@@ -261,15 +261,6 @@
 
 (defmulti day-saving "[tz y]" (fn [tz _] tz))
 
-(defmethod day-saving
-  :ny
-  [_ y]
-  (assert (> y 2006) "Not impl.")
-  {:offset 5
-   :ds -1
-   :in #::cd{:year y :month 3 :day (u/more-or-eq y 3 0 8) :hour 2 :min 0}
-   :out #::cd{:year y :month 11 :day (u/more-or-eq y 11 0 1) :hour 2 :min 0}})
-
 (defn *day-saving-with-utc [tz y]
   (let [ds (day-saving tz y)]
     (assoc ds
