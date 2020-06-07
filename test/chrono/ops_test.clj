@@ -184,7 +184,11 @@
        ::ch/ms    500})
 
     (matcho/match (sut/plus t {::ci/ms 200})
-                  {::ch/ms 700})))
+                  {::ch/ms 700})
+
+    (matcho/match (sut/plus t {::ci/ms 600})
+                  {::ch/ms  100
+                   ::ch/sec 31})))
 
 ;; (deftest arithmetic-operations-test
 ;;   (testing "+"

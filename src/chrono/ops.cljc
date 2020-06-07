@@ -23,11 +23,11 @@
           (assoc x k (- (+ del r) m), k-next (+ s ds -1))))
       x)))
 
-(def normalize-ms (gen-norm :ms :sec 1000 0))
-(def normalize-s  (gen-norm :sec :min 60 0))
-(def normalize-mi (gen-norm :min :hour 60 0))
-(def normalize-h  (gen-norm :hour :day 24 0))
-(def normalize-m  (gen-norm :month :year 12 1))
+(def normalize-ms (gen-norm :chrono.core/ms :chrono.core/sec 1000 0))
+(def normalize-s  (gen-norm :chrono.core/sec :chrono.core/min 60 0))
+(def normalize-mi (gen-norm :chrono.core/min :chrono.core/hour 60 0))
+(def normalize-h  (gen-norm :chrono.core/hour :chrono.core/day 24 0))
+(def normalize-m  (gen-norm :chrono.core/month :chrono.core/year 12 1))
 
 (defn days-and-months [y m d]
   (if (<= 1 d 27)
@@ -59,28 +59,38 @@
 
 (defmulti normalize-rule (fn [unit _] unit))
 (defmethod normalize-rule :default [_ t] t)
-(defmethod normalize-rule :ms [_ t] (normalize-ms t))
-(defmethod normalize-rule :sec [_ t] (normalize-s t))
-(defmethod normalize-rule :min [_ t] (normalize-mi t))
-(defmethod normalize-rule :hour [_ t] (normalize-h t))
-(defmethod normalize-rule :day [_ t] (normalize-d t))
-(defmethod normalize-rule :month [_ t] (normalize-m t))
+(defmethod normalize-rule :chrono.core/ms [_ t] (normalize-ms t))
+(defmethod normalize-rule :chrono.core/sec [_ t] (normalize-s t))
+(defmethod normalize-rule :chrono.core/min [_ t] (normalize-mi t))
+(defmethod normalize-rule :chrono.core/hour [_ t] (normalize-h t))
+(defmethod normalize-rule :chrono.core/day [_ t] (normalize-d t))
+(defmethod normalize-rule :chrono.core/month [_ t] (normalize-m t))
 
-(def defaults-units  [[:year 0] [:month 1] [:day 1] [:hour 0] [:min 0] [:sec 0] [:ms 0]])
+(def defaults-units  [[:chrono.core/year 0]
+                      [:chrono.core/month 1]
+                      [:chrono.core/day 1]
+                      [:chrono.core/hour 0]
+                      [:chrono.core/min 0]
+                      [:chrono.core/sec 0]
+                      [:chrono.core/ms 0]])
+
 (defn custom-units [t]
   (let [units-to-ignore (into #{} (conj (map first defaults-units) :tz))
         current-units (into #{} (keys t))]
     (into [] (remove units-to-ignore current-units))))
 
+(defn- to-dt [k]
+  (keyword "chrono.core" (name k)))
+
 (defn ordered-rules [t]
-  (let [init [:ms :sec :min :hour :month]
+  (let [init (map to-dt [:ms :sec :min :hour :month])
         with-custom (apply conj (custom-units t) init)]
-    (conj with-custom :day)))
+    (conj with-custom :chrono.core/day)))
 
 (declare to-utc)
 (declare to-tz)
 
-(defn normalize [{:keys [tz] :as t}]
+(defn normalize [{:chrono.core/keys [tz] :as t}]
   (let [rules           (ordered-rules t)
         normalized-time (reduce (fn [t unit] (normalize-rule unit t)) t rules)]
     (into {}
