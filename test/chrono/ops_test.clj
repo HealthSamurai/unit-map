@@ -296,7 +296,27 @@
 
     (is (= #::cd{:year 2019, :month 12, :day 10, :hour 15, :min 17, :sec 50, :ms 911}
            (sut/plus #::cd{:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911}
-                     #::ci{:hour 2})))))
+                     #::ci{:hour 2})))
+
+    (testing "with custom units"
+      (def normalize-cd-ns (sut/gen-norm ::cd/ns ::cd/ms 1000000 0))
+      (def normalize-ci-ns (sut/gen-norm ::ci/ns ::ci/ms 1000000 0))
+
+      (defmethod sut/normalize-rule ::cd/ns [_ t] (normalize-cd-ns t))
+      (defmethod sut/normalize-rule ::ci/ns [_ t] (normalize-ci-ns t))
+
+      (is (= #::ci{:ns 11}
+             (sut/plus #::ci{:ns 10} #::ci{:ns 1})))
+
+      (is (= #::ci{:sec 1}
+             (sut/plus #::ci{:ns 999999999} #::ci{:ns 1})))
+
+      (is (= #::ci{:sec 1 :ms 9}
+             (sut/plus #::ci{:ns 9999999} #::ci{:ns 999000001})))
+
+      (is (= #::cd{:year 2020 :month 1 :day 1}
+             (sut/plus #::cd{:year 2019 :month 12 :day 31 :hour 23 :min 59 :sec 59 :ns 999999999}
+                       #::ci{:ns 1}))))))
 
 ;; (deftest arithmetic-operations-test
 ;;   (testing "+"
