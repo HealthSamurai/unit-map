@@ -25,11 +25,16 @@
           (assoc x k (- (+ del r) m), k-next (+ s ds -1))))
       x)))
 
-(def normalize-ms (gen-norm ::cd/ms    ::cd/sec  1000 0))
-(def normalize-s  (gen-norm ::cd/sec   ::cd/min  60   0))
-(def normalize-mi (gen-norm ::cd/min   ::cd/hour 60   0))
-(def normalize-h  (gen-norm ::cd/hour  ::cd/day  24   0))
-(def normalize-m  (gen-norm ::cd/month ::cd/year 12   1))
+(def normalize-cd-ms (gen-norm ::cd/ms    ::cd/sec  1000 0))
+(def normalize-cd-s  (gen-norm ::cd/sec   ::cd/min  60   0))
+(def normalize-cd-mi (gen-norm ::cd/min   ::cd/hour 60   0))
+(def normalize-cd-h  (gen-norm ::cd/hour  ::cd/day  24   0))
+(def normalize-cd-m  (gen-norm ::cd/month ::cd/year 12   1))
+
+(def normalize-ci-ms (gen-norm ::ci/ms    ::ci/sec  1000 0))
+(def normalize-ci-s  (gen-norm ::ci/sec   ::ci/min  60   0))
+(def normalize-ci-mi (gen-norm ::ci/min   ::ci/hour 60   0))
+(def normalize-ci-h  (gen-norm ::ci/hour  ::ci/day  24   0))
 
 (defn days-and-months [y m d]
   (if (<= 1 d 27)
@@ -53,36 +58,53 @@
           [ny nm dd]
           (days-and-months ny nm dd))))))
 
-(defn normalize-d  [x]
+(defn normalize-cd-d  [x]
   (if (and (:year x) (:month x) (:day x))
     (let [[y m d] (days-and-months (:year x) (:month x) (:day x))]
       (assoc x :year y :month m :day d))
     x))
 
 (defmulti normalize-rule (fn [unit _] unit))
-(defmethod normalize-rule :default [_ t] t)
-(defmethod normalize-rule ::cd/ms [_ t] (normalize-ms t))
-(defmethod normalize-rule ::cd/sec [_ t] (normalize-s t))
-(defmethod normalize-rule ::cd/min [_ t] (normalize-mi t))
-(defmethod normalize-rule ::cd/hour [_ t] (normalize-h t))
-(defmethod normalize-rule ::cd/day [_ t] (normalize-d t))
-(defmethod normalize-rule ::cd/month [_ t] (normalize-m t))
+(defmethod normalize-rule :default   [_ t] t)
 
-(def defaults-units  [[::cd/year 0]
-                      [::cd/month 1]
-                      [::cd/day 1]
-                      [::cd/hour 0]
-                      [::cd/min 0]
-                      [::cd/sec 0]
-                      [::cd/ms 0]])
+(defmethod normalize-rule ::cd/ms    [_ t] (normalize-cd-ms t))
+(defmethod normalize-rule ::cd/sec   [_ t] (normalize-cd-s t))
+(defmethod normalize-rule ::cd/min   [_ t] (normalize-cd-mi t))
+(defmethod normalize-rule ::cd/hour  [_ t] (normalize-cd-h t))
+(defmethod normalize-rule ::cd/day   [_ t] (normalize-cd-d t))
+(defmethod normalize-rule ::cd/month [_ t] (normalize-cd-m t))
+
+(defmethod normalize-rule ::ci/ms    [_ t] (normalize-ci-ms t))
+(defmethod normalize-rule ::ci/sec   [_ t] (normalize-ci-s t))
+(defmethod normalize-rule ::ci/min   [_ t] (normalize-ci-mi t))
+(defmethod normalize-rule ::ci/hour  [_ t] (normalize-ci-h t))
+
+(def datetime-unit-defaults [[::cd/year 0]
+                             [::cd/month 1]
+                             [::cd/day 1]
+                             [::cd/hour 0]
+                             [::cd/min 0]
+                             [::cd/sec 0]
+                             [::cd/ms 0]])
+
+(def interval-unit-defaults [[::ci/day 0]
+                             [::ci/hour 0]
+                             [::ci/min 0]
+                             [::ci/sec 0]
+                             [::ci/ms 0]])
+
+(def unit-defaults
+  (concat datetime-unit-defaults
+          interval-unit-defaults))
 
 (defn custom-units [t]
-  (let [units-to-ignore (into #{} (conj (map first defaults-units) :tz))
+  (let [units-to-ignore (into #{} (conj (map first unit-defaults) ::cd/tz))
         current-units (into #{} (keys t))]
     (into [] (remove units-to-ignore current-units))))
 
 (defn ordered-rules [t]
-  (let [init [::cd/ms ::cd/sec ::cd/min ::cd/hour ::cd/month]
+  (let [init [::cd/ms ::cd/sec ::cd/min ::cd/hour ::cd/month
+              ::ci/ms ::ci/sec ::ci/min ::ci/hour]
         with-custom (apply conj (custom-units t) init)]
     (conj with-custom ::cd/day)))
 
@@ -142,7 +164,7 @@
 (def to-normalized-utc (comp normalize #(to-tz % 0)))
 
 (defn- after? [t t']
-  (loop [[[p s] & ps] defaults-units]
+  (loop [[[p s] & ps] datetime-unit-defaults]
     (let [t->tp #(get % p s)
           tp (t->tp t)
           tp' (t->tp t')]
