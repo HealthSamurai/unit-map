@@ -72,7 +72,7 @@
     (is (= (sut/to-tz {:hour 1} -1)
            {:hour 1 :tz -1}))))
 
-(deftest comparsion-operators-test
+(deftest comparison-operators-test
   (testing "="
     (is (sut/eq? {:year 2011 :month 1 :day 1 :hour 0}))
     (is (not (sut/eq? {:year 2011 :month 1 :day 2 :hour 0}
@@ -315,7 +315,7 @@
            {:hour 2 :tz 2}))))
 
 (deftest test-timezones
-  (testing "tz comparsion"
+  (testing "tz comparison"
     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
                  {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
 
