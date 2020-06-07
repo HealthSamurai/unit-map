@@ -316,7 +316,21 @@
 
       (is (= #::cd{:year 2020 :month 1 :day 1}
              (sut/plus #::cd{:year 2019 :month 12 :day 31 :hour 23 :min 59 :sec 59 :ns 999999999}
-                       #::ci{:ns 1}))))))
+                       #::ci{:ns 1})))))
+
+  (testing "-"
+    (is (= #::cd{:year 2016, :month 1, :day 1, :hour 23, :min 30}
+           (sut/minus #::cd{:year 2016 :month 12 :day 31 :hour 23 :min 30}
+                      #::ci{:day 365})))
+
+    (is (= #::cd{:year 2015, :month 12, :day 31, :hour 23, :min 30}
+           (sut/minus #::cd{:year 2016 :month 12 :day 31 :hour 23 :min 30}
+                      #::ci{:day 366})))
+    (is (= #::cd{:tz -2}
+           (sut/minus #::cd{:hour 2 :tz -2} #::ci{:hour 2})))
+    (is (= #::ci{:day 2 :hour 2}
+           (sut/minus #::cd{:year 2020 :month 6 :day 7 :hour 15 :min 30 :tz 3}
+                      #::cd{:year 2020 :month 6 :day 5 :hour 13 :min 30 :tz 3})))))
 
 ;; (deftest arithmetic-operations-test
 ;;   (testing "+"

@@ -129,6 +129,12 @@
           (map (fn [k] {k (+ (get r k 0) (get i-r-tz k 0))}))
           (disj (set (concat (keys r) (keys i-r-tz))) :tz))))
 
+(defn- append-prefix-to-keys [m prefix]
+  (reduce-kv (fn [r k v]
+               (assoc r (keyword (name prefix) (name k)) v))
+             {}
+             m))
+
 (defn init-plus2 [a b]
   (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
         {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
@@ -137,12 +143,10 @@
                            "chrono.interval")]
     (if (and a-ch b-ch)
       (throw (Exception. "Can't add 2 dates."))
-      (->> (merge-with +
-                       (or a-ch a-ci)
-                       (or b-ch b-ci))
-           (reduce-kv (fn [r k v]
-                        (assoc r (keyword result-namespace (name k)) v))
-                      {})))))
+      (-> (merge-with +
+                      (or a-ch a-ci)
+                      (or b-ch b-ci))
+          (append-prefix-to-keys result-namespace)))))
 
 (defn plus
   ([]           default-time)
@@ -158,10 +162,28 @@
    x
    [:year :month :day :hour :min :sec :ms]))
 
+(defn init-minus [a b]
+  (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
+        {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
+        result-namespace (if (or (and a-ch b-ch)
+                                 (and a-ci b-ci))
+                           "chrono.interval"
+                           "chrono.datetime")
+        tz (::cd/tz a)]
+    (if (and a-ci b-ch)
+      (throw (Exception. "Can't subtract a date from an interval."))
+      (cond-> (merge-with +
+                          (or a-ch a-ci)
+                          (invert (or b-ch b-ci)))
+        true (dissoc :tz)
+        true (append-prefix-to-keys result-namespace)
+        (and (some? tz)
+             (and a-ch b-ci)) (assoc ::cd/tz tz)))))
+
 (defn minus
   ([]           default-time)
   ([x]          x)
-  ([x y]        (normalize (init-plus x (invert y))))
+  ([x y]        (normalize (init-minus x y)))
   ([x y & more] (reduce minus (minus x y) more)))
 
 (def to-normalized-utc (comp normalize #(to-tz % 0)))
