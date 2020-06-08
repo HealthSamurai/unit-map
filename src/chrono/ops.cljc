@@ -129,7 +129,7 @@
              {}
              m))
 
-(defn init-plus [a b]
+(defn- init-plus [a b]
   (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
         {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
         tz (or (:tz a-ch) (:tz b-ch))
@@ -160,7 +160,7 @@
    x
    [:year :month :day :hour :min :sec :ms]))
 
-(defn init-minus [a b]
+(defn- init-minus [a b]
   (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
         {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
         tz (:tz a-ch)
