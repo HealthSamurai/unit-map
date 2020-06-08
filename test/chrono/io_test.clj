@@ -123,7 +123,10 @@
 
   (testing "roundtrip"
     (let [t #::cd{:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
-      (matcho/match (sut/parse (sut/format t)) t)))
+      (matcho/match (sut/parse (sut/format t)) t))
+    (let [i #::ci{:day 50 :hour 20 :min 30 :sec 5 :ms 123}
+          fmt [::ci/day \space ::ci/hour \space ::ci/min \space ::ci/sec \. ::ci/ms]]
+      (is (= i (-> i (sut/format fmt) (sut/parse fmt))))))
 
   (testing "format with specified width"
     (is (= "06.03.20"
