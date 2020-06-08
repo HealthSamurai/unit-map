@@ -123,19 +123,13 @@
 
 (def ^:private default-time {:year 0 :month 1 :day 1 :hour 0 :min 0 :sec 0 :ms 0})
 
-(defn- init-plus [{:keys [tz] :as r} i]
-  (let [i-r-tz (to-tz i tz)]
-    (into (if tz {:tz tz} {})
-          (map (fn [k] {k (+ (get r k 0) (get i-r-tz k 0))}))
-          (disj (set (concat (keys r) (keys i-r-tz))) :tz))))
-
 (defn- append-prefix-to-keys [m prefix]
   (reduce-kv (fn [r k v]
                (assoc r (keyword (name prefix) (name k)) v))
              {}
              m))
 
-(defn init-plus2 [a b]
+(defn init-plus [a b]
   (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
         {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
         tz (or (:tz a-ch) (:tz b-ch))
@@ -155,7 +149,7 @@
 (defn plus
   ([]           default-time)
   ([x]          x)
-  ([x y]        (normalize (init-plus2 x y)))
+  ([x y]        (normalize (init-plus x y)))
   ([x y & more] (reduce plus (plus x y) more)))
 
 (defn invert [x]
