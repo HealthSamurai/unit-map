@@ -1,6 +1,7 @@
 (ns chrono.util
   (:require [clojure.string :as str]
-            [chrono.datetime :as cd]))
+            [chrono.datetime :as cd]
+            [chrono.interval :as ci]))
 
 (defmulti locale (fn[x] x))
 
@@ -23,13 +24,18 @@
 (defmethod locale :default [_] locale-en)
 
 (def parse-patterns
-  #::cd{:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
-        :month "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}+\\.?)"
-        :day   "(?:3[0-1]|[1-2]\\d|0[1-9]|[1-9])"
-        :hour  "(?:2[0-3]|[0-1]\\d|\\d)"
-        :min   "(?:[0-5]\\d|\\d)"
-        :sec   "(?:[0-5]\\d|\\d)"
-        :ms    "(?:\\d\\d\\d|\\d\\d|\\d)"})
+  {::cd/year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
+   ::cd/month "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}+\\.?)"
+   ::cd/day   "(?:3[0-1]|[1-2]\\d|0[1-9]|[1-9])"
+   ::cd/hour  "(?:2[0-3]|[0-1]\\d|\\d)"
+   ::cd/min   "(?:[0-5]\\d|\\d)"
+   ::cd/sec   "(?:[0-5]\\d|\\d)"
+   ::cd/ms    "(?:\\d\\d\\d|\\d\\d|\\d)"
+   ::ci/day   "(?:[0-9]+)"
+   ::ci/hour  "(?:2[0-3]|[0-1]\\d|\\d)"
+   ::ci/min   "(?:[0-5]\\d|\\d)"
+   ::ci/sec   "(?:[0-5]\\d|\\d)"
+   ::ci/ms    "(?:\\d\\d\\d|\\d\\d|\\d)"})
 
 (def format-patterns
   #::cd{:year  4

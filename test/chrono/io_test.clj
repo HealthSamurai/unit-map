@@ -80,7 +80,13 @@
         (matcho/match (sut/parse "month 19" ^:ru[::cd/month \space ::cd/year]) nil))
 
       (testing "invalid locale name"
-        (matcho/match (sut/parse "январь 19" ^:en[::cd/month \space ::cd/year]) nil))))
+        (matcho/match (sut/parse "январь 19" ^:en[::cd/month \space ::cd/year]) nil)))
+
+    (testing "intervals"
+      (is (= #::ci{:hour 20 :min 30}
+             (sut/parse "20:30" [::ci/hour \: ::ci/min])))
+      (is (= #::ci{:day 50}
+             (sut/parse "50d" [::ci/day \d])))))
 
   (testing "format"
     (is (= "12/01/2010"
@@ -106,7 +112,14 @@
       (is (= "5.000001234" (sut/format {::cd/sec 5 :ns 1234}
                                        [[::cd/sec 1] \. ::cd/ms [:ns 6]])))
       (is (= "5.000123456" (sut/format {::cd/sec 5 :ns 123456}
-                                       [[::cd/sec 1] \. ::cd/ms :ns])))))
+                                       [[::cd/sec 1] \. ::cd/ms :ns]))))
+    (testing "intervals"
+      (is (= "20 hours 3 minutes"
+             (sut/format #::ci{:hour 20 :min 3}
+                         [::ci/hour " hours " ::ci/min " minutes"])))
+      (is (= "50 days"
+             (sut/format #::ci{:day 50}
+                         [::ci/day " days"])))))
 
   (testing "roundtrip"
     (let [t #::cd{:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
