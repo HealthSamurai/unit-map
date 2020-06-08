@@ -1,10 +1,11 @@
 (ns chrono.mask-test
   (:require [chrono.mask :as sut]
             [clojure.test :as t]
-            [chrono.io :as io]))
+            [chrono.io :as io]
+            [chrono.datetime :as cd]))
 
 (t/deftest mask-test
-  (let [cases {[:hour \: :min \: :sec]
+  (let [cases {[::cd/hour \: ::cd/min \: ::cd/sec]
                {"2300"     "23:00:"
                 "23:00"    "23:00:"
                 "230000"   "23:00:00"
@@ -23,7 +24,7 @@
                 "399"      "03:09:09"
                 "999999"   "09:09:09"}
 
-               [:month \- :day]
+               [::cd/month \- ::cd/day]
                {"01-01" "01-01"
                 "0101"  "01-01"
                 "67"    "06-07"
@@ -44,4 +45,4 @@
     (doseq [[fmt facts] cases
             [inp res]   facts]
       (t/testing (str "resolve: " fmt " " inp)
-          (t/is (= res (sut/resolve inp fmt)))))))
+        (t/is (= res (sut/resolve inp fmt)))))))

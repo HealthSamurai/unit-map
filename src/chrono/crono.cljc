@@ -1,18 +1,20 @@
 (ns chrono.crono
   (:require [chrono.core :as ch]
+            [chrono.datetime :as cd]
+            [chrono.interval :as ci]
             [chrono.now :as now]
             [chrono.util :as util]))
 
 (def needed-for
-  {:month [:year :month]
-   :day [:year :month :day]
-   :hour [:year :month :day :hour]
-   :min [:year :month :day :hour :min]
-   :sec [:year :month :day :hour :min :sec]})
+  #::ci{:month [::cd/year ::cd/month]
+        :day [::cd/year ::cd/month ::cd/day]
+        :hour [::cd/year ::cd/month ::cd/day ::cd/hour]
+        :min [::cd/year ::cd/month ::cd/day ::cd/hour ::cd/min]
+        :sec [::cd/year ::cd/month ::cd/day ::cd/hour ::cd/min ::cd/sec]})
 
 (def default-at
-  {:hour {:min 0}
-   :min {:sec 0}})
+  #::ci{:hour {::cd/min 0}
+        :min {::cd/sec 0}})
 
 (defn next-time-assumption [current-time {every :every at :at}])
 
@@ -32,9 +34,9 @@
 
 (defn validate-cfg [cfg]
   (assert (:every cfg) ":every must be specified")
-  (assert (contains? #{:month :day :hour :min :sunday :monday :tuesday :wednesday :thursday :friday :saturday}
+  (assert (contains? #{::ci/month ::ci/day ::ci/hour ::ci/min :sunday :monday :tuesday :wednesday :thursday :friday :saturday}
                      (keyword (:every cfg)))
-          ":every must one of [month day hour min sunday monday tuesday wednesday thursday friday saturday]"))
+          ":every must one of [ci/month ci/day ci/hour ci/min sunday monday tuesday wednesday thursday friday saturday]"))
 
 (defn next-time
   ([cfg] (next-time (now/utc) cfg))
@@ -43,10 +45,10 @@
    (if (contains? (set days-of-week) (keyword (:every cfg)))
      (first
       (filter
-       #(= (util/day-of-week (:year %) (:month %) (:day %))
+       #(= (util/day-of-week (::cd/year %) (::cd/month %) (::cd/day %))
            (.indexOf days-of-week (keyword (:every cfg))))
        (drop 1 (iterate
-                (fn [current-time] (*next-time current-time (assoc cfg :every :day)))
+                (fn [current-time] (*next-time current-time (assoc cfg :every ::ci/day)))
                 current-time))))
      (*next-time current-time cfg))))
 
