@@ -197,7 +197,7 @@
 (def to-normalized-utc (comp normalize #(to-tz % 0)))
 
 (defn- after? [t t']
-  (loop [[[p s] & ps] datetime-unit-defaults]
+  (loop [[[p s] & ps] unit-defaults]
     (let [t->tp #(get % p s)
           tp (t->tp t)
           tp' (t->tp t')]
