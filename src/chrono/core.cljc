@@ -4,12 +4,6 @@
             [chrono.io :as io])
   (:refer-clojure :exclude [+ - = > >= < <= not= format compare]))
 
-(defn datetime [t]
-  (merge {:type  :datetime
-          :year  1900
-          :month 1
-          :day   1} t))
-
 (def parse io/parse)
 (def format io/format)
 (def strict-parse io/strict-parse)
@@ -27,7 +21,7 @@
 (def date-valid? io/date-valid?)
 
 (def + ops/plus)
-(def - ops/minus) ; TODO: add tests
+(def - ops/minus)
 (def = ops/eq?)
 (def not= ops/not-eq?)
 (def eq? ops/eq?)
