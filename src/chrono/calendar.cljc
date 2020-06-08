@@ -1,5 +1,6 @@
 (ns chrono.calendar
-  (:require [chrono.util :as util]))
+  (:require [chrono.util :as util]
+            [chrono.datetime :as cd]))
 
 (def months
   {0  {:name "January" :days 31}
@@ -63,28 +64,36 @@
 (defn for-month [y m & [fmt {today :today active :active}]]
   (let [start-day (util/day-of-week y m 1 fmt)
         start-month (if (= 1 m) 12 (dec m))
-        pm-num-days (util/days-in-month {:year (if (= 1 m) (dec y) y), :month start-month})
-        pm-last-day {:month start-month :day pm-num-days}
+        pm-num-days (util/days-in-month #::cd{:year (if (= 1 m) (dec y) y), :month start-month})
+        pm-last-day #::cd{:month start-month :day pm-num-days}
         start-cal (if (= 0 start-day)
-                    {:month m :day 1}
-                    {:month start-month :day (inc (- pm-num-days start-day))})
-        num-d     (util/days-in-month {:year y, :month m})]
-    {:year y :month m
+                    #::cd{:month m :day 1}
+                    #::cd{:month start-month :day (inc (- pm-num-days start-day))})
+        num-d     (util/days-in-month #::cd{:year y, :month m})]
+    {::cd/year y
+     ::cd/month m
      :cal (for [r (range 6)]
             (for [wd (range 7)]
               (let [idx (+ (* r 7) wd)
                     d (inc (- idx start-day))
                     cell (cond
                            (< idx start-day)
-                           {:year (if (= 1 m) (dec y) y) :month start-month :day (+ (:day start-cal) idx)}
+                           #::cd{:year (if (= 1 m) (dec y) y)
+                                 :month start-month
+                                 :day (+ (::cd/day start-cal) idx)}
 
                            (> d num-d)
-                           {:year (if (= m 12) (inc y) y) :month (if (= 12 m) 1 (inc m)) :day (inc (- idx start-day num-d))}
+                           #::cd{:year (if (= m 12) (inc y) y)
+                                 :month (if (= 12 m) 1 (inc m))
+                                 :day (inc (- idx start-day num-d))}
 
                            :else
-                           {:year y :month m :day d :current true})]
-                (if (and (= (:year cell) (:year active))
-                         (= (:month cell) (:month active))
-                         (= (:day cell) (:day active)))
+                           {::cd/year y
+                            ::cd/month m
+                            ::cd/day d
+                            :current true})]
+                (if (and (= (::cd/year cell) (::cd/year active))
+                         (= (::cd/month cell) (::cd/month active))
+                         (= (::cd/day cell) (::cd/day active)))
                   (assoc cell :active true)
                   cell))))}))
