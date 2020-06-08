@@ -1,8 +1,9 @@
 (ns chrono.locale-ru
-  (:require [chrono.util :as util]))
+  (:require [chrono.util :as util]
+            [chrono.datetime :as cd]))
 
 (defmethod util/locale :ru [_]
-  {:month
+  {::cd/month
    {1 {:name "Январь", :short "Янв", :regex "(?iu)янв(ар(ь|я))?"}
     2 {:name "Февраль", :short "Фев", :regex "(?iu)фев(рал(ь|я))?"}
     3 {:name "Март", :short "Мар", :regex "(?iu)мар(та?)?"}

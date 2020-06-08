@@ -1,7 +1,9 @@
 (ns chrono.io
   (:require [chrono.util :as util]
             [chrono.ops :as ops]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [chrono.datetime :as cd]
+            [chrono.interval :as ci])
   (:refer-clojure :exclude [format]))
 
 (defn- format-str [v [fmt & fmt-args] lang]
@@ -75,19 +77,23 @@
   #?(:clj true ; TODO
      :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
 
-(def epoch {:year 1970 :day 1 :month 1})
+(def epoch #::cd{:year 1970 :day 1 :month 1})
 
 (defn from-epoch [e]
-  (ops/plus {:sec e} epoch))
+  (ops/plus {::ci/sec e} epoch))
 
 (defn to-epoch [date]
-  (let [years (range (:year epoch) (:year date))
-        months (range 1 (:month date))]
+  (let [years (range (::cd/year epoch) (::cd/year date))
+        months (range 1 (::cd/month date))]
     (-> date
-        (dissoc :year :month)
-        (update :day #(reduce (fn [days year]
-                                (+ days (if (util/leap-year? year) 366 365))) % years))
-        (update :day #(reduce (fn [days month]
-                                (+ days (util/days-in-month
-                                         {:month month :year (:year date)}))) % months))
+        (dissoc ::cd/year ::cd/month)
+        (update ::cd/day #(reduce (fn [days year]
+                                    (+ days (if (util/leap-year? year) 366 365)))
+                                  %
+                                  years))
+        (update ::cd/day #(reduce (fn [days month]
+                                    (+ days (util/days-in-month
+                                             {::cd/month month ::cd/year (::cd/year date)})))
+                                  %
+                                  months))
         util/seconds)))

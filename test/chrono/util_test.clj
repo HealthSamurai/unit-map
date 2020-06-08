@@ -1,6 +1,7 @@
 (ns chrono.util-test
   (:require [clojure.test :refer :all]
             [chrono.util :as sut]
+            [chrono.datetime :as cd]
             [matcho.core :as matcho])
   (:import [java.util Date]))
 
@@ -16,15 +17,15 @@
 
   (doseq [m (range 1 13)
           y (range 100)]
-    (doseq [d (range 1 (inc (sut/days-in-month {:year (+ 2000 y), :month m})))]
+    (doseq [d (range 1 (inc (sut/days-in-month #::cd{:year (+ 2000 y), :month m})))]
       (let [y (+ 2000 y)
             ref (.getDay (Date. (- y 1900) (dec m) d))
             sam (sut/day-of-week y m d)]
         (when-not (= sam ref)
           (throw (Exception. (pr-str y "-" m "-" d " " "sam" sam " ref " ref)))))))
 
-  (is (=  31 (sut/days-in-month {:year 2018, :month 1})))
-  (is (=  28 (sut/days-in-month {:year 2018, :month 2})))
+  (is (=  31 (sut/days-in-month #::cd{:year 2018, :month 1})))
+  (is (=  28 (sut/days-in-month #::cd{:year 2018, :month 2})))
 
   (doseq [y [1960 1964 1968	1972 1976
              1980 1984 1988	1992 1996
@@ -46,7 +47,7 @@
                  "JUNE" 6}
           test-fn (fn [[inp res]]
                     (testing (str "parsing: " inp)
-                      (is (= (sut/parse-name inp :month nil) res))))]
+                      (is (= (sut/parse-name inp ::cd/month nil) res))))]
       (doall
        (map test-fn cases)))))
 
