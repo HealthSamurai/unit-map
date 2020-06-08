@@ -82,7 +82,7 @@
 (defmethod normalize-rule ::ci/min   [_ t] (normalize-ci-mi t))
 (defmethod normalize-rule ::ci/hour  [_ t] (normalize-ci-h t))
 
-(def datetime-unit-defaults [[::cd/year 0]
+(def datetime-unit-defaults [[::cd/year 1]
                              [::cd/month 1]
                              [::cd/day 1]
                              [::cd/hour 0]
