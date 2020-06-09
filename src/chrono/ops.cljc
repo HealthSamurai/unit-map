@@ -3,15 +3,6 @@
             [chrono.interval :as ci]
             [chrono.util :as u]))
 
-(defn- group-keys [m]
-  (reduce-kv (fn [result k v]
-               (let [key-namespace (-> k namespace keyword)
-                     normalized-key (-> k name keyword)]
-                 (assoc-in result
-                           [key-namespace normalized-key]
-                           v)))
-             {}
-             m))
 
 (defn gen-norm [k k-next del m]
   (fn [x]
@@ -61,10 +52,7 @@
 (defn normalize-cd-d [{::cd/keys [year month day] :as x}]
   (if (and year month day)
     (let [[y m d] (days-and-months year month day)]
-      (assoc x
-             ::cd/year y
-             ::cd/month m
-             ::cd/day d))
+      (assoc x ::cd/year y, ::cd/month m, ::cd/day d))
     x))
 
 (defmulti normalize-rule (fn [unit _] unit))
@@ -130,19 +118,19 @@
              m))
 
 (defn- init-plus [a b]
-  (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
-        {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
+  (let [{a-ch :chrono.datetime a-ci :chrono.interval} (u/group-keys a)
+        {b-ch :chrono.datetime b-ci :chrono.interval} (u/group-keys b)
         tz (or (:tz a-ch) (:tz b-ch))
         result-namespace (if (or a-ch b-ch)
                            "chrono.datetime"
                            "chrono.interval")]
     (if (and a-ch b-ch)
-      (throw (Exception. "Can't add 2 dates."))
+      (throw (ex-info "Can't add 2 dates." {:operation `+, :params [a-ch b-ch]}))
       (cond-> (merge-with +
                           (or a-ch a-ci)
                           (or b-ch b-ci))
-        true (append-prefix-to-keys result-namespace)
-        true (dissoc ::cd/tz)
+        :always (-> (append-prefix-to-keys result-namespace)
+                    (dissoc ::cd/tz))
         (and (some? tz)
              (or a-ch b-ch)) (assoc ::cd/tz tz)))))
 
@@ -161,19 +149,19 @@
    [:year :month :day :hour :min :sec :ms]))
 
 (defn- init-minus [a b]
-  (let [{a-ch :chrono.datetime a-ci :chrono.interval} (group-keys a)
-        {b-ch :chrono.datetime b-ci :chrono.interval} (group-keys b)
+  (let [{a-ch :chrono.datetime a-ci :chrono.interval} (u/group-keys a)
+        {b-ch :chrono.datetime b-ci :chrono.interval} (u/group-keys b)
         tz (:tz a-ch)
         b-ch (when (some? b-ch)
                (-> (to-tz b tz)
-                   group-keys
+                   u/group-keys
                    :chrono.datetime))
         result-namespace (if (or (and a-ch b-ch)
                                  (and a-ci b-ci))
                            "chrono.interval"
                            "chrono.datetime")]
     (if (and a-ci b-ch)
-      (throw (Exception. "Can't subtract a date from an interval."))
+      (throw (ex-info "Can't subtract a date from an interval." {:operation `-, :params [a-ci b-ch]}))
       (cond-> (merge-with +
                           (or a-ch a-ci)
                           (invert (or b-ch b-ci)))

@@ -75,7 +75,7 @@
 
 (defn date-valid? [value fmt]
   #?(:clj true ; TODO
-     :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
+     :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [::cd/year "-" ::cd/month "-" ::cd/day])))))) ;; TODO: remove interop, move to chrono.util
 
 (def epoch #::cd{:year 1970 :day 1 :month 1})
 

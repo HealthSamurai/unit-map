@@ -3,6 +3,16 @@
             [chrono.datetime :as cd]
             [chrono.interval :as ci]))
 
+(defn group-keys [m]
+  (reduce-kv (fn [result k v]
+               (let [key-namespace (-> k namespace keyword)
+                     normalized-key (-> k name keyword)]
+                 (assoc-in result
+                           [key-namespace normalized-key]
+                           v)))
+             {}
+             m))
+             
 (defmulti locale (fn[x] x))
 
 (def locale-en

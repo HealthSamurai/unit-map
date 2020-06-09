@@ -36,7 +36,7 @@
   (assert (:every cfg) ":every must be specified")
   (assert (contains? #{::ci/month ::ci/day ::ci/hour ::ci/min :sunday :monday :tuesday :wednesday :thursday :friday :saturday}
                      (keyword (:every cfg)))
-          ":every must one of [ci/month ci/day ci/hour ci/min sunday monday tuesday wednesday thursday friday saturday]"))
+          ":every must one of [::ci/month ::ci/day ::ci/hour ::ci/min \"sunday\" \"monday\" \"tuesday\" \"wednesday\" \"thursday\" \"friday\" \"saturday\"]"))
 
 (defn next-time
   ([cfg] (next-time (now/utc) cfg))

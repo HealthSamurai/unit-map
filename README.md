@@ -68,9 +68,9 @@ Pure clojure time made simple for clj & cljs
 (def normalize-ns (ops/gen-norm ::cd/ns ::cd/ms 1000000 0))
 (defmethod ops/normalize-rule ::cd/ns [_ t] (normalize-ns t))
 
-(ops/normalize {::cd/ns 1000000000})             ;; => #::cd{:sec 1}
-(ops/plus {::cd/ns 999999999} {::ci/ns 1})       ;; => #::cd{:sec 1}
-(ops/plus {::cd/ns 9999999} {::ci/ns 999000001}) ;; => #::cd{:sec 1 :ms 9}
+(ops/normalize {::cd/ns 1000000000}          ;; => #::cd{:sec 1}
+(ch/+ {::cd/ns 999999999} {::ci/ns 1})       ;; => #::cd{:sec 1}
+(ch/+ {::cd/ns 9999999} {::ci/ns 999000001}) ;; => #::cd{:sec 1 :ms 9}
 ```
 
 ## License
