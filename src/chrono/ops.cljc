@@ -4,14 +4,12 @@
 (defn gen-norm [unit next-unit proportion min-value next-min-value]
   (fn [t]
     (if-let [unit-value (get t unit)]
-      (let [unit-new-value (+ min-value
-                              (mod (- unit-value min-value)
-                                   proportion))
-            next-unit-value (or (get t next-unit)
-                                next-min-value)
+      (let [norm-unit-value (- unit-value min-value)
+            unit-new-value (+ min-value (mod norm-unit-value proportion))
+            next-unit-value (get t next-unit next-min-value)
             next-unit-new-value (+ next-unit-value
-                                   (cond-> (quot (- unit-value min-value) proportion)
-                                     (< unit-value min-value) dec))]
+                                   (cond-> (quot norm-unit-value proportion)
+                                     (neg? norm-unit-value) dec))]
         (assoc t
                unit unit-new-value
                next-unit next-unit-new-value))
