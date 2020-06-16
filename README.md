@@ -35,14 +35,14 @@ Pure clojure time made simple for clj & cljs
 (ch/format {:hour 1 :min 0 :sec 5} [[:hour 1] \: [:min 1] \: [:sec 1]]) ;; => "1:0:5"
 
 (-> t
-    (ch/to-tz :ny) ;; => {:min 30, :day 29, :hour 5, :month 1, :year 2018, :sec 15, :tz :ny}
-    (ch/to-utc))   ;; => {:min 30, :day 29, :hour 10, :month 1, :year 2018, :sec 15 :tz 0}
+    (ch/to-tz :ny) ;; => {:year 2018, :month 1, :day 29, :hour 5, :min 30, :sec 15, :tz :ny}
+    (ch/to-utc))   ;; => {:year 2018, :month 1, :day 29, :hour 10, :min 30, :sec 15, :tz :0}
 ;; implement your tz with defmethod ch/day-saving :<your-tz>
 
 ;; You can use number as utc-offset
 (-> t
-    (ch/to-tz 3) ;; => {:min 30, :day 29, :hour 13, :month 1, :year 2018, :sec 15, :tz 3}
-    (ch/to-utc)) ;; => {:min 30, :day 29, :hour 10, :month 1, :year 2018, :sec 15, :tz 0}
+    (ch/to-tz 3) ;; => {:year 2018, :month 1, :day 29, :hour 13, :min 30, :sec 15, :tz 3}
+    (ch/to-utc)) ;; => {:year 2018, :month 1, :day 29, :hour 10, :min 30, :sec 15, :tz 0}
 
 (require '[chrono.now :as now])
 

@@ -1,7 +1,7 @@
 #kaocha/v1
 {:tests                       [{:id   :unit
                                 :source-paths  ["src"]
-                                :test-paths    ["runner" "test" "test-resources"]
+                                :test-paths    ["test"]
                                 :ns-patterns   ["-test$"]}]
  :fail-fast?                  false
  :color?                      true
@@ -9,7 +9,7 @@
                                         :ci kaocha.report/dots}
  ;;:reporter                  [kaocha.report.progress/report]
  ;;:reporter                  [kaocha.report/documentation]
- 
+
  :plugins                     [:kaocha.plugin/filter
                                :kaocha.plugin/capture-output
                                :kaocha.plugin/profiling]

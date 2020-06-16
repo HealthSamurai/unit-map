@@ -1,23 +1,26 @@
 (ns chrono.ops
   (:require [chrono.util :as u]))
 
-(defn gen-norm [k k-next del m]
-  (fn [x]
-    (if-let [z (get x k)]
-      (let [ds (quot z (+ m del))
-            s  (or (get x k-next) m)
-            r  (-> (rem z (+ m del))
-                   (as-> r (cond-> r (zero? r) (+ m r))))]
-        (if (>= z m)
-          (assoc x k r, k-next (+ s ds))
-          (assoc x k (- (+ del r) m), k-next (+ s ds -1))))
-      x)))
+(defn gen-norm [unit next-unit proportion min-value next-min-value]
+  (fn [t]
+    (if-let [unit-value (get t unit)]
+      (let [norm-unit-value     (- unit-value min-value)
+            borrow?             (neg? norm-unit-value)
+            unit-new-value      (+ min-value (mod norm-unit-value proportion))
+            next-unit-value     (get t next-unit next-min-value)
+            next-unit-new-value (+ next-unit-value
+                                   (cond-> (quot norm-unit-value proportion)
+                                     borrow? dec))]
+        (assoc t
+               unit unit-new-value
+               next-unit next-unit-new-value))
+      t)))
 
-(def normalize-ms (gen-norm :ms :sec 1000 0))
-(def normalize-s  (gen-norm :sec :min 60 0))
-(def normalize-mi (gen-norm :min :hour 60 0))
-(def normalize-h  (gen-norm :hour :day 24 0))
-(def normalize-m  (gen-norm :month :year 12 1))
+(def normalize-ms (gen-norm :ms    :sec  1000 0 0))
+(def normalize-s  (gen-norm :sec   :min  60   0 0))
+(def normalize-mi (gen-norm :min   :hour 60   0 0))
+(def normalize-h  (gen-norm :hour  :day  24   0 0))
+(def normalize-m  (gen-norm :month :year 12   1 1))
 
 (defn days-and-months [y m d]
   (if (<= 1 d 27)
