@@ -43,7 +43,7 @@
 (defn parse
   ([s] (parse s util/iso-fmt))
   ([s fmt]
-   (when (string? s)
+   (when-not (str/blank? s)
      (internal-parse s fmt false))))
 
 (defn strict-parse
