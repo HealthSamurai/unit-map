@@ -2,6 +2,8 @@
 
 Pure clojure time made simple for clj & cljs
 
+[![Clojars Project](http://clojars.org/healthsamurai/chrono/latest-version.svg)](http://clojars.org/healthsamurai/chrono)
+
 <img src="clocks.png" height="384px" />
 
 ## Usage
