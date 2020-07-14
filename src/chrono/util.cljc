@@ -57,11 +57,11 @@
        :cljs (let [x* (js/parseInt x)] (when-not (NaN? x*) x*)))))
 
 (defn parse-name [name unit lang]
-  (-> (locale lang)
-      (get unit)
-      (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
-      doall
-      ffirst))
+  (when name
+    (-> (locale lang)
+            (get unit)
+            (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
+            ffirst)))
 
 (defn parse-val [x unit lang]
   (or (parse-int x)
