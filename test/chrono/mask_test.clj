@@ -44,4 +44,12 @@
     (doseq [[fmt facts] cases
             [inp res]   facts]
       (t/testing (str "resolve: " fmt " " inp)
-          (t/is (= res (sut/resolve inp fmt)))))))
+        (t/is (= res (sut/resolve inp fmt))))))
+
+  (let [cases {[:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "+03:00"]
+               {"2020-07-14T13:30"    "2020-07-14T13:30"
+                "2020-07-14T13:30:00" "2020-07-14T13:30:00+03:00"}}]
+    (doseq [[fmt facts] cases
+            [inp res]   facts]
+      (t/testing (str "resolve: " fmt " " inp)
+        (t/is (= res (sut/clean-resolve inp fmt)))))))

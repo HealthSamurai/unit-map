@@ -63,19 +63,27 @@
 
 (defn clean-build [t fmt]
   (let [clean-fmt
-        (reduce
-         (fn [acc f]
-           (cond
-             (not (keyword? f)) (update acc :buff conj f)
-             (some? (get t f))  (-> acc
-                                    (update :result concat (conj (:buff acc) f))
-                                    (assoc :buff []))
-             :else              (reduced acc)))
-         {:result []
-          :buff   []}
-         fmt)]
+        (loop [acc       {:result []
+                          :buff   []}
+               [f & rfs] fmt]
+          (cond
+            (not-any? keyword? (cons f rfs))
+            (-> acc
+                (update :result concat (apply conj (:buff acc) f rfs))
+                (assoc :buff []))
+
+            (not (keyword? f)) (recur (update acc :buff conj f)
+                                      rfs)
+            (some? (get t f))  (recur (-> acc
+                                          (update :result concat (conj (:buff acc) f))
+                                          (assoc :buff []))
+                                      rfs)
+            :else              acc))]
     (build t (vec (:result clean-fmt)))))
 
 (defn resolve [s fmt]
   (let [{:keys [not-parsed] :as p} (parse s fmt)]
     (str (build p fmt) not-parsed)))
+
+(defn clean-resolve [s fmt]
+  (clean-build (parse s fmt) fmt))
