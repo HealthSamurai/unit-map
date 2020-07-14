@@ -275,6 +275,9 @@
     (is (= (sut/plus {:year 2019 :month 11 :day 32} {:month 1})
            {:year 2020 :month 1 :day 1}))
 
+    (is (= {:year 2020 :month 2}
+           (sut/plus {:year 2020 :month 2} {:day 0})))
+
     (is (= (sut/plus {:year 2019, :month 12, :day 10, :hour 13, :min 17, :sec 50, :ms 911} {:hour 2})
            {:year 2019, :month 12, :day 10, :hour 15, :min 17, :sec 50, :ms 911}))
 
@@ -288,7 +291,7 @@
            {:hour 2 :tz -2}))
 
     (testing "with custom units"
-      (def normalize-ns (sut/gen-norm :ns :ms 1000000 0))
+      (def normalize-ns (sut/gen-norm :ns :ms 1000000 0 0))
       (defmethod sut/normalize-rule :ns [_ t] (normalize-ns t))
 
       (is (= (sut/plus {:ns 10} {:ns 1})
@@ -309,12 +312,30 @@
 
     (is (= (sut/minus {:year 2016 :month 12 :day 31 :hour 23 :min 30} {:day 366})
            {:year 2015, :month 12, :day 31, :hour 23, :min 30}))
+
+    (is (= {:year 2020 :month 1 :day 31}
+           (sut/minus {:year 2020 :month 2}
+                      {:day 1})))
+    (is (= {:year 2020 :month 2}
+           (sut/minus {:year 2020 :month 2}
+                      {:day 0})))
+
     (is (= (sut/minus {:hour 2 :tz -2} {:hour 2})
            {:tz -2}))
     (is (= (sut/minus {:hour 3 :tz 2} {:hour 1 :tz 2})
            {:hour 2 :tz 2}))))
 
-(deftest ^:kaocha/pending test-timezones
+(deftest normalize-test
+  (is (= {:year 2019 :month 11 :day 10}
+         (sut/normalize {:year 2019 :month 11 :day 10})))
+  (is (= {:year 2019 :month 12 :day 10}
+         (sut/normalize {:year 2019 :month 12 :day 10})))
+  (is (= {:year 2020 :month 12 :day 10}
+         (sut/normalize {:year 2019 :month 24 :day 10})))
+  (is (= {:year 2021 :month 1 :day 10}
+         (sut/normalize {:year 2019 :month 25 :day 10}))))
+
+(deftest test-timezones
   (testing "tz comparsion"
     (is (sut/lte {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}
                  {:year 2018 :month 5 :day 2 :hour 14 :tz :ny}))
