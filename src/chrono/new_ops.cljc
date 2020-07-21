@@ -52,3 +52,37 @@
                 (-> x (- start) (mod step) zero?))
            (and (not= ##Inf end)
                 (-> x (+ end) (mod step) zero?)))))
+
+(defn get-next [s x]
+  (loop [[el next & rest] s]
+    (cond
+      (nil? el)
+      nil
+
+      (or (= x el)
+          (and (map? el) (= x (:end el))))
+      (cond-> next (map? next) (:start next))
+
+      (and (map? el)
+           (range-contains? el x))
+      (+ x (:step el))
+
+      :else
+      (recur (cons next rest)))))
+
+(defn get-prev [s x]
+  (loop [[prev el & rest] (cons nil s)]
+    (cond
+      (nil? el)
+      nil
+
+      (or (= x el)
+          (and (map? el) (= x (:start el))))
+      (cond-> prev (map? prev) (:end prev))
+
+      (and (map? el)
+           (range-contains? el x))
+      (- x (:step el))
+
+      :else
+      (recur (cons el rest)))))
