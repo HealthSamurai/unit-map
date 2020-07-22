@@ -24,7 +24,7 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
-(defn process-range* [pprev prev operator next nnext]
+(defn process-range* [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next]))]}
   {:start (or pprev prev)
@@ -42,7 +42,7 @@
       (= '.. x) (recur rest
                        (concat result
                                (drop-last 2 buffer)
-                               [(process-range pprev prev x next nnext)])
+                               [(process-range pprev prev next nnext)])
                        [])
       :else     (recur (concat [prev x next nnext] rest)
                        result
