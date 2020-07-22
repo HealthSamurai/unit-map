@@ -23,16 +23,13 @@
     (matcho/match (sut/process-sequence am-hours)
                   [12 {:start 1, :step 1, :end 11}]))
 
-  (t/testing "range-contains?"
-    (matcho/match (map (partial sut/range-contains? (first (sut/process-sequence base60)))
+  (t/testing "sequence-contains?"
+    (matcho/match (map (partial sut/sequence-contains? base60)
                        [##-Inf -1 0 59 60 ##Inf])
                   [false false true true false false])
-    (matcho/match (map (partial sut/range-contains? (first (sut/process-sequence years)))
-                       [##-Inf -31337 -1 0 1])
-                  [true true true false false])
-    (matcho/match (map (partial sut/range-contains? (last (sut/process-sequence years)))
-                       [##Inf 31337 1 0 -1])
-                  [true true true false false]))
+    (matcho/match (map (partial sut/sequence-contains? years)
+                       [##-Inf -31337 -1 0 1 31337 ##Inf])
+                  [true true true false true true true]))
 
   (t/testing "get-next"
     (matcho/match (->> 0

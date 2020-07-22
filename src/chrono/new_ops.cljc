@@ -24,7 +24,7 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
-(defn process-range* [pprev prev op next nnext]
+(defn process-range* [pprev prev operator next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next]))]}
   {:start (or pprev prev)
@@ -56,6 +56,11 @@
                 (-> x (- start) (mod step) zero?))
            (and (not= ##Inf end)
                 (-> x (+ end) (mod step) zero?)))))
+
+(defn sequence-contains? [s x]
+  (->> (process-sequence s)
+       (some #(or (= x %) (when (map? %) (range-contains? % x))))
+       boolean))
 
 (defn get-next [s x]
   (loop [[el next & rest] s]
