@@ -63,7 +63,7 @@
        boolean))
 
 (defn get-next [s x]
-  (loop [[el next & rest] s]
+  (loop [[el next & rest] (process-sequence s)]
     (cond
       (nil? el)
       nil
@@ -80,7 +80,7 @@
       (recur (cons next rest)))))
 
 (defn get-prev [s x]
-  (loop [[prev el & rest] (cons nil s)]
+  (loop [[prev el & rest] (cons nil (process-sequence s))]
     (cond
       (nil? el)
       nil

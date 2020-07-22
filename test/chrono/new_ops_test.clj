@@ -32,45 +32,27 @@
                   [true true true false true true true]))
 
   (t/testing "get-next"
-    (matcho/match (->> 0
-                       (iterate (partial sut/get-next (sut/process-sequence base60)))
-                       (take-while some?))
+    (matcho/match (take-while some? (iterate (partial sut/get-next base60) 0))
                   (range 60))
 
-    (matcho/match (->> :jan
-                       (iterate (partial sut/get-next (sut/process-sequence months)))
-                       (take-while some?))
+    (matcho/match (take-while some? (iterate (partial sut/get-next months) :jan))
                   [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec])
 
-    (matcho/match (->> 1970
-                       (iterate (partial sut/get-next (sut/process-sequence years)))
-                       (take 51))
+    (matcho/match (take 51 (iterate (partial sut/get-next years) 1970))
                   (range 1970 2021))
 
-    (matcho/match (->> 12
-                       (iterate (partial sut/get-next (sut/process-sequence am-hours)))
-                       (take-while some?))
+    (matcho/match (take-while some? (iterate (partial sut/get-next am-hours) 12))
                   [12 1 2 3 4 5 6 7 8 9 10 11]))
 
   (t/testing "get-prev"
-    (matcho/match (->> 59
-                       (iterate (partial sut/get-prev (sut/process-sequence base60)))
-                       (take-while some?))
+    (matcho/match (take-while some? (iterate (partial sut/get-prev base60) 59))
                   (range 59 -1 -1))
 
-    (matcho/match (->> :dec
-                       (iterate (->> months
-                                     sut/process-sequence
-                                     (partial sut/get-prev)))
-                       (take-while some?))
+    (matcho/match (take-while some? (iterate (partial sut/get-prev months) :dec))
                   [:dec :nov :oct :sep :aug :jul :jun :may :apr :mar :feb :jan])
 
-    (matcho/match (->> 1970
-                       (iterate (partial sut/get-prev (sut/process-sequence years)))
-                       (take 51))
+    (matcho/match (take 51 (iterate (partial sut/get-prev years) 1970))
                   (range 1970 1920))
 
-    (matcho/match (->> 11
-                       (iterate (partial sut/get-prev (sut/process-sequence am-hours)))
-                       (take-while some?))
+    (matcho/match (take-while some? (iterate (partial sut/get-prev am-hours) 11))
                   [11 10 9 8 7 6 5 4 3 2 1 12])))
