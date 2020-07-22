@@ -24,10 +24,14 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
-(defn process-range [pprev prev op next nnext]
+(defn process-range* [pprev prev op next nnext]
+  {:pre [(and (not-every? nil? [pprev nnext])
+              (every? some? [prev next]))]}
   {:start (or pprev prev)
    :step  (if (nil? pprev) (- nnext next) (- prev pprev))
    :end   (or nnext next)})
+
+(def process-range (memoize process-range*))
 
 (defn process-sequence [s]
   (loop [[pprev prev x next nnext & rest] (concat [nil nil] s [nil nil])
