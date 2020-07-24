@@ -112,7 +112,8 @@
       (cond-> prev (map? prev) (:end prev))
 
       (and (map? el)
-           (range-contains? el x))
+           (range-contains? el value x)
+           (range-contains? el value (- x (:step el))))
       (- x (:step el))
 
       :else
