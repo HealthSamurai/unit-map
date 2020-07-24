@@ -132,9 +132,9 @@
       end)))
 
 (defn inc-unit [unit value]
-  (or (some->> (if-let [unit-value (get value unit)]
-                 (get-next-unit-value (get-rules value unit) value unit-value)
-                 (get-next-unit-value (get-rules value unit) value (get-min-value value unit)))
+  (or (some->> (or (get value unit)
+                   (get-min-value value unit))
+               (get-next-unit-value (get-rules value unit) value)
                (assoc value unit))
       (inc-unit (get-next-unit value unit)
                 (assoc value unit (get-min-value value unit)))))
