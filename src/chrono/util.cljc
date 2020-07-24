@@ -168,3 +168,8 @@
           (< dw' dw) (+ d (- dw dw')))))
 
 (def more-or-eq (memoize *more-or-eq))
+
+(defn try-call [maybe-fn & args]
+  (if (fn? maybe-fn)
+    (apply maybe-fn args)
+    maybe-fn))

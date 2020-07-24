@@ -48,7 +48,13 @@
                        result
                        (conj buffer x)))))
 
-(defn range-contains? [{:keys [start step end]} x]
+(defmulti range-contains?
+  (fn [{:keys [start step end]} value x]
+    (if (some fn? [start step end])
+      :fn
+      :const)))
+
+(defmethod range-contains? :const [{:keys [start step end]} _ x]
   (and (<= start x end)
        (or (= start x)
            (= end x)
@@ -57,12 +63,18 @@
            (and (not= ##Inf end)
                 (-> x (+ end) (mod step) zero?)))))
 
-(defn sequence-contains? [s x]
+(defmethod range-contains? :fn [rng value x]
+  (prn rng value x)
+  (-> (reduce-kv (fn [acc k v] (assoc acc k (u/try-call v value))) {} rng)
+      (range-contains? nil x)))
+
+(defn sequence-contains? [s value x]
   (->> (process-sequence s)
-       (some #(or (= x %) (when (map? %) (range-contains? % x))))
+       (some #(or (= x %)
+                  (when (map? %) (range-contains? % value x))))
        boolean))
 
-(defn get-next [s x]
+(defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
     (cond
       (nil? el)
@@ -73,13 +85,14 @@
       (cond-> next (map? next) (:start next))
 
       (and (map? el)
-           (range-contains? el x))
+           (range-contains? el value x)
+           (range-contains? el value (+ x (:step el))))
       (+ x (:step el))
 
       :else
       (recur (cons next rest)))))
 
-(defn get-prev [s x]
+(defn get-prev-unit-value [s value x]
   (loop [[prev el & rest] (cons nil (process-sequence s))]
     (cond
       (nil? el)

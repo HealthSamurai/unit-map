@@ -24,34 +24,34 @@
                   [12 {:start 1, :step 1, :end 11}]))
 
   (t/testing "sequence-contains?"
-    (matcho/match (map (partial sut/sequence-contains? base60)
+    (matcho/match (map (partial sut/sequence-contains? base60 nil)
                        [##-Inf -1 0 59 60 ##Inf])
                   [false false true true false false])
-    (matcho/match (map (partial sut/sequence-contains? years)
+    (matcho/match (map (partial sut/sequence-contains? years nil)
                        [##-Inf -31337 -1 0 1 31337 ##Inf])
                   [true true true false true true true]))
 
-  (t/testing "get-next"
-    (matcho/match (take-while some? (iterate (partial sut/get-next base60) 0))
+  (t/testing "get-next-unit-value"
+    (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value base60 nil) 0))
                   (range 60))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-next months) :jan))
+    (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value months nil) :jan))
                   [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec])
 
-    (matcho/match (take 51 (iterate (partial sut/get-next years) 1970))
+    (matcho/match (take 51 (iterate (partial sut/get-next-unit-value years nil) 1970))
                   (range 1970 2021))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-next am-hours) 12))
+    (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value am-hours nil) 12))
                   [12 1 2 3 4 5 6 7 8 9 10 11]))
 
-  (t/testing "get-prev"
-    (matcho/match (take-while some? (iterate (partial sut/get-prev base60) 59))
+  (t/testing "get-prev-unit-value"
+    (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))
                   (range 59 -1 -1))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-prev months) :dec))
+    (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value months nil) :dec))
                   [:dec :nov :oct :sep :aug :jul :jun :may :apr :mar :feb :jan])
 
-    (matcho/match (take 51 (iterate (partial sut/get-prev years) 1970))
+    (matcho/match (take 51 (iterate (partial sut/get-prev-unit-value years nil) 1970))
                   (range 1970 1920))
 
     (matcho/match (take-while some? (iterate (partial sut/get-prev am-hours) 11))
