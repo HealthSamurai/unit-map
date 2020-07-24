@@ -173,3 +173,9 @@
   (if (fn? maybe-fn)
     (apply maybe-fn args)
     maybe-fn))
+
+(defn get-next-element [s x]
+  (second (drop-while (partial not= x) s)))
+
+(defn get-prev-element [s x]
+  (last (take-while (partial not= x) s)))

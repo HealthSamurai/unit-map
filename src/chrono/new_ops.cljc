@@ -24,6 +24,15 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
+(defn get-rules [value unit]
+  (get (rules value) unit))
+
+(defn get-next-unit [value unit]
+  (u/get-next-element (keys (rules value)) unit))
+
+(defn get-prev-unit [value unit]
+  (u/get-prev-element (keys (rules value)) unit))
+
 (defn process-range* [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next]))]}
@@ -108,3 +117,31 @@
 
       :else
       (recur (cons el rest)))))
+
+(defn get-min-value [value unit]
+  (let [start (first (process-sequence (get-rules value unit)))]
+    (if (map? start)
+      (u/try-call (:start start) value)
+      start)))
+
+(defn get-max-value [value unit]
+  (let [end (last (process-sequence (get-rules value unit)))]
+    (if (map? end)
+      (u/try-call (:end end) value)
+      end)))
+
+(defn inc-unit [unit value]
+  (or (some->> (if-let [unit-value (get value unit)]
+                 (get-next-unit-value (get-rules value unit) value unit-value)
+                 (get-next-unit-value (get-rules value unit) value (get-min-value value unit)))
+               (assoc value unit))
+      (inc-unit (get-next-unit value unit)
+                (assoc value unit (get-min-value value unit)))))
+
+(defn dec-unit [unit value]
+  (or (some->> (if-let [unit-value (get value unit)]
+                 (get-prev-unit-value (get-rules value unit) value unit-value)
+                 (get-max-value value unit))
+               (assoc value unit))
+      (dec-unit (get-next-unit value unit)
+                (assoc value unit (get-max-value value unit)))))
