@@ -33,16 +33,14 @@
 (defn get-prev-unit [value unit]
   (u/get-prev-element (keys (rules value)) unit))
 
-(defn process-range* [pprev prev next nnext]
+(defn process-range [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next]))]}
   {:start (or pprev prev)
    :step  (if (nil? pprev) (- nnext next) (- prev pprev))
    :end   (or nnext next)})
 
-(def process-range (memoize process-range*))
-
-(defn process-sequence [s]
+(defn process-sequence* [s]
   (loop [[pprev prev x next nnext & rest] (concat [nil nil] s [nil nil])
          result []
          buffer []]
@@ -56,6 +54,8 @@
       :else     (recur (concat [prev x next nnext] rest)
                        result
                        (conj buffer x)))))
+
+(def process-sequence (memoize process-sequence*))
 
 (defmulti range-contains?
   (fn [{:keys [start step end]} value x]
