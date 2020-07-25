@@ -110,18 +110,19 @@
       (u/try-call (:end end) value)
       end)))
 
-(defn inc-unit [unit value]
-  (or (some->> (or (get value unit)
-                   (get-min-value value unit))
+(defn inc-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)}, :as value}]
+  (or (some->> unit-value
                (get-next-unit-value (unit-type value unit) value)
                (assoc value unit))
       (inc-unit (get-next-unit value unit)
                 (assoc value unit (get-min-value value unit)))))
 
-(defn dec-unit [unit value]
-  (or (some->> (if-let [unit-value (get value unit)]
+(defn dec-unit [unit {unit-value unit, :as value}]
+  (or (some->> (if (some? unit-value)
                  (get-prev-unit-value (unit-type value unit) value unit-value)
                  (get-max-value value unit))
                (assoc value unit))
-      (dec-unit (get-next-unit value unit)
-                (assoc value unit (get-max-value value unit)))))
+      (as-> value $
+        (dissoc $ unit)
+        (dec-unit (get-next-unit $ unit) $)
+        (assoc $ unit (get-max-value $ unit)))))
