@@ -130,19 +130,9 @@
 (declare substract-from-unit)
 
 (defn add-to-unit [unit value x]
-  (if (neg? x)
-    (substract-from-unit unit value (- x))
-    (loop [i x, acc value]
-      (if (zero? i)
-        acc
-        (recur (dec i)
-               (inc-unit unit acc))))))
+  (let [f (if (neg? x) dec-unit inc-unit)]
+    (u/n-times x (partial f unit) value)))
 
 (defn substract-from-unit [unit value x]
-  (if (neg? x)
-    (add-to-unit unit value (- x))
-    (loop [i x, acc value]
-      (if (zero? i)
-        acc
-        (recur (dec i)
-               (dec-unit unit acc))))))
+  (let [f (if (neg? x) inc-unit dec-unit)]
+    (u/n-times x (partial f unit) value)))

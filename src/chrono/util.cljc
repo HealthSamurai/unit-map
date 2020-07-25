@@ -179,3 +179,6 @@
 
 (defn get-prev-element [s x]
   (last (take-while (partial not= x) s)))
+
+(defn n-times [n f & args]
+  (apply (apply comp (repeat n f)) args))
