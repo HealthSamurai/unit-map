@@ -127,14 +127,10 @@
         (dec-unit (get-next-unit $ unit) $)
         (assoc $ unit (get-max-value $ unit)))))
 
-(declare substract-from-unit)
-
 (defn add-to-unit [unit value x]
   (let [f     (if (neg? x) dec-unit inc-unit)
         abs-x (if (neg? x) (- x) x)]
     (u/n-times abs-x (partial f unit) value)))
 
 (defn substract-from-unit [unit value x]
-  (let [f     (if (neg? x) inc-unit dec-unit)
-        abs-x (if (neg? x) (- x) x)]
-    (u/n-times abs-x (partial f unit) value)))
+  (add-to-unit unit value (- x)))
