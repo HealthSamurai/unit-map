@@ -1,37 +1,17 @@
 (ns chrono.new-ops
+  (:refer-clojure :exclude [type])
   (:require [chrono.util :as u]))
 
-(defmulti rules (comp ffirst meta))
+(defmulti type (comp ffirst meta))
 
-(defmethod rules :default [_]
-  (array-map
-   :ms     [0 1 '.. 999]
-   :sec    [0 1 '.. 59]
-   :min    [0 1 '.. 59]
-   :hour   [0 1 '.. 23]
-   :day    [1 2 '.. u/days-in-month]
-   :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
-   :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
-
-(defmethod rules :am-pm [_]
-  (array-map
-   :ms     [0 1 '.. 999]
-   :sec    [0 1 '.. 59]
-   :min    [0 1 '.. 59]
-   :hour   [12 1 2 '.. 11]
-   :period [:am :pm]
-   :day    [1 2 '.. u/days-in-month]
-   :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
-   :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
-
-(defn get-rules [value unit]
-  (get (rules value) unit))
+(defn unit-type [value unit]
+  (get (type value) unit))
 
 (defn get-next-unit [value unit]
-  (u/get-next-element (keys (rules value)) unit))
+  (u/get-next-element (keys (type value)) unit))
 
 (defn get-prev-unit [value unit]
-  (u/get-prev-element (keys (rules value)) unit))
+  (u/get-prev-element (keys (type value)) unit))
 
 (defn process-range [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
@@ -119,13 +99,13 @@
       (recur (cons el rest)))))
 
 (defn get-min-value [value unit]
-  (let [start (first (process-sequence (get-rules value unit)))]
+  (let [start (first (process-sequence (unit-type value unit)))]
     (if (map? start)
       (u/try-call (:start start) value)
       start)))
 
 (defn get-max-value [value unit]
-  (let [end (last (process-sequence (get-rules value unit)))]
+  (let [end (last (process-sequence (unit-type value unit)))]
     (if (map? end)
       (u/try-call (:end end) value)
       end)))
@@ -133,14 +113,14 @@
 (defn inc-unit [unit value]
   (or (some->> (or (get value unit)
                    (get-min-value value unit))
-               (get-next-unit-value (get-rules value unit) value)
+               (get-next-unit-value (unit-type value unit) value)
                (assoc value unit))
       (inc-unit (get-next-unit value unit)
                 (assoc value unit (get-min-value value unit)))))
 
 (defn dec-unit [unit value]
   (or (some->> (if-let [unit-value (get value unit)]
-                 (get-prev-unit-value (get-rules value unit) value unit-value)
+                 (get-prev-unit-value (unit-type value unit) value unit-value)
                  (get-max-value value unit))
                (assoc value unit))
       (dec-unit (get-next-unit value unit)
