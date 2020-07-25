@@ -73,7 +73,6 @@
                 (-> x (+ end) (mod step) zero?)))))
 
 (defmethod range-contains? :fn [rng value x]
-  (prn rng value x)
   (-> (reduce-kv (fn [acc k v] (assoc acc k (u/try-call v value))) {} rng)
       (range-contains? nil x)))
 
