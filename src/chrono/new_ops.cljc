@@ -126,3 +126,23 @@
         (dissoc $ unit)
         (dec-unit (get-next-unit $ unit) $)
         (assoc $ unit (get-max-value $ unit)))))
+
+(declare substract-from-unit)
+
+(defn add-to-unit [unit value x]
+  (if (neg? x)
+    (substract-from-unit unit value (- x))
+    (loop [i x, acc value]
+      (if (zero? i)
+        acc
+        (recur (dec i)
+               (inc-unit unit acc))))))
+
+(defn substract-from-unit [unit value x]
+  (if (neg? x)
+    (add-to-unit unit value (- x))
+    (loop [i x, acc value]
+      (if (zero? i)
+        acc
+        (recur (dec i)
+               (dec-unit unit acc))))))
