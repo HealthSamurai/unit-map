@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [type])
   (:require [chrono.util :as u]))
 
-(defmulti type (comp ffirst meta))
+(defmulti type (comp ffirst meta)) ;; TODO: maybe use namespaced-keywords instead?
 
 (defn unit-type [value unit]
   (get (type value) unit))
