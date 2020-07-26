@@ -143,13 +143,8 @@
       (every? (partial apply =) value-pairs) 0)))
 
 (defn eq?
-  ([x] true)
-  ([x y] (= 0 (cmp x y)))
-  ([x y & more]
-   (if (eq? x y)
-     (if (next more)
-       (recur y (first more) (next more))
-       (eq? y (first more)))
-     false)))
+  ([x]          true)
+  ([x y]        (= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
 
 (def not-eq? (complement eq?))

@@ -182,3 +182,9 @@
 
 (defn n-times [n f & args]
   (apply (apply comp (repeat n f)) args))
+
+(defn apply-binary-pred [pred x y & more]
+  (cond
+    (not (pred x y)) false
+    (next more)     (recur pred y (first more) (next more))
+    :else           (pred y (first more))))
