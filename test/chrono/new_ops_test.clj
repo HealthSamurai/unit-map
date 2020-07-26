@@ -9,10 +9,10 @@
 (defmethod sut/type :default [_] datetime/gregorian-military)
 
 (t/deftest range-test
-  (def base60   (:min  (sut/rules {})))
-  (def months   (:month (sut/rules {})))
-  (def years    (:year (sut/rules {})))
-  (def am-hours (:hour (sut/rules ^:am-pm{})))
+  (def base60   (:min  (sut/type {})))
+  (def months   (:month (sut/type {})))
+  (def years    (:year (sut/type {})))
+  (def am-hours (:hour (sut/type ^:am-pm{})))
 
   (t/testing "process-sequence"
     (matcho/match (sut/process-sequence base60)
