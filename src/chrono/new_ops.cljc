@@ -130,12 +130,22 @@
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
 
+(defn sequence-cmp [s value x y]
+  (cond
+    (= x y) 0
+    (nil? x) -1
+    (nil? y) 1
+    (= x (sequence-contains-some s value x y)) -1
+    :else 1))
+
 (defn cmp [x y]
   {:pre [(= (type x) (type y))]} ;;TODO: maybe allow to compare across different types?
-  (let [units       (reverse (keys (type x)))
-        value-pairs (map (juxt (partial get x) (partial get y)) units)]
-    (cond
-      (every? (partial apply =) value-pairs) 0)))
+  (or (->> (type x)
+           reverse
+           (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
+           (filter (comp not zero?))
+           first)
+      0))
 
 (defn eq?
   ([x]          true)
