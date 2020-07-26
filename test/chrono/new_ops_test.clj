@@ -12,7 +12,7 @@
   (def base60   (:min  (sut/type {})))
   (def months   (:month (sut/type {})))
   (def years    (:year (sut/type {})))
-  (def am-hours (:hour (sut/type ^:am-pm{})))
+  (def am-hours (:hour (sut/type ^::time/am-pm{})))
 
   (t/testing "process-sequence"
     (matcho/match (sut/process-sequence base60)
