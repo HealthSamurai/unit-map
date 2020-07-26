@@ -7,10 +7,7 @@
    :ms     [0 1 '.. 999]
    :sec    [0 1 '.. 59]
    :min    [0 1 '.. 59]
-   :hour   [0 1 '.. 23]
-   :day    [1 2 '.. u/days-in-month]
-   :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
-   :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
+   :hour   [0 1 '.. 23]))
 
 (defmethod ops/type ::military [_] military)
 
@@ -21,9 +18,6 @@
    :sec    [0 1 '.. 59]
    :min    [0 1 '.. 59]
    :hour   [12 1 2 '.. 11]
-   :period [:am :pm]
-   :day    [1 2 '.. u/days-in-month]
-   :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
-   :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
+   :period [:am :pm]))
 
 (defmethod ops/type ::am-pm [_] am-pm)
