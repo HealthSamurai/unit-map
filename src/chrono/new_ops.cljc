@@ -149,7 +149,27 @@
 
 (defn eq?
   ([x]          true)
-  ([x y]        (= 0 (cmp x y)))
+  ([x y]        (zero? (cmp x y)))
   ([x y & more] (apply u/apply-binary-pred eq? x y more)))
 
 (def not-eq? (complement eq?))
+
+(defn lt?
+  ([x]          true)
+  ([x y]        (neg? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
+
+(defn gt?
+  ([x]          true)
+  ([x y]        (pos? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
+
+(defn lte?
+  ([x]          true)
+  ([x y]        (>= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
+
+(defn gte?
+  ([x]          true)
+  ([x y]        (<= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
