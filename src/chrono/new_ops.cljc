@@ -134,3 +134,22 @@
 
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
+
+(defn cmp [x y]
+  {:pre [(= (type x) (type y))]} ;;TODO: maybe allow to compare across different types?
+  (let [units       (reverse (keys (type x)))
+        value-pairs (map (juxt (partial get x) (partial get y)) units)]
+    (cond
+      (every? (partial apply =) value-pairs) 0)))
+
+(defn eq?
+  ([x] true)
+  ([x y] (= 0 (cmp x y)))
+  ([x y & more]
+   (if (eq? x y)
+     (if (next more)
+       (recur y (first more) (next more))
+       (eq? y (first more)))
+     false)))
+
+(def not-eq? (complement eq?))

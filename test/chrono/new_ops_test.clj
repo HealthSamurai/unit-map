@@ -106,4 +106,15 @@
     (matcho/match (sut/substract-from-unit :day {:day 1, :month :jan, :year 2020} -9000)
                   {:day 22, :month :aug, :year 2044})
     (matcho/match (sut/substract-from-unit :day {:day 1, :month :jan, :year 2020} 0)
-                  {:day 1, :month :jan, :year 2020})))
+                  {:day 1, :month :jan, :year 2020}))
+
+  (t/testing "eq?"
+    (t/is (sut/eq? {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/eq? {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/eq? {} {}))
+    (t/is (sut/not-eq? {} {:year 2020})))
+
+  (t/testing "not-eq?"
+    (t/is (not (sut/not-eq? {:day 26, :month :jul, :year 2020})))
+    (t/is (sut/not-eq? {:day 27, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/not-eq? {} {:day 26, :month :jul, :year 2020}))))
