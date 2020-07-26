@@ -37,30 +37,25 @@
 
 (def process-sequence (memoize process-sequence*))
 
-(defmulti range-contains?
-  (fn [{:keys [start step end]} value x]
-    (if (some fn? [start step end])
-      :fn
-      :const)))
+(defn range-contains-some [rng value & xs]
+  (let [{:keys [start step end]} (reduce-kv (fn [acc k v] (assoc acc k (u/try-call v value))) {} rng)]
+    (->> (sort xs)
+         (filter #(and (<= start % end)
+                       (or (= start %)
+                           (= end %)
+                           (and (not= ##-Inf start)
+                                (-> % (- start) (mod step) zero?))
+                           (and (not= ##Inf end)
+                                (-> % (+ end) (mod step) zero?)))))
+         first)))
 
-(defmethod range-contains? :const [{:keys [start step end]} _ x]
-  (and (<= start x end)
-       (or (= start x)
-           (= end x)
-           (and (not= ##-Inf start)
-                (-> x (- start) (mod step) zero?))
-           (and (not= ##Inf end)
-                (-> x (+ end) (mod step) zero?)))))
-
-(defmethod range-contains? :fn [rng value x]
-  (-> (reduce-kv (fn [acc k v] (assoc acc k (u/try-call v value))) {} rng)
-      (range-contains? nil x)))
-
-(defn sequence-contains? [s value x]
-  (->> (process-sequence s)
-       (some #(or (= x %)
-                  (when (map? %) (range-contains? % value x))))
-       boolean))
+(defn sequence-contains-some
+  "Returns first (i.e. min) x found in the sequence"
+  [s value x & xs]
+  (let [xs (cons x xs)]
+    (some (some-fn (set xs)
+                   #(when (map? %) (apply range-contains-some % value xs)))
+          (process-sequence s))))
 
 (defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
@@ -73,8 +68,8 @@
       (cond-> next (map? next) (:start next))
 
       (and (map? el)
-           (range-contains? el value x)
-           (range-contains? el value (+ x (:step el))))
+           (range-contains-some el value x)
+           (range-contains-some el value (+ x (:step el))))
       (+ x (:step el))
 
       :else
@@ -91,8 +86,8 @@
       (cond-> prev (map? prev) (:end prev))
 
       (and (map? el)
-           (range-contains? el value x)
-           (range-contains? el value (- x (:step el))))
+           (range-contains-some el value x)
+           (range-contains-some el value (- x (:step el))))
       (- x (:step el))
 
       :else

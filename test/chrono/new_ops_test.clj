@@ -28,11 +28,11 @@
     (matcho/match (sut/process-sequence am-hours)
                   [12 {:start 1, :step 1, :end 11}]))
 
-  (t/testing "sequence-contains?"
-    (matcho/match (map (partial sut/sequence-contains? base60 nil)
+  (t/testing "sequence-contains-some"
+    (matcho/match (map (comp boolean (partial sut/sequence-contains-some base60 nil))
                        [##-Inf -1 0 59 60 ##Inf])
                   [false false true true false false])
-    (matcho/match (map (partial sut/sequence-contains? years nil)
+    (matcho/match (map (comp boolean (partial sut/sequence-contains-some years nil))
                        [##-Inf -31337 -1 0 1 31337 ##Inf])
                   [true true true false true true true]))
 
