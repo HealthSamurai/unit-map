@@ -2,7 +2,18 @@
   (:refer-clojure :exclude [type])
   (:require [chrono.util :as u]))
 
-(defmulti type (comp ffirst meta)) ;; TODO: maybe use namespaced-keywords instead?
+(def get-type (some-fn (comp ffirst meta) (constantly :default-type)))
+
+(defmulti type get-type) ;; TODO: maybe use namespaced-keywords instead?
+
+(defmethod type :default [value]
+  (reduce-kv (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf]))
+             {}
+             value))
+
+(defn delta-type? [value]
+  (and (some? (get-type value))
+       (not (contains? (methods type) (get-type value)))))
 
 (defn unit-type [value unit]
   (get (type value) unit))
@@ -129,6 +140,20 @@
 
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
+
+(defn plus
+  "  a   + delta =   a
+   delta +   a   =   a
+   value + value = error"
+  ([x]          x)
+  ([x y] {:pre [(some delta-type? [x y])]}
+   (let [[a b] (if (delta-type? x) [y x] [x y])]
+     (with-meta (->> (type a)
+                     reverse
+                     (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0))) a)
+                     (merge b))
+       (meta a))))
+  ([x y & more] (reduce plus (plus x y) more)))
 
 (defn sequence-cmp [s value x y]
   (cond

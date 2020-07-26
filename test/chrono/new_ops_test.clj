@@ -6,7 +6,7 @@
             [matcho.core :as matcho]
             [clojure.test :as t]))
 
-(defmethod sut/type :default [_] datetime/gregorian-military)
+(defmethod sut/type :default-type [_] datetime/gregorian-military)
 
 (t/deftest range-test
   (def base60   (:min  (sut/type {})))
@@ -107,6 +107,23 @@
                   {:day 22, :month :aug, :year 2044})
     (matcho/match (sut/substract-from-unit :day {:day 1, :month :jan, :year 2020} 0)
                   {:day 1, :month :jan, :year 2020}))
+
+  (t/testing "plus"
+    (matcho/match (sut/plus {:day 1, :month :mar, :year 2019})
+                  {:day 1, :month :mar, :year 2019})
+    (matcho/match (sut/plus {:day 1, :month :mar, :year 2019} ^:delta{})
+                  {:day 1, :month :mar, :year 2019})
+    (matcho/match (sut/plus {:day 1, :month :mar, :year 2019} ^:delta{:year 1, :day 1})
+                  {:day 2, :year 2020})
+    (matcho/match (sut/plus {:day 1, :month :mar, :year 2019} ^:delta{:day 99, :month -99, :year 0, :sec 30, :foo 1})
+                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1})
+    (matcho/match (sut/plus {:day 1, :month :mar, :year 2019}
+                            ^:delta{:year 0}
+                            ^:delta{:month -99}
+                            ^:delta{:day 99}
+                            ^:delta{:sec 30}
+                            ^:delta{:foo 1})
+                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1}))
 
   (t/testing "eq?"
     (t/is (sut/eq? {:day 26, :month :jul, :year 2020}))
