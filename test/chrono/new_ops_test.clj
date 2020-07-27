@@ -26,7 +26,13 @@
                    {:start 1, :step 1, :end ##Inf}])
 
     (matcho/match (sut/process-sequence am-hours)
-                  [12 {:start 1, :step 1, :end 11}]))
+                  [12 {:start 1, :step 1, :end 11}])
+
+    (matcho/match (sut/process-sequence days)
+                  [{:start 1, :step 1, :end fn?}])
+
+    (matcho/match (sut/process-sequence [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15])
+                  [{:start 1, :step 2, :end fn?} 13 15]))
 
   (t/testing "sequence-contains-some"
     (matcho/match (map (comp boolean (partial sut/sequence-contains-some base60 nil))

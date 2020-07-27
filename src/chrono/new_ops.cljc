@@ -37,7 +37,7 @@
          buffer []]
     (cond
       (nil? x)  (concat result buffer)
-      (= '.. x) (recur rest
+      (= '.. x) (recur (concat [nil nil] rest)
                        (concat result
                                (drop-last 2 buffer)
                                [(process-range pprev prev next nnext)])
