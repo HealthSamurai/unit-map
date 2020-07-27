@@ -71,6 +71,50 @@
                    #(when (map? %) (apply range-contains-some % value xs)))
           (process-sequence s))))
 
+(defn sequence-cmp [s value x y]
+  (cond
+    (= x y) 0
+    (nil? x) -1
+    (nil? y) 1
+    (= x (sequence-contains-some s value x y)) -1
+    :else 1))
+
+(defn cmp [x y]
+  {:pre [(= (type x) (type y))]} ;;TODO: maybe allow to compare across different types?
+  (or (->> (type x)
+           reverse
+           (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
+           (filter (comp not zero?))
+           first)
+      0))
+
+(defn eq?
+  ([x]          true)
+  ([x y]        (zero? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
+
+(def not-eq? (complement eq?))
+
+(defn lt?
+  ([x]          true)
+  ([x y]        (neg? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
+
+(defn gt?
+  ([x]          true)
+  ([x y]        (pos? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
+
+(defn lte?
+  ([x]          true)
+  ([x y]        (>= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
+
+(defn gte?
+  ([x]          true)
+  ([x y]        (<= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
+
 (defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
     (let [{:keys [step end]} (if (map? el) (concretize-range el value) {})]
@@ -177,47 +221,3 @@
            (plus x (invert y))
            (difference x y)))
   ([x y & more] (reduce minus (minus x y) more)))
-
-(defn sequence-cmp [s value x y]
-  (cond
-    (= x y) 0
-    (nil? x) -1
-    (nil? y) 1
-    (= x (sequence-contains-some s value x y)) -1
-    :else 1))
-
-(defn cmp [x y]
-  {:pre [(= (type x) (type y))]} ;;TODO: maybe allow to compare across different types?
-  (or (->> (type x)
-           reverse
-           (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
-           (filter (comp not zero?))
-           first)
-      0))
-
-(defn eq?
-  ([x]          true)
-  ([x y]        (zero? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
-
-(def not-eq? (complement eq?))
-
-(defn lt?
-  ([x]          true)
-  ([x y]        (neg? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
-
-(defn gt?
-  ([x]          true)
-  ([x y]        (pos? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
-
-(defn lte?
-  ([x]          true)
-  ([x y]        (>= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
-
-(defn gte?
-  ([x]          true)
-  ([x y]        (<= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
