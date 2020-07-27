@@ -49,7 +49,7 @@
 (def process-sequence (memoize process-sequence*))
 
 (defn range-contains-some [rng value & xs]
-  (let [{:keys [start step end]} (reduce-kv (fn [acc k v] (assoc acc k (u/try-call v value))) {} rng)]
+  (let [{:keys [start step end]} (u/map-values #(u/try-call % value) rng)]
     (->> (sort xs)
          (filter #(and (<= start % end)
                        (or (= start %)

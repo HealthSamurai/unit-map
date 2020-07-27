@@ -188,3 +188,6 @@
     (not (pred x y)) false
     (next more)     (recur pred y (first more) (next more))
     :else           (pred y (first more))))
+
+(defn map-values [f m]
+  (reduce-kv (fn [acc k v] (update acc k f)) m m))
