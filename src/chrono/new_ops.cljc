@@ -145,15 +145,35 @@
   "  a   + delta =   a
    delta +   a   =   a
    value + value = error"
-  ([x]          x)
+  ([] {})
+  ([x] x)
   ([x y] {:pre [(some delta-type? [x y])]}
-   (let [[a b] (if (delta-type? x) [y x] [x y])]
+   (let [[a b] (if (delta-type? y) [x y] [y x])]
      (with-meta (->> (type a)
                      reverse
                      (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0))) a)
                      (merge b))
        (meta a))))
   ([x y & more] (reduce plus (plus x y) more)))
+
+(defn invert [x]
+  {:pre [(delta-type? x)]}
+  (u/map-values - x))
+
+(defn difference ;; TODO
+  "Difference between two values"
+  [x y]
+  (throw (ex-info "Difference is not implemented yet" {:args [x y]})))
+
+(defn minus
+  "  a   -   a   = delta
+   value - delta = value
+   delta - value = error"
+  ([x] (invert x))
+  ([x y] (if (delta-type? y)
+           (plus x (invert y))
+           (difference x y)))
+  ([x y & more] (reduce minus (minus x y) more)))
 
 (defn sequence-cmp [s value x y]
   (cond
