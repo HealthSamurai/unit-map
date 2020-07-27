@@ -48,8 +48,11 @@
 
 (def process-sequence (memoize process-sequence*))
 
+(defn concretize-range [rng value]
+  (u/map-values #(u/try-call % value) rng))
+
 (defn range-contains-some [rng value & xs]
-  (let [{:keys [start step end]} (u/map-values #(u/try-call % value) rng)]
+  (let [{:keys [start step end]} (concretize-range rng value)]
     (->> (sort xs)
          (filter #(and (<= start % end)
                        (or (= start %)
@@ -70,39 +73,39 @@
 
 (defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
-    (cond
-      (nil? el)
-      nil
+    (let [{:keys [step end]} (if (map? el) (concretize-range el value) {})]
+      (cond
+        (nil? el)
+        nil
 
-      (or (= x el)
-          (and (map? el) (= x (:end el))))
-      (cond-> next (map? next) (:start next))
+        (or (= x el) (= x end))
+        (cond-> next (map? next) (-> :start (u/try-call value)))
 
-      (and (map? el)
-           (range-contains-some el value x)
-           (range-contains-some el value (+ x (:step el))))
-      (+ x (:step el))
+        (and (map? el)
+             (range-contains-some el value x)
+             (range-contains-some el value (+ x step)))
+        (+ x step)
 
-      :else
-      (recur (cons next rest)))))
+        :else
+        (recur (cons next rest))))))
 
 (defn get-prev-unit-value [s value x]
   (loop [[prev el & rest] (cons nil (process-sequence s))]
-    (cond
-      (nil? el)
-      nil
+    (let [{:keys [start step]} (if (map? el) (concretize-range el value) {})]
+      (cond
+        (nil? el)
+        nil
 
-      (or (= x el)
-          (and (map? el) (= x (:start el))))
-      (cond-> prev (map? prev) (:end prev))
+        (or (= x el) (= x start))
+        (cond-> prev (map? prev) (-> :end (u/try-call value)))
 
-      (and (map? el)
-           (range-contains-some el value x)
-           (range-contains-some el value (- x (:step el))))
-      (- x (:step el))
+        (and (map? el)
+             (range-contains-some el value x)
+             (range-contains-some el value (- x step)))
+        (- x step)
 
-      :else
-      (recur (cons el rest)))))
+        :else
+        (recur (cons el rest))))))
 
 (defn get-min-value [value unit]
   (let [start (first (process-sequence (unit-type value unit)))]

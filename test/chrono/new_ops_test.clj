@@ -10,6 +10,7 @@
 
 (t/deftest range-test
   (def base60   (:min  (sut/type {})))
+  (def days     (:day (sut/type {})))
   (def months   (:month (sut/type {})))
   (def years    (:year (sut/type {})))
   (def am-hours (:hour (sut/type ^::time/am-pm{})))
@@ -40,7 +41,13 @@
                   [false false true true false false])
     (matcho/match (map (comp boolean (partial sut/sequence-contains-some years nil))
                        [##-Inf -31337 -1 0 1 31337 ##Inf])
-                  [true true true false true true true]))
+                  [true true true false true true true])
+    (matcho/match (map (comp boolean (partial sut/sequence-contains-some days {:month :feb, :year 2020}))
+                       [0 1 28 29 30])
+                  [false true true true false])
+    (matcho/match (map (comp boolean (partial sut/sequence-contains-some days {:month :feb, :year 2019}))
+                       [0 1 28 29 30])
+                  [false true true false false]))
 
   (t/testing "get-next-unit-value"
     (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value base60 nil) 0))
@@ -53,7 +60,13 @@
                   (range 1970 2021))
 
     (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value am-hours nil) 12))
-                  [12 1 2 3 4 5 6 7 8 9 10 11]))
+                  [12 1 2 3 4 5 6 7 8 9 10 11])
+    (t/is (= 13 (sut/get-next-unit-value [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                         {:bar 7}
+                                         9)))
+    (t/is (= 11 (sut/get-next-unit-value [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                         {:bar 8}
+                                         9))))
 
   (t/testing "get-prev-unit-value"
     (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))
