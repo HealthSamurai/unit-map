@@ -2,6 +2,10 @@
   (:refer-clojure :exclude [type])
   (:require [chrono.util :as u]))
 
+;; TODO: sequence and range may be types/records
+;; Maybe this will help to get rid of
+;; repeating checks for 'map?, process-range and concretize-range
+
 (def get-type (some-fn (comp ffirst meta) (constantly :default-type)))
 
 (defmulti type get-type) ;; TODO: maybe use namespaced-keywords instead?
@@ -14,6 +18,10 @@
 (defn delta-type? [value]
   (and (some? (get-type value))
        (not (contains? (methods type) (get-type value)))))
+
+(defn value-type? [value]
+  (or (nil? (get-type value))
+      (contains? (methods type) (get-type value))))
 
 (defn unit-type [value unit]
   (get (type value) unit))
@@ -49,7 +57,7 @@
 (def process-sequence (memoize process-sequence*))
 
 (defn concretize-range [rng value]
-  (u/map-values #(u/try-call % value) rng))
+  (u/map-v #(u/try-call % value) rng))
 
 (defn range-contains-some [rng value & xs]
   (let [{:keys [start step end]} (concretize-range rng value)]
@@ -79,7 +87,7 @@
     (= x (sequence-contains-some s value x y)) -1
     :else 1))
 
-(defn cmp [x y]
+(defn cmp [x y] ;;TODO: ignore zeros in delta types
   {:pre [(= (type x) (type y))]} ;;TODO: maybe allow to compare across different types?
   (or (->> (type x)
            reverse
@@ -203,21 +211,60 @@
        (meta a))))
   ([x y & more] (reduce plus (plus x y) more)))
 
+(defn index-in-range [rng value x]
+  (let [{:keys [start step]} (concretize-range rng value)]
+    (if (u/infinite? start)
+      ##Inf ;; TODO: negative indexing for ranges starting with infinity
+      (quot (- x start) step))))
+
+(defn range-length [rng value]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (if (some u/infinite? [start end])
+      ##Inf
+      (inc (quot (- end start) step)))))
+
+(defn index-in-sequence [s value x]
+  (loop [i 0
+         [el & rest-s] (process-sequence s)]
+    (when (some? el)
+      (let [[increment index]
+            (if (map? el)
+              [(range-length el value) (index-in-range el value x)]
+              [1 (when (= x el) 0)])]
+        (if (some? index)
+          (+ i index)
+          (recur (+ i increment) rest-s))))))
+
+(defn value->delta [value & [meta]]
+  (with-meta
+    (u/map-kv (fn [k v]
+                (let [i (index-in-sequence (unit-type value k) value v)]
+                  (if (u/infinite? i) v i))) ;; TODO: returning v here is wrong
+              value)                         ;; for example: 1a.d. - 1b.c. will be 2, should be 1
+    (or meta {:delta true})))
+
 (defn invert [x]
   {:pre [(delta-type? x)]}
-  (u/map-values - x))
+  (u/map-v - x))
 
-(defn difference ;; TODO
-  "Difference between two values"
-  [x y]
-  (throw (ex-info "Difference is not implemented yet" {:args [x y]})))
+(declare difference)
 
 (defn minus
   "  a   -   a   = delta
    value - delta = value
    delta - value = error"
   ([x] (invert x))
-  ([x y] (if (delta-type? y)
-           (plus x (invert y))
-           (difference x y)))
+  ([x y]
+   {:pre [(not (and (delta-type? x) (value-type? y)))]}
+   (if (delta-type? y)
+     (plus x (invert y))
+     (cond-> (difference x y)
+       (gt? y x) invert)))
   ([x y & more] (reduce minus (minus x y) more)))
+
+(defn difference
+  "Difference between two values"
+  [x y]
+  (->> (if (gte? x y) [x y] [y x])
+       (map value->delta)
+       (apply minus)))

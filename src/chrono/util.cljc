@@ -189,5 +189,10 @@
     (next more)     (recur pred y (first more) (next more))
     :else           (pred y (first more))))
 
-(defn map-values [f m]
+(defn map-v [f m]
   (reduce-kv (fn [acc k v] (update acc k f)) m m))
+
+(defn map-kv [f m]
+  (reduce-kv (fn [acc k v] (update acc k (partial f k))) m m))
+
+(defn infinite? [x] (or (= ##Inf x) (= ##-Inf x)))

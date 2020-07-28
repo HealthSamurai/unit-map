@@ -151,6 +151,20 @@
     (matcho/match (sut/invert ^:delta{:day 1, :month 3})
                   ^:delta{:day -1, :month -3}))
 
+  (t/testing "difference"
+    (matcho/match (sut/difference {:day 20, :month :jul, :year 2020}
+                                  {:day 26, :month :jul, :year 2020})
+                  ^:delta{:day 6})
+    (matcho/match (sut/difference {:day 26, :month :jul, :year 2020}
+                                  {:day 20, :month :jul, :year 2020})
+                  ^:delta{:day 6})
+    (matcho/match (sut/difference {:day 27, :month :jul, :year 2020}
+                                  {:day 5, :month :jul, :year 1997})
+                  {:day 22, :year 23})
+    (matcho/match (sut/difference {:day 5, :month :jul, :year 1997}
+                                  {:day 27, :month :jul, :year 2020})
+                  {:day 22, :year 23}))
+
   (t/testing "minus"
     (matcho/match (sut/minus ^:delta{:day 1, :month 3})
                   ^:delta{:day -1, :month -3})
@@ -163,7 +177,20 @@
                              ^:delta{:day -99}
                              ^:delta{:sec -30}
                              ^:delta{:foo -1})
-                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1}))
+                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1})
+
+    (matcho/match (sut/minus {:day 20, :month :jul, :year 2020}
+                             {:day 26, :month :jul, :year 2020})
+                  ^:delta{:day -6})
+    (matcho/match (sut/minus {:day 26, :month :jul, :year 2020}
+                             {:day 20, :month :jul, :year 2020})
+                  ^:delta{:day 6})
+    (matcho/match (sut/minus {:day 27, :month :jul, :year 2020}
+                             {:day 5, :month :jul, :year 1997})
+                  {:day 22, :year 23})
+    (matcho/match (sut/minus {:day 5, :month :jul, :year 1997}
+                             {:day 27, :month :jul, :year 2020})
+                  {:day -22, :year -23}))
 
   (t/testing "eq?"
     (t/is (sut/eq? {:day 26, :month :jul, :year 2020}))
