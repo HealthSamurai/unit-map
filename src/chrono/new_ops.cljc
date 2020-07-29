@@ -199,6 +199,12 @@
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
 
+(defn strip-zeros [delta]
+  (reduce-kv
+   (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
+   delta
+   delta))
+
 (defn plus
   "  a   + delta =   a
    delta +   a   =   a
@@ -206,12 +212,14 @@
   ([] {})
   ([x] x)
   ([x y] {:pre [(some delta-type? [x y])]}
-   (let [[a b] (if (delta-type? y) [x y] [y x])]
-     (with-meta (->> (type a)
-                     reverse
-                     (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0))) a)
-                     (merge b))
-       (meta a))))
+   (let [[a b]  (if (delta-type? y) [x y] [y x])
+         result (-> (->> (type a)
+                         reverse
+                         (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0))) a)
+                         (merge b))
+                    (with-meta (meta a)))]
+     (cond-> result
+       (delta-type? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
 
 (defn index-in-range
@@ -233,20 +241,24 @@
   (loop [i 0
          [el & rest-s] (process-sequence s)]
     (when (some? el)
-      (let [[increment index]
-            (if (map? el)
-              [(if (u/infinite? (:start el)) 1 (range-length el value)) (index-in-range el value x)]
-              [1 (when (= x el) 0)])]
+      (let [increment (if (and (map? el) (u/finite? (:start el)))
+                        (range-length el value)
+                        1)
+            index     (cond
+                        (= x el)  0
+                        (map? el) (index-in-range el value x))]
         (if (some? index)
           (+ i index)
           (recur (+ i increment) rest-s))))))
 
 (defn value->delta [value & [meta]]
-  (with-meta
-    (u/map-kv (fn [k v] (index-in-sequence (unit-type value k) value v))
-              value)
-    (or meta {:delta true}))) ;; TODO: maybe there is a way to get rid of hardcoded default delta type?
-                              ;; one way will be make an empty meta as a delta type
+  (reduce-kv
+   (fn [acc k v]
+     (let [i (index-in-sequence (unit-type value k) value v)]
+       (cond-> acc (not (zero? i)) (assoc k i))))
+   (with-meta {} (or meta {:delta true})) ;; TODO: maybe there is a way to get rid of hardcoded default delta type?
+   value))                                ;; one way will be make an empty meta as a delta type
+
 (defn invert [x]
   {:pre [(delta-type? x)]}
   (u/map-v - x))
