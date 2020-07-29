@@ -160,10 +160,14 @@
                   ^:delta{:day 6})
     (matcho/match (sut/difference {:day 27, :month :jul, :year 2020}
                                   {:day 5, :month :jul, :year 1997})
-                  {:day 22, :year 23})
+                  ^:delta{:day 22, :year 23})
     (matcho/match (sut/difference {:day 5, :month :jul, :year 1997}
                                   {:day 27, :month :jul, :year 2020})
-                  {:day 22, :year 23}))
+                  ^:delta{:day 22, :year 23})
+    (matcho/match (sut/difference {:year 1} {:year -1})
+                  ^:delta{:year 1})
+    (matcho/match (sut/difference {:year -1} {:year 1})
+                  ^:delta{:year 1}))
 
   (t/testing "minus"
     (matcho/match (sut/minus ^:delta{:day 1, :month 3})
@@ -187,10 +191,16 @@
                   ^:delta{:day 6})
     (matcho/match (sut/minus {:day 27, :month :jul, :year 2020}
                              {:day 5, :month :jul, :year 1997})
-                  {:day 22, :year 23})
+                  ^:delta{:day 22, :year 23})
     (matcho/match (sut/minus {:day 5, :month :jul, :year 1997}
                              {:day 27, :month :jul, :year 2020})
-                  {:day -22, :year -23}))
+                  ^:delta{:day -22, :year -23})
+    (matcho/match (sut/minus {:year -1}
+                             {:year 1})
+                  ^:delta{:year -1})
+    (matcho/match (sut/minus {:year 1}
+                             {:year -1})
+                  ^:delta{:year 1}))
 
   (t/testing "eq?"
     (t/is (sut/eq? {:day 26, :month :jul, :year 2020}))

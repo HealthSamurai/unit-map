@@ -212,10 +212,11 @@
   ([x y & more] (reduce plus (plus x y) more)))
 
 (defn index-in-range [rng value x]
-  (let [{:keys [start step]} (concretize-range rng value)]
-    (if (u/infinite? start)
-      ##Inf ;; TODO: negative indexing for ranges starting with infinity
-      (quot (- x start) step))))
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (when (range-contains-some rng value x)
+      (if (u/infinite? start)
+        (- (quot (- x end) step))
+        (quot (- x start) step)))))
 
 (defn range-length [rng value]
   (let [{:keys [start step end]} (concretize-range rng value)]
@@ -229,7 +230,7 @@
     (when (some? el)
       (let [[increment index]
             (if (map? el)
-              [(range-length el value) (index-in-range el value x)]
+              [(if (u/infinite? (:start el)) 1 (range-length el value)) (index-in-range el value x)]
               [1 (when (= x el) 0)])]
         (if (some? index)
           (+ i index)
@@ -237,12 +238,10 @@
 
 (defn value->delta [value & [meta]]
   (with-meta
-    (u/map-kv (fn [k v]
-                (let [i (index-in-sequence (unit-type value k) value v)]
-                  (if (u/infinite? i) v i))) ;; TODO: returning v here is wrong
-              value)                         ;; for example: 1a.d. - 1b.c. will be 2, should be 1
-    (or meta {:delta true})))
-
+    (u/map-kv (fn [k v] (index-in-sequence (unit-type value k) value v))
+              value)
+    (or meta {:delta true}))) ;; TODO: maybe there is a way to get rid of hardcoded default delta type?
+                              ;; one way will be make an empty meta as a delta type
 (defn invert [x]
   {:pre [(delta-type? x)]}
   (u/map-v - x))
