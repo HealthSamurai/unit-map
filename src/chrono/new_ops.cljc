@@ -59,17 +59,20 @@
 (defn concretize-range [rng value]
   (u/map-v #(u/try-call % value) rng))
 
-(defn range-contains-some [rng value & xs]
+(defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
-    (->> (sort xs)
-         (filter #(and (<= start % end)
-                       (or (= start %)
-                           (= end %)
-                           (and (not= ##-Inf start)
-                                (-> % (- start) (mod step) zero?))
-                           (and (not= ##Inf end)
-                                (-> % (+ end) (mod step) zero?)))))
-         first)))
+    (and (<= start x end)
+         (or (= start x)
+             (= end x)
+             (and (not= ##-Inf start)
+                  (-> x (- start) (mod step) zero?))
+             (and (not= ##Inf end)
+                  (-> x (+ end) (mod step) zero?))))))
+
+(defn range-contains-some [rng value & xs]
+  (->> (sort xs)
+       (filter (partial range-contains? (concretize-range rng value) value))
+       first))
 
 (defn sequence-contains-some
   "Returns first (i.e. min) x found in the sequence"
@@ -95,7 +98,7 @@
            (filter (comp not zero?))
            first)
       0))
-
+;; TODO: some checks will be faster without cmp
 (defn eq?
   ([x]          true)
   ([x y]        (zero? (cmp x y)))
@@ -211,7 +214,9 @@
        (meta a))))
   ([x y & more] (reduce plus (plus x y) more)))
 
-(defn index-in-range [rng value x]
+(defn index-in-range
+  "Returns negative index if range start is infinite, 0 index will be end of range."
+  [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
     (when (range-contains-some rng value x)
       (if (u/infinite? start)

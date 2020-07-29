@@ -196,3 +196,5 @@
   (reduce-kv (fn [acc k v] (update acc k (partial f k))) m m))
 
 (defn infinite? [x] (or (= ##Inf x) (= ##-Inf x)))
+
+(defn finite? [x] (and (not= ##Inf x) (not= ##-Inf x)))
