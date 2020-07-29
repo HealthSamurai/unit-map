@@ -35,7 +35,7 @@
   (get (type value) unit))
 
 (defn add-delta-type [value delta-meta]
-  (with-meta {}
+  (with-meta value
     (or (some-> (ffirst (meta value))
                 (hash-map (or delta-meta :delta)))
         (some-> delta-meta (hash-map true))
@@ -296,3 +296,12 @@
   (->> (if (gte? x y) [x y] [y x])
        (map value->delta)
        (apply minus)))
+
+(defn apply-delta [value delta]
+  (assoc (plus value delta)
+         (second (get-type delta)) delta))
+
+(defn get-applied-deltas [value]
+  (->> value
+       (remove (comp (partial contains? (set (keys (type value)))) key))
+       (map (fn [[k v]] (with-meta v {(get-type value) k})))))
