@@ -137,15 +137,14 @@
                             ^:delta{:year 1, :day 1})
                   {:day 2, :year 2020})
     (matcho/match (sut/plus {:day 1, :month :mar, :year 2019}
-                            ^:delta{:day 99, :month -99, :year 0, :sec 30, :foo 1})
-                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1})
+                            ^:delta{:day 99, :month -99, :year 0, :sec 30})
+                  {:sec 30, :day 10, :month :mar :year 2011})
     (matcho/match (sut/plus {:day 1, :month :mar, :year 2019}
                             ^:delta{:year 0}
                             ^:delta{:month -99}
                             ^:delta{:day 99}
-                            ^:delta{:sec 30}
-                            ^:delta{:foo 1})
-                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1}))
+                            ^:delta{:sec 30})
+                  {:sec 30, :day 10, :month :mar :year 2011}))
 
   (t/testing "invert"
     (matcho/match (sut/invert ^:delta{:day 1, :month 3})
@@ -179,15 +178,14 @@
     (matcho/match (sut/minus ^:delta{:day 1, :month 3})
                   ^:delta{:day -1, :month -3})
     (matcho/match (sut/minus {:day 1, :month :mar, :year 2019}
-                             ^:delta{:day -99, :month 99, :year 0, :sec -30, :foo -1})
-                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1})
+                             ^:delta{:day -99, :month 99, :year 0, :sec -30})
+                  {:sec 30, :day 10, :month :mar :year 2011})
     (matcho/match (sut/minus {:day 1, :month :mar, :year 2019}
                              ^:delta{:year 0}
                              ^:delta{:month 99}
                              ^:delta{:day -99}
-                             ^:delta{:sec -30}
-                             ^:delta{:foo -1})
-                  {:sec 30, :day 10, :month :mar :year 2011, :foo 1})
+                             ^:delta{:sec -30})
+                  {:sec 30, :day 10, :month :mar :year 2011})
 
     (matcho/match (sut/minus {:day 20, :month :jul, :year 2020}
                              {:day 26, :month :jul, :year 2020})

@@ -213,13 +213,10 @@
   ([x] x)
   ([x y] {:pre [(some delta-type? [x y])]}
    (let [[a b]  (if (delta-type? y) [x y] [y x])
-         result (-> (->> (type a)
-                         reverse
-                         (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0))) a)
-                         (merge b))
-                    (with-meta (meta a)))]
-     (cond-> result
-       (delta-type? result) strip-zeros)))
+         result (->> (reverse (type b))
+                     (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0)))
+                             a))]
+     (cond-> result (delta-type? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
 
 (defn index-in-range
