@@ -34,12 +34,11 @@
 (defn unit-type [value unit]
   (get (type value) unit))
 
-(defn add-delta-type [value delta-meta]
-  (with-meta value
-    (or (some-> (ffirst (meta value))
-                (hash-map (or delta-meta :delta)))
-        (some-> delta-meta (hash-map true))
-        {:delta true})))
+(defn make-delta-type [value-meta delta-type]
+  (or (some-> (ffirst value-meta)
+              (hash-map (or delta-type :delta)))
+      (some-> delta-type (hash-map true))
+      {:delta true}))
 
 (defn get-next-unit [value unit]
   (u/get-next-element (keys (type value)) unit))
@@ -268,8 +267,10 @@
    (fn [acc k v]
      (let [i (index-in-sequence (unit-type value k) value v)]
        (cond-> acc (not (zero? i)) (assoc k i))))
-   (add-delta-type value (or delta-meta :delta)) ;; TODO: maybe there is a way to get rid of hardcoded default delta type?
-   value))                                       ;; one way will be make an empty meta as a delta type
+   (with-meta {} (make-delta-type (meta value) (or delta-meta :delta)))
+   value))
+;; TODO: maybe there is a way to get rid of hardcoded default delta type?
+;; one way will be make an empty meta as a delta type
 
 (defn invert [x]
   {:pre [(delta-type? x)]}
