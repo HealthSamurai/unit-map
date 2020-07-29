@@ -1,6 +1,5 @@
 (ns chrono.type.datetime
-  (:require [chrono.new-ops :as ops]
-            [chrono.util :as u]))
+  (:require [chrono.new-ops :as ops]))
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))
@@ -34,7 +33,7 @@
    :min    [0 1 '.. 59]
    :hour   [12 1 2 '.. 11]
    :period [:am :pm]
-   :day    [1 2 '.. u/days-in-month]
+   :day    [1 2 '.. days-in-month]
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 

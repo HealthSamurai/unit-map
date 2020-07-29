@@ -1,6 +1,5 @@
 (ns chrono.type.time
-  (:require [chrono.new-ops :as ops]
-            [chrono.util :as u]))
+  (:require [chrono.new-ops :as ops]))
 
 (def military
   (array-map
