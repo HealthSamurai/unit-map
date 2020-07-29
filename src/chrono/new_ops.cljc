@@ -6,9 +6,17 @@
 ;; Maybe this will help to get rid of
 ;; repeating checks for 'map?, process-range and concretize-range
 
-(def get-type (some-fn (comp ffirst meta) (constantly :default-type)))
+(declare get-type)
 
-(defmulti type get-type) ;; TODO: maybe use namespaced-keywords instead?
+(defmulti type #'get-type)
+
+(defn get-type [x]
+  (let [[v d] (first (meta x))] ;; TODO: maybe use namespaced-keywords instead?
+    (cond
+      (nil? v)     :default-type
+      (keyword? d) [v d]
+      :else        (or (get (set (keys (methods type))) v)
+                       [:default-type v]))))
 
 (defmethod type :default [value]
   (reduce-kv (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf]))
@@ -16,15 +24,22 @@
              value))
 
 (defn delta-type? [value]
-  (and (some? (get-type value))
-       (not (contains? (methods type) (get-type value)))))
+  (let [t (get-type value)]
+    (and (vector? t) (some? (second t)))))
 
 (defn value-type? [value]
-  (or (nil? (get-type value))
-      (contains? (methods type) (get-type value))))
+  (let [t (get-type value)]
+    (or (keyword? t))))
 
 (defn unit-type [value unit]
   (get (type value) unit))
+
+(defn add-delta-type [value delta-meta]
+  (with-meta {}
+    (or (some-> (ffirst (meta value))
+                (hash-map (or delta-meta :delta)))
+        (some-> delta-meta (hash-map true))
+        {:delta true})))
 
 (defn get-next-unit [value unit]
   (u/get-next-element (keys (type value)) unit))
@@ -248,13 +263,13 @@
           (+ i index)
           (recur (+ i increment) rest-s))))))
 
-(defn value->delta [value & [meta]]
+(defn value->delta [value & [delta-meta]]
   (reduce-kv
    (fn [acc k v]
      (let [i (index-in-sequence (unit-type value k) value v)]
        (cond-> acc (not (zero? i)) (assoc k i))))
-   (with-meta {} (or meta {:delta true})) ;; TODO: maybe there is a way to get rid of hardcoded default delta type?
-   value))                                ;; one way will be make an empty meta as a delta type
+   (add-delta-type value (or delta-meta :delta)) ;; TODO: maybe there is a way to get rid of hardcoded default delta type?
+   value))                                       ;; one way will be make an empty meta as a delta type
 
 (defn invert [x]
   {:pre [(delta-type? x)]}

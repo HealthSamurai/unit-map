@@ -15,6 +15,18 @@
   (def years    (:year (sut/type {})))
   (def am-hours (:hour (sut/type ^::time/am-pm{})))
 
+  (t/testing "type-test"
+    (t/is (= ::time/military          (sut/get-type ^::time/military{:hour 10})))
+    (t/is (= [::time/military :delta] (sut/get-type ^{::time/military :delta}{:hour 1})))
+    (t/is (= [::time/military :tz]    (sut/get-type ^{::time/military :tz}{:hour 1})))
+
+    (t/is (= :default-type          (sut/get-type {:hour 10})))
+    (t/is (= [:default-type :delta] (sut/get-type ^:delta{:hour 1})))
+    (t/is (= [:default-type :tz]    (sut/get-type ^:tz{:hour 1})))
+
+    (t/is (= [::time/military :delta] (sut/get-type (sut/value->delta ^::time/military{:hour 1}))))
+    (t/is (= [:default-type :delta]   (sut/get-type (sut/value->delta {:hour 1})))))
+
   (t/testing "process-sequence"
     (matcho/match (sut/process-sequence base60)
                   [{:start 0, :step 1, :end 59}])
