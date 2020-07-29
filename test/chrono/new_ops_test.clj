@@ -6,14 +6,14 @@
             [matcho.core :as matcho]
             [clojure.test :as t]))
 
-(defmethod sut/type :default-type [_] datetime/gregorian-military)
+(defmethod sut/definition :default-type [_] datetime/gregorian-military)
 
 (t/deftest range-test
-  (def base60   (:min  (sut/type {})))
-  (def days     (:day (sut/type {})))
-  (def months   (:month (sut/type {})))
-  (def years    (:year (sut/type {})))
-  (def am-hours (:hour (sut/type ^::time/am-pm{})))
+  (def base60   (:min  (sut/definition {})))
+  (def days     (:day (sut/definition {})))
+  (def months   (:month (sut/definition {})))
+  (def years    (:year (sut/definition {})))
+  (def am-hours (:hour (sut/definition ^::time/am-pm{})))
 
   (t/testing "type-test"
     (t/is (= ::time/military          (sut/get-type ^::time/military{:hour 10})))

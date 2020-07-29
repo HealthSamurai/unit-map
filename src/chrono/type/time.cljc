@@ -8,7 +8,7 @@
    :min    [0 1 '.. 59]
    :hour   [0 1 '.. 23]))
 
-(defmethod ops/type ::military [_] military)
+(defmethod ops/definition ::military [_] military)
 
 
 (def am-pm
@@ -19,4 +19,4 @@
    :hour   [12 1 2 '.. 11]
    :period [:am :pm]))
 
-(defmethod ops/type ::am-pm [_] am-pm)
+(defmethod ops/definition ::am-pm [_] am-pm)

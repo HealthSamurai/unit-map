@@ -1,5 +1,4 @@
 (ns chrono.new-ops
-  (:refer-clojure :exclude [type])
   (:require [chrono.util :as u]))
 
 ;; TODO: sequence and range may be types/records
@@ -8,17 +7,17 @@
 
 (declare get-type)
 
-(defmulti type #'get-type)
+(defmulti definition #'get-type)
 
 (defn get-type [x]
   (let [[v d] (first (meta x))] ;; TODO: maybe use namespaced-keywords instead?
     (cond
       (nil? v)     :default-type
       (keyword? d) [v d]
-      :else        (or (get (set (keys (methods type))) v)
+      :else        (or (get (set (keys (methods definition))) v)
                        [:default-type v]))))
 
-(defmethod type :default [value]
+(defmethod definition :default [value] ;; TODO: take keys from deltas main type
   (reduce-kv (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf]))
              {}
              value))
@@ -32,7 +31,7 @@
     (or (keyword? t))))
 
 (defn unit-type [value unit]
-  (get (type value) unit))
+  (get (definition value) unit))
 
 (defn make-delta-type [value-meta delta-type]
   (or (some-> (ffirst value-meta)
@@ -41,10 +40,10 @@
       {:delta true}))
 
 (defn get-next-unit [value unit]
-  (u/get-next-element (keys (type value)) unit))
+  (u/get-next-element (keys (definition value)) unit))
 
 (defn get-prev-unit [value unit]
-  (u/get-prev-element (keys (type value)) unit))
+  (u/get-prev-element (keys (definition value)) unit))
 
 (defn process-range [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
@@ -105,8 +104,8 @@
     :else 1))
 
 (defn cmp [x y] ;;TODO: ignore zeros in delta types
-  {:pre [(= (type x) (type y))]} ;;TODO: maybe allow to compare across different types?
-  (or (->> (type x)
+  {:pre [(= (definition x) (definition y))]} ;;TODO: maybe allow to compare across different types?
+  (or (->> (definition x)
            reverse
            (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
            (filter (comp not zero?))
@@ -227,7 +226,7 @@
   ([x] x)
   ([x y] {:pre [(some delta-type? [x y])]}
    (let [[a b]  (if (delta-type? y) [x y] [y x])
-         result (->> (reverse (type b))
+         result (->> (reverse (definition b))
                      (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0)))
                              a))]
      (cond-> result (delta-type? result) strip-zeros)))
@@ -304,5 +303,5 @@
 
 (defn get-applied-deltas [value]
   (->> value
-       (remove (comp (partial contains? (set (keys (type value)))) key))
+       (remove (comp (partial contains? (set (keys (definition value)))) key))
        (map (fn [[k v]] (with-meta v {(get-type value) k})))))

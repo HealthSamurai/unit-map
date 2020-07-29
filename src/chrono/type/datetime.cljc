@@ -23,7 +23,7 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
-(defmethod ops/type ::military [_] gregorian-military)
+(defmethod ops/definition ::military [_] gregorian-military)
 
 
 (def gregorian-am-pm
@@ -37,4 +37,4 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
-(defmethod ops/type ::am-pm [_] gregorian-am-pm)
+(defmethod ops/definition ::am-pm [_] gregorian-am-pm)

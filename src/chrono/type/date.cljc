@@ -19,4 +19,4 @@
    :month  [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
    :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
-(defmethod ops/type ::gregorian [_] gregorian)
+(defmethod ops/definition ::gregorian [_] gregorian)
