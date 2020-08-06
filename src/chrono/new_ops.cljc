@@ -14,7 +14,7 @@
     (cond
       (nil? v)     :default-type
       (keyword? d) [v d]
-      :else        (or (get (set (keys (methods definition))) v)
+      :else        (or (some-> (methods definition) (find v) key)
                        [:default-type v]))))
 
 (defmethod definition :default [value] ;; TODO: take keys from deltas main type
@@ -245,18 +245,18 @@
   (let [{:keys [start step end]} (concretize-range rng value)]
     (if (some u/infinite? [start end])
       ##Inf
-      (inc (quot (- end start) step)))))
+      (-> (- end start) (quot step) inc))))
 
 (defn index-in-sequence [s value x]
-  (loop [i 0
-         [el & rest-s] (process-sequence s)]
+  (loop [i 0, [el & rest-s] (process-sequence s)]
     (when (some? el)
       (let [increment (if (and (map? el) (u/finite? (:start el)))
                         (range-length el value)
                         1)
-            index     (cond
-                        (= x el)  0
-                        (map? el) (index-in-range el value x))]
+
+            index (cond
+                    (= x el)  0
+                    (map? el) (index-in-range el value x))]
         (if (some? index)
           (+ i index)
           (recur (+ i increment) rest-s))))))
@@ -266,12 +266,10 @@
    (fn [acc k v]
      (let [i (index-in-sequence (unit-type value k) value v)]
        (cond-> acc (not (zero? i)) (assoc k i))))
-   (with-meta {} (make-delta-type (meta value) (or delta-meta :delta)))
+   (with-meta {} (make-delta-type (meta value) delta-meta))
    value))
-;; TODO: maybe there is a way to get rid of hardcoded default delta type?
-;; one way will be make an empty meta as a delta type
 
-(defn invert [x]
+(defn invert [x] ;; TODO: map only over type's values, not all keys
   {:pre [(delta-type? x)]}
   (u/map-v - x))
 
@@ -283,7 +281,7 @@
    delta - value = error"
   ([x] (invert x))
   ([x y]
-   {:pre [(not (and (delta-type? x) (value-type? y)))]}
+   {:pre [(or (value-type? x) (delta-type? y))]}
    (if (delta-type? y)
      (plus x (invert y))
      (cond-> (difference x y)
@@ -303,5 +301,5 @@
 
 (defn get-applied-deltas [value]
   (->> value
-       (remove (comp (partial contains? (set (keys (definition value)))) key))
+       (remove (comp (partial contains? (-> value definition keys set)) key))
        (map (fn [[k v]] (with-meta v {(get-type value) k})))))
