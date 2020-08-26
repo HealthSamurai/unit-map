@@ -16,16 +16,46 @@
   (def am-hours (:hour (sut/definition ^::time/am-pm{})))
 
   (t/testing "type-test"
-    (t/is (= ::time/military          (sut/get-type ^::time/military{:hour 10})))
+    (t/is (= [::time/military]        (sut/get-type ^::time/military{:hour 10})))
     (t/is (= [::time/military :delta] (sut/get-type ^{::time/military :delta}{:hour 1})))
     (t/is (= [::time/military :tz]    (sut/get-type ^{::time/military :tz}{:hour 1})))
 
-    (t/is (= :default-type          (sut/get-type {:hour 10})))
+    (t/is (= [:default-type]        (sut/get-type {:hour 10})))
     (t/is (= [:default-type :delta] (sut/get-type ^:delta{:hour 1})))
     (t/is (= [:default-type :tz]    (sut/get-type ^:tz{:hour 1})))
 
     (t/is (= [::time/military :delta] (sut/get-type (sut/value->delta ^::time/military{:hour 1}))))
-    (t/is (= [:default-type :delta]   (sut/get-type (sut/value->delta {:hour 1})))))
+    (t/is (= [:default-type :delta]   (sut/get-type (sut/value->delta {:hour 1}))))
+
+    (matcho/match (sut/definition ^::time/military{:hour 20})
+                  '{:ms   [0 1 .. 999]
+                    :sec  [0 1 .. 59]
+                    :min  [0 1 .. 59]
+                    :hour [0 1 .. 23]})
+
+    (matcho/match (sut/definition ^{::time/military :tz}{:hour 20})
+                  '{:ms   [0 1 .. 999]
+                    :sec  [0 1 .. 59]
+                    :min  [0 1 .. 59]
+                    :hour [0 1 .. 23]})
+
+    (matcho/match (sut/definition ^::datetime/military{:hour 20, :year 2020, :day 26, :month 8})
+                  {:ms    [0 1 '.. 999]
+                   :sec   [0 1 '.. 59]
+                   :min   [0 1 '.. 59]
+                   :hour  [0 1 '.. 23]
+                   :day   [1 2 '.. fn?]
+                   :month [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
+                   :year  [##-Inf '.. -2 -1 1 2 '.. ##Inf]})
+
+    (matcho/match (sut/definition ^{::datetime/military :tz}{:hour 2, :month 12, :year 2020})
+                  {:ms    [0 1 '.. 999]
+                   :sec   [0 1 '.. 59]
+                   :min   [0 1 '.. 59]
+                   :hour  [0 1 '.. 23]
+                   :day   [0 1 '.. 30]
+                   :month [0 1 '.. 11]
+                   :year  [##-Inf '.. -2 -1 0 1 '.. ##Inf]}))
 
   (t/testing "process-sequence"
     (matcho/match (sut/process-sequence base60)
@@ -46,6 +76,19 @@
 
     (matcho/match (sut/process-sequence [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15])
                   [{:start 1, :step 2, :end fn?} 13 15]))
+
+  (t/testing "sequence-length"
+    (t/is (= 12    (sut/sequence-length [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec] {})))
+    (t/is (= ##Inf (sut/sequence-length [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
+    (t/is (= 1000  (sut/sequence-length [0 1 '.. 999] {})))
+
+    (t/is (= 0      (sut/sequence-first-index [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec] {})))
+    (t/is (= ##-Inf (sut/sequence-first-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
+    (t/is (= 0      (sut/sequence-first-index [0 1 '.. 999] {})))
+
+    (t/is (= 11    (sut/sequence-last-index [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec] {})))
+    (t/is (= ##Inf (sut/sequence-last-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
+    (t/is (= 999   (sut/sequence-last-index [0 1 '.. 999] {}))))
 
   (t/testing "sequence-contains-some"
     (matcho/match (map (comp boolean (partial sut/sequence-contains-some base60 nil))

@@ -1,34 +1,61 @@
 (ns chrono.new-ops
   (:require [chrono.util :as u]))
 
-;; TODO: sequence and range may be types/records
-;; Maybe this will help to get rid of
-;; repeating checks for 'map?, process-range and concretize-range
-
 (declare get-type)
+(declare value-type?)
+(declare delta-type?)
 
-(defmulti definition #'get-type)
+(defn dispatch-definition [v]
+  (if (value-type? v)
+    (first (get-type v))
+    :default))
+
+;; This whole type dispatching system implementation looks ugly
+(defmulti definition #'dispatch-definition)
 
 (defn get-type [x]
   (let [[v d] (first (meta x))] ;; TODO: maybe use namespaced-keywords instead?
     (cond
-      (nil? v)     :default-type
+      (nil? v)     [:default-type]
       (keyword? d) [v d]
-      :else        (or (some-> (methods definition) (find v) key)
+      :else        (or (some-> (methods definition) (find v) key vector)
                        [:default-type v]))))
 
-(defmethod definition :default [value] ;; TODO: take keys from deltas main type
-  (reduce-kv (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf]))
-             {}
-             value))
+(declare index-in-sequence)
+(declare sequence-first-index)
+(declare sequence-last-index)
+
+;; TODO: preserve fn start & end?
+(defn to-delta-definition [s value]
+  (let [first-idx (sequence-first-index s value)
+        last-idx  (sequence-last-index s value)]
+    (cond
+      (every? u/infinite? [first-idx last-idx])
+      [##-Inf '.. -2 -1 0 1 '.. ##Inf]
+
+      (u/infinite? last-idx)
+      [first-idx  (inc first-idx) '.. ##Inf]
+
+      (u/infinite? first-idx)
+      [##-Inf '.. (dec last-idx) last-idx]
+
+      :else
+      [first-idx (inc first-idx) '.. last-idx])))
+
+(defmethod definition :default [value]
+  (let [t              (get-type value)
+        is-delta-type? (= 2 (count t))]
+    (reduce-kv (if is-delta-type?
+                 (fn [acc k v] (assoc acc k (to-delta-definition v value)))
+                 (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf])))
+               {}
+               ((get-method definition (first t)) value))))
 
 (defn delta-type? [value]
-  (let [t (get-type value)]
-    (and (vector? t) (some? (second t)))))
+  (= 2 (count (get-type value))))
 
 (defn value-type? [value]
-  (let [t (get-type value)]
-    (or (keyword? t))))
+  (= 1 (count (get-type value))))
 
 (defn unit-type [value unit]
   (get (definition value) unit))
@@ -52,6 +79,9 @@
    :step  (if (nil? pprev) (- nnext next) (- prev pprev))
    :end   (or nnext next)})
 
+;; TODO: wrapping single enums into {:start :val :end :val :step 1} will help
+;; to not call map? each time
+;; but it may make harder to do fast arithmetics optimizations
 (defn process-sequence* [s]
   (loop [[pprev prev x next nnext & rest] (concat [nil nil] s [nil nil])
          result []
@@ -67,6 +97,7 @@
                        result
                        (conj buffer x)))))
 
+;; TODO: do this when defining the type instead of on each call
 (def process-sequence (memoize process-sequence*))
 
 (defn concretize-range [rng value]
@@ -247,7 +278,12 @@
       ##Inf
       (-> (- end start) (quot step) inc))))
 
-(defn index-in-sequence [s value x]
+(defn sequence-length [s value]
+  (->> (process-sequence s)
+       (map #(if (map? %) (range-length % value) 1))
+       (reduce + 0)))
+
+(defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
   (loop [i 0, [el & rest-s] (process-sequence s)]
     (when (some? el)
       (let [increment (if (and (map? el) (u/finite? (:start el)))
@@ -260,6 +296,20 @@
         (if (some? index)
           (+ i index)
           (recur (+ i increment) rest-s))))))
+
+(defn sequence-first-index [s value]
+  (let [e (first (process-sequence s))
+        r (when (map? e) (concretize-range e value))]
+    (if (or (not (map? e)) (u/finite? (:start r)))
+       0
+      ##-Inf)))
+
+(defn sequence-last-index [s value] ;; TODO: check for empty sequence?
+  (let [e (last (process-sequence s))
+        r (when (map? e) (concretize-range e value))]
+    (if (or (not (map? e)) (u/finite? (:end r)))
+      (dec (sequence-length s value))
+      ##Inf)))
 
 (defn value->delta [value & [delta-meta]]
   (reduce-kv
@@ -302,4 +352,4 @@
 (defn get-applied-deltas [value]
   (->> value
        (remove (comp (partial contains? (-> value definition keys set)) key))
-       (map (fn [[k v]] (with-meta v {(get-type value) k})))))
+       (map (fn [[k v]] (with-meta v {(first (get-type value)) k})))))
