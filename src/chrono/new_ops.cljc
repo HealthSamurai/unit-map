@@ -354,7 +354,7 @@
   (assoc (plus value delta)
          (second (get-type delta)) delta))
 
-(defn remove-delta [value]
+(defn remove-deltas [value]
   (->> (get-applied-deltas value)
        (map invert)
        (reduce (fn [v d]
