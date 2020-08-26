@@ -8,10 +8,11 @@
 
 (defn days-in-month [{m :month, y :year}]
   (cond
+    (some nil? [m y])                    ##Inf
     (contains? #{:apr :jun :sep :nov} m) 30
-    (and (leap-year? y) (= :feb m)) 29
-    (= :feb m) 28
-    :else 31))
+    (and (leap-year? y) (= :feb m))      29
+    (= :feb m)                           28
+    :else                                31))
 
 (def gregorian-military
   (array-map
