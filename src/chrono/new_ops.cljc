@@ -1,77 +1,7 @@
 (ns chrono.new-ops
   (:require [chrono.util :as u]))
 
-(declare get-type)
-(declare value-type?)
-(declare delta-type?)
-
-(defn dispatch-definition [v]
-  (if (value-type? v)
-    (first (get-type v))
-    :default))
-
-;; This whole type dispatching system implementation looks ugly
-(defmulti definition #'dispatch-definition)
-
-(defn get-type [x]
-  (let [[v d] (first (meta x))] ;; TODO: maybe use namespaced-keywords instead?
-    (cond
-      (nil? v)     [:default-type]
-      (keyword? d) [v d]
-      :else        (or (some-> (methods definition) (find v) key vector)
-                       [:default-type v]))))
-
-(declare index-in-sequence)
-(declare sequence-first-index)
-(declare sequence-last-index)
-
-;; TODO: preserve fn start & end?
-(defn to-delta-definition [s value]
-  (let [first-idx (sequence-first-index s value)
-        last-idx  (sequence-last-index s value)]
-    (cond
-      (every? u/infinite? [first-idx last-idx])
-      [##-Inf '.. -2 -1 0 1 '.. ##Inf]
-
-      (u/infinite? last-idx)
-      [first-idx  (inc first-idx) '.. ##Inf]
-
-      (u/infinite? first-idx)
-      [##-Inf '.. (dec last-idx) last-idx]
-
-      :else
-      [first-idx (inc first-idx) '.. last-idx])))
-
-(defmethod definition :default [value]
-  (let [t              (get-type value)
-        is-delta-type? (= 2 (count t))]
-    (reduce-kv (if is-delta-type?
-                 (fn [acc k v] (assoc acc k (to-delta-definition v value)))
-                 (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf])))
-               {}
-               ((get-method definition (first t)) value))))
-
-(defn delta-type? [value]
-  (= 2 (count (get-type value))))
-
-(defn value-type? [value]
-  (= 1 (count (get-type value))))
-
-(defn unit-type [value unit]
-  (get (definition value) unit))
-
-(defn make-delta-type [value-meta delta-type]
-  (or (some-> (ffirst value-meta)
-              (hash-map (or delta-type :delta)))
-      (some-> delta-type (hash-map true))
-      {:delta true}))
-
-(defn get-next-unit [value unit]
-  (u/get-next-element (keys (definition value)) unit))
-
-(defn get-prev-unit [value unit]
-  (u/get-prev-element (keys (definition value)) unit))
-
+;;;;;;;; range & sequence ;;;;;;;;
 (defn process-range [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next]))]}
@@ -103,6 +33,7 @@
 (defn concretize-range [rng value]
   (u/map-v #(u/try-call % value) rng))
 
+;;;;;;;; contains & length & index ;;;;;;;;
 (defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
     (and (<= start x end)
@@ -126,6 +57,162 @@
                    #(when (map? %) (apply range-contains-some % value xs)))
           (process-sequence s))))
 
+(defn index-in-range
+  "Returns negative index if range start is infinite, 0 index will be end of range."
+  [rng value x]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (when (range-contains-some rng value x)
+      (if (u/infinite? start)
+        (quot (- end x) step)
+        (quot (- x start) step)))))
+
+(defn range-length [rng value]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (if (some u/infinite? [start end])
+      ##Inf
+      (-> (- end start) (quot step) inc))))
+
+(defn sequence-length [s value]
+  (->> (process-sequence s)
+       (map #(if (map? %) (range-length % value) 1))
+       (reduce + 0)))
+
+(defn sequence-first-index [s value]
+  (let [e (first (process-sequence s))
+        r (when (map? e) (concretize-range e value))]
+    (if (or (not (map? e)) (u/finite? (:start r)))
+      0
+      ##-Inf)))
+
+(defn sequence-last-index [s value] ;; TODO: check for empty sequence?
+  (let [e (last (process-sequence s))
+        r (when (map? e) (concretize-range e value))]
+    (if (or (not (map? e)) (u/finite? (:end r)))
+      (dec (sequence-length s value))
+      ##Inf)))
+
+(defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
+  (loop [i 0, [el & rest-s] (process-sequence s)]
+    (when (some? el)
+      (let [increment (if (and (map? el) (u/finite? (:start el)))
+                        (range-length el value)
+                        1)
+
+            index (cond
+                    (= x el)  0
+                    (map? el) (index-in-range el value x))]
+        (if (some? index)
+          (+ i index)
+          (recur (+ i increment) rest-s))))))
+
+;;;;;;;; type ;;;;;;;;
+(declare get-type)
+
+(defn delta-type? [value]
+  (= 2 (count (get-type value))))
+
+(defn value-type? [value]
+  (= 1 (count (get-type value))))
+
+(defn dispatch-definition [v]
+  (if (value-type? v)
+    (first (get-type v))
+    :default))
+
+;; This whole type dispatching system implementation looks ugly
+(defmulti definition #'dispatch-definition)
+
+(defn get-type [x]
+  (let [[v d] (first (meta x))] ;; TODO: maybe use namespaced-keywords instead?
+    (cond
+      (nil? v)     [:default-type]
+      (keyword? d) [v d]
+      :else        (or (some-> (methods definition) (find v) key vector)
+                       [:default-type v]))))
+
+;; TODO: preserve fn start & end?
+(defn to-delta-definition [s value]
+  (let [first-idx (sequence-first-index s value)
+        last-idx  (sequence-last-index s value)]
+    (cond
+      (every? u/infinite? [first-idx last-idx])
+      [##-Inf '.. -2 -1 0 1 '.. ##Inf]
+
+      (u/infinite? last-idx)
+      [first-idx  (inc first-idx) '.. ##Inf]
+
+      (u/infinite? first-idx)
+      [##-Inf '.. (dec last-idx) last-idx]
+
+      :else
+      [first-idx (inc first-idx) '.. last-idx])))
+
+(defmethod definition :default [value]
+  (let [t              (get-type value)
+        is-delta-type? (= 2 (count t))]
+    (reduce-kv (if is-delta-type?
+                 (fn [acc k v] (assoc acc k (to-delta-definition v value)))
+                 (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf])))
+               {}
+               ((get-method definition (first t)) value))))
+
+(defn unit-type [value unit]
+  (get (definition value) unit))
+
+(defn make-delta-type [value-meta delta-type]
+  (or (some-> (ffirst value-meta)
+              (hash-map (or delta-type :delta)))
+      (some-> delta-type (hash-map true))
+      {:delta true}))
+
+(defn get-next-unit [value unit]
+  (u/get-next-element (keys (definition value)) unit))
+
+(defn get-prev-unit [value unit]
+  (u/get-prev-element (keys (definition value)) unit))
+
+(defn strip-zeros [delta]
+  (reduce-kv
+   (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
+   delta
+   delta))
+
+(defn invert [x] ;; TODO: map only over type's values, not all keys
+  {:pre [(delta-type? x)]}
+  (u/map-v - x))
+
+;;;;;;;; delta ;;;;;;;;
+(declare plus)
+
+(defn apply-delta [value delta]
+  (assoc (plus value delta)
+         (second (get-type delta)) delta))
+
+(defn get-applied-deltas [value]
+  (->> value
+       (remove (comp (partial contains? (-> value definition keys set)) key))
+       (map (fn [[k v]] (with-meta v {(first (get-type value)) k})))))
+
+(defn remove-deltas [value]
+  (->> (get-applied-deltas value)
+       (map invert)
+       (reduce (fn [v d]
+                 (let [delta-key (second (get-type d))]
+                   (-> v
+                       (dissoc delta-key)
+                       (apply-delta d)
+                       (dissoc delta-key))))
+               value)))
+
+(defn drop-deltas [value]
+  (->> (get-applied-deltas value)
+       (map (comp second get-type))
+       (apply dissoc value)))
+
+(defn apply-deltas [value deltas]
+  (reduce apply-delta value deltas))
+
+;;;;;;;; cmp ;;;;;;;;
 (defn sequence-cmp [s value x y]
   (cond
     (= x y) 0
@@ -133,13 +220,6 @@
     (nil? y) 1
     (= x (sequence-contains-some s value x y)) -1
     :else 1))
-
-(declare strip-zeros)
-(declare get-applied-deltas)
-(declare minus)
-(declare apply-deltas)
-(declare remove-deltas)
-(declare drop-deltas)
 
 (defn cmp [x y]
   {:pre [(= (get-type x) (get-type y))]} ;;TODO: maybe allow to compare across different types?
@@ -188,6 +268,7 @@
   ([x y]        (<= 0 (cmp x y)))
   ([x y & more] (apply u/apply-binary-pred gte? x y more)))
 
+;;;;;;;; arithmetic ;;;;;;;;
 (defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
     (let [{:keys [step end]} (if (map? el) (concretize-range el value) {})]
@@ -261,12 +342,6 @@
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
 
-(defn strip-zeros [delta]
-  (reduce-kv
-   (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
-   delta
-   delta))
-
 (defn plus
   "  a   + delta =   a
    delta +   a   =   a
@@ -281,54 +356,6 @@
      (cond-> result (delta-type? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
 
-(defn index-in-range
-  "Returns negative index if range start is infinite, 0 index will be end of range."
-  [rng value x]
-  (let [{:keys [start step end]} (concretize-range rng value)]
-    (when (range-contains-some rng value x)
-      (if (u/infinite? start)
-        (quot (- end x) step)
-        (quot (- x start) step)))))
-
-(defn range-length [rng value]
-  (let [{:keys [start step end]} (concretize-range rng value)]
-    (if (some u/infinite? [start end])
-      ##Inf
-      (-> (- end start) (quot step) inc))))
-
-(defn sequence-length [s value]
-  (->> (process-sequence s)
-       (map #(if (map? %) (range-length % value) 1))
-       (reduce + 0)))
-
-(defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
-  (loop [i 0, [el & rest-s] (process-sequence s)]
-    (when (some? el)
-      (let [increment (if (and (map? el) (u/finite? (:start el)))
-                        (range-length el value)
-                        1)
-
-            index (cond
-                    (= x el)  0
-                    (map? el) (index-in-range el value x))]
-        (if (some? index)
-          (+ i index)
-          (recur (+ i increment) rest-s))))))
-
-(defn sequence-first-index [s value]
-  (let [e (first (process-sequence s))
-        r (when (map? e) (concretize-range e value))]
-    (if (or (not (map? e)) (u/finite? (:start r)))
-       0
-      ##-Inf)))
-
-(defn sequence-last-index [s value] ;; TODO: check for empty sequence?
-  (let [e (last (process-sequence s))
-        r (when (map? e) (concretize-range e value))]
-    (if (or (not (map? e)) (u/finite? (:end r)))
-      (dec (sequence-length s value))
-      ##Inf)))
-
 (defn value->delta [value & [delta-meta]]
   (reduce-kv
    (fn [acc k v]
@@ -336,10 +363,6 @@
        (cond-> acc (not (zero? i)) (assoc k i))))
    (with-meta {} (make-delta-type (meta value) delta-meta))
    value))
-
-(defn invert [x] ;; TODO: map only over type's values, not all keys
-  {:pre [(delta-type? x)]}
-  (u/map-v - x))
 
 (declare difference)
 
@@ -362,31 +385,3 @@
   (->> (if (gte? x y) [x y] [y x])
        (map value->delta)
        (apply minus)))
-
-(defn apply-delta [value delta]
-  (assoc (plus value delta)
-         (second (get-type delta)) delta))
-
-(defn remove-deltas [value]
-  (->> (get-applied-deltas value)
-       (map invert)
-       (reduce (fn [v d]
-                 (let [delta-key (second (get-type d))]
-                   (-> v
-                       (dissoc delta-key)
-                       (apply-delta d)
-                       (dissoc delta-key))))
-               value)))
-
-(defn drop-deltas [value]
-  (->> (get-applied-deltas value)
-       (map (comp second get-type))
-       (apply dissoc value)))
-
-(defn get-applied-deltas [value]
-  (->> value
-       (remove (comp (partial contains? (-> value definition keys set)) key))
-       (map (fn [[k v]] (with-meta v {(first (get-type value)) k})))))
-
-(defn apply-deltas [value deltas]
-  (reduce apply-delta value deltas))
