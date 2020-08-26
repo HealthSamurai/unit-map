@@ -134,15 +134,20 @@
     (= x (sequence-contains-some s value x y)) -1
     :else 1))
 
+(declare strip-zeros)
+
 (defn cmp [x y] ;;TODO: ignore zeros in delta types
-  {:pre [(= (definition x) (definition y))]} ;;TODO: maybe allow to compare across different types?
-  (or (->> (definition x)
-           reverse
-           (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
-           (filter (comp not zero?))
-           first)
-      0))
-;; TODO: some checks will be faster without cmp
+  {:pre [(= (get-type x) (get-type y))]} ;;TODO: maybe allow to compare across different types?
+  (let [delta-cmp? (delta-type? x)
+        x          (cond-> x delta-cmp? strip-zeros)
+        y          (cond-> y delta-cmp? strip-zeros)]
+    (or (->> (definition x)
+             reverse
+             (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
+             (drop-while zero?)
+             first)
+        0)))
+
 (defn eq?
   ([x]          true)
   ([x y]        (zero? (cmp x y)))

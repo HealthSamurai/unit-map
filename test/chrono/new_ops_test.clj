@@ -302,4 +302,8 @@
   (t/testing "gte?"
     (t/is (sut/gte? {:day 26, :month :jul, :year 2020}))
     (t/is (sut/gte? {:day 27, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020}))
-    (t/is (sut/gte? {:day 26, :month :jul, :year 2020} {}))))
+    (t/is (sut/gte? {:day 26, :month :jul, :year 2020} {})))
+
+  (t/testing "cmp delta"
+    (t/is (= 0 (sut/cmp ^{::time/military :tz}{:hour 20}
+                        ^{::time/military :tz}{:hour 20, :min 0})))))
