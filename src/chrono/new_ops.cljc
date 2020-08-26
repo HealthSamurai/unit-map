@@ -369,3 +369,6 @@
   (->> value
        (remove (comp (partial contains? (-> value definition keys set)) key))
        (map (fn [[k v]] (with-meta v {(first (get-type value)) k})))))
+
+(defn apply-deltas [value deltas]
+  (reduce apply-delta value deltas))

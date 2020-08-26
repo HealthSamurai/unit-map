@@ -268,6 +268,9 @@
     (matcho/match (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
                                    ^:tz{:hour 2})
                   {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733, :tz {:hour 2}})
+    (matcho/match (sut/apply-deltas {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                                    [^:tz{:hour 2}])
+                  {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733, :tz {:hour 2}})
     (matcho/match (sut/get-applied-deltas
                    (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
                                     ^:tz{:hour 2}))
