@@ -278,7 +278,11 @@
     (matcho/match (-> {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
                       (sut/apply-delta ^:tz{:hour 2})
                       sut/remove-deltas)
-                  {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}))
+                  {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733})
+    (matcho/match (-> {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                      (sut/apply-deltas [^:tz{:hour 2}])
+                      sut/drop-deltas)
+                  {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733}))
 
   (t/testing "eq?"
     (t/is (sut/eq? {:day 26, :month :jul, :year 2020}))

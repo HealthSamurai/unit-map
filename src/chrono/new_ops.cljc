@@ -365,6 +365,11 @@
                        (dissoc delta-key))))
                value)))
 
+(defn drop-deltas [value]
+  (->> (get-applied-deltas value)
+       (map (comp second get-type))
+       (apply dissoc value)))
+
 (defn get-applied-deltas [value]
   (->> value
        (remove (comp (partial contains? (-> value definition keys set)) key))
