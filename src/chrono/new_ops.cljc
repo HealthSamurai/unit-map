@@ -354,6 +354,17 @@
   (assoc (plus value delta)
          (second (get-type delta)) delta))
 
+(defn remove-delta [value]
+  (->> (get-applied-deltas value)
+       (map invert)
+       (reduce (fn [v d]
+                 (let [delta-key (second (get-type d))]
+                   (-> v
+                       (dissoc delta-key)
+                       (apply-delta d)
+                       (dissoc delta-key))))
+               value)))
+
 (defn get-applied-deltas [value]
   (->> value
        (remove (comp (partial contains? (-> value definition keys set)) key))
