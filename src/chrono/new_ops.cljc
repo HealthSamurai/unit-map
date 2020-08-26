@@ -135,15 +135,28 @@
     :else 1))
 
 (declare strip-zeros)
+(declare get-applied-deltas)
+(declare minus)
+(declare apply-deltas)
+(declare remove-deltas)
+(declare drop-deltas)
 
-(defn cmp [x y] ;;TODO: ignore zeros in delta types
+(defn cmp [x y]
   {:pre [(= (get-type x) (get-type y))]} ;;TODO: maybe allow to compare across different types?
   (let [delta-cmp? (delta-type? x)
-        x          (cond-> x delta-cmp? strip-zeros)
-        y          (cond-> y delta-cmp? strip-zeros)]
-    (or (->> (definition x)
+        x'         (cond
+                     delta-cmp?                      (strip-zeros x)
+                     (empty? (get-applied-deltas y)) (drop-deltas x)
+                     :else                           x)
+        y'         (cond
+                     delta-cmp?                      (strip-zeros y)
+                     (empty? (get-applied-deltas x)) (drop-deltas y)
+                     (empty? (get-applied-deltas y)) y
+                     :else                           (-> (remove-deltas y)
+                                                         (apply-deltas (get-applied-deltas x))))]
+    (or (->> (definition x')
              reverse
-             (map (fn [[unit sequence]] (sequence-cmp sequence x (get x unit) (get y unit))))
+             (map (fn [[unit sequence]] (sequence-cmp sequence x' (get x' unit) (get y' unit))))
              (drop-while zero?)
              first)
         0)))

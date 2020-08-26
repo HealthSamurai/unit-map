@@ -317,4 +317,16 @@
 
   (t/testing "cmp delta"
     (t/is (= 0 (sut/cmp ^{::time/military :tz}{:hour 20}
-                        ^{::time/military :tz}{:hour 20, :min 0})))))
+                        ^{::time/military :tz}{:hour 20, :min 0}))))
+
+  (t/testing "cmp with delta"
+    (t/is (= 0 (sut/cmp ^::time/military{:hour 20, :min 20, :tz {:hour 3}}
+                        ^::time/military{:hour 19, :min 20, :tz {:hour 2}})))
+    (t/is (= 0 (sut/cmp ^::time/military{:hour 19, :min 20, :tz {:hour 2}}
+                        ^::time/military{:hour 20, :min 20, :tz {:hour 3}})))
+    (t/is (= 0 (sut/cmp ^::time/military{:hour 20, :min 20, :tz {:hour 3}}
+                        ^::time/military{:hour 20, :min 20, :tz {:hour 3}})))
+    (t/is (= 0 (sut/cmp ^::time/military{:hour 20, :min 20, :tz {:hour 3}}
+                        ^::time/military{:hour 20, :min 20})))
+    (t/is (= 0 (sut/cmp ^::time/military{:hour 20, :min 20}
+                        ^::time/military{:hour 20, :min 20, :tz {:hour 3}})))))
