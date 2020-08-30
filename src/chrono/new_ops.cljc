@@ -369,7 +369,6 @@
   ([x y & more] (apply u/apply-binary-pred gte? x y more)))
 
 ;;;;;;;; arithmetic ;;;;;;;;
-
 (defn plus
   "  a   + delta =   a
    delta +   a   =   a
@@ -384,7 +383,16 @@
      (cond-> result (delta-type? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
 
-(declare difference)
+(defn substract-delta [x delta]
+  (plus x (invert delta)))
+
+(defn difference
+  "Difference between two values"
+  [x y]
+  (->> (cond-> (process-binary-op-args-deltas x y)
+         (lt? x y) reverse)
+       (map value->delta)
+       (apply substract-delta)))
 
 (defn minus
   "  a   -   a   = delta
@@ -394,15 +402,7 @@
   ([x y]
    {:pre [(or (value-type? x) (delta-type? y))]}
    (if (delta-type? y)
-     (plus x (invert y))
+     (substract-delta x y)
      (cond-> (difference x y)
        (gt? y x) invert)))
   ([x y & more] (reduce minus (minus x y) more)))
-
-(defn difference
-  "Difference between two values"
-  [x y]
-  (->> (cond-> (process-binary-op-args-deltas x y)
-         (lt? x y) reverse)
-       (map value->delta)
-       (apply minus)))
