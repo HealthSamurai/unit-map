@@ -292,9 +292,13 @@
   (reduce apply-delta value deltas))
 
 (defn to-deltas [value new-deltas]
-  (let [has-deltas? (seq (get-applied-deltas value))
-        new-deltas? (seq new-deltas)]
+  (let [current-deltas (get-applied-deltas value)
+        has-deltas?    (seq current-deltas)
+        new-deltas?    (seq new-deltas)]
     (cond
+      (= (apply merge new-deltas) (apply merge current-deltas))
+      value
+
       (and has-deltas? new-deltas?) (-> (remove-deltas value) (apply-deltas new-deltas))
       new-deltas?                   (assoc-deltas value new-deltas)
       has-deltas?                   (drop-deltas value)

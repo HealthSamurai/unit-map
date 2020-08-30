@@ -271,7 +271,10 @@
                         {:day 26, :month :jul, :year 2020})
              ^:delta{:day 1}))
     (t/is (sut/eq? {:year 2020 :month :jan :day 31}
-                   (sut/minus {:year 2020 :month :feb} ^:delta{:day 1}))))
+                   (sut/minus {:year 2020 :month :feb} ^:delta{:day 1})))
+    (t/is (sut/eq? ^:delta{:hour 2}
+                   (sut/minus {:hour 3 :tz {:hour 2}}
+                              {:hour 1 :tz {:hour 2}}))))
 
   (t/testing "delta"
     (matcho/match (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
