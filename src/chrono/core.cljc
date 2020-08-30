@@ -1,6 +1,5 @@
 (ns chrono.core
-  (:require [chrono.tz :as tz]
-            [chrono.ops :as ops]
+  (:require [chrono.ops :as ops]
             [chrono.io :as io])
   (:refer-clojure :exclude [+ - = > >= < <= not= format compare]))
 
