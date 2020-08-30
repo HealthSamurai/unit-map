@@ -199,7 +199,11 @@
                             ^:delta{:month -99}
                             ^:delta{:day 99}
                             ^:delta{:sec 30})
-                  {:sec 30, :day 10, :month :mar :year 2011}))
+                  {:sec 30, :day 10, :month :mar :year 2011})
+    (t/is (sut/eq? {:year 2010 :month :dec :day 31 :hour 23 :min 30}
+                   (sut/plus {:year 2011 :month :jan :day 1 :hour 0}
+                             ^:delta{:min -30})))
+    )
 
   (t/testing "invert"
     (matcho/match (sut/invert ^:delta{:day 1, :month 3})
@@ -265,7 +269,9 @@
                   ^:delta{:year 1})
     (t/is (= (sut/minus {:day 27, :month :jul, :year 2020}
                         {:day 26, :month :jul, :year 2020})
-             ^:delta{:day 1})))
+             ^:delta{:day 1}))
+    (t/is (sut/eq? {:year 2020 :month :jan :day 31}
+                   (sut/minus {:year 2020 :month :feb} ^:delta{:day 1}))))
 
   (t/testing "delta"
     (matcho/match (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}

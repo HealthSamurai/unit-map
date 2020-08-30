@@ -228,9 +228,8 @@
                 (assoc value unit (get-min-value value unit)))))
 
 (defn dec-unit [unit {unit-value unit, :as value}]
-  (or (some->> (if (some? unit-value)
-                 (get-prev-unit-value (unit-type value unit) value unit-value)
-                 (get-max-value value unit))
+  (or (some->> (or unit-value (get-min-value value unit))
+               (get-prev-unit-value (unit-type value unit) value)
                (assoc value unit))
       (as-> value $
         (dissoc $ unit)
