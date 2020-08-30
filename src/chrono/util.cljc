@@ -180,8 +180,11 @@
 (defn get-prev-element [s x]
   (last (take-while (partial not= x) s)))
 
-(defn n-times [n f & args]
-  (apply (apply comp (repeat n f)) args))
+(defn n-times [n f x]
+  (loop [i n, r x]
+    (if (pos? i)
+      (recur (dec i) (f r))
+      r)))
 
 (defn apply-binary-pred [pred x y & more]
   (cond
