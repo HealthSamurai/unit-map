@@ -302,12 +302,14 @@
       :else                         value)))
 
 (defn value->delta [value & [delta-meta]]
-  (reduce-kv
-   (fn [acc k v]
-     (let [i (index-in-sequence (unit-type value k) value v)]
-       (cond-> acc (not (zero? i)) (assoc k i))))
-   (with-meta {} (make-delta-type (meta value) delta-meta))
-   value))
+  (->> (definition value)
+       (reduce-kv
+        (fn [acc k s]
+          (if-let [v (get value k)]
+            (assoc acc k (index-in-sequence s value v))
+            acc))
+        (with-meta {} (make-delta-type (meta value) delta-meta)))
+       strip-zeros))
 
 (defn try-strip-zeros [x]
   (cond-> x (delta-type? x) strip-zeros))
