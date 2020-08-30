@@ -222,12 +222,15 @@
                   ^:delta{:year 1})
     (matcho/match (sut/difference {:year -1} {:year 1})
                   ^:delta{:year 1})
-    (t/is (= ^:delta{}
-             (sut/difference {:day 27, :month :jul, :year 2020}
-                             {:day 27, :month :jul, :year 2020})))
-    (t/is (= ^:delta{:day 1}
-             (sut/difference {:day 28, :month :jul, :year 2020}
-                             {:day 27, :month :jul, :year 2020}))))
+    (t/is (sut/eq? ^:delta{}
+                   (sut/difference {:day 27, :month :jul, :year 2020}
+                                   {:day 27, :month :jul, :year 2020})))
+    (t/is (sut/eq? ^:delta{:day 1}
+                   (sut/difference {:day 28, :month :jul, :year 2020}
+                                   {:day 27, :month :jul, :year 2020})))
+    (t/is (sut/eq? ^{::time/military :delta}{:hour 0}
+                   (sut/difference ^::time/military{:hour 12, :min 30, :tz {:hour -2}}
+                                   ^::time/military{:hour 14, :min 30, :tz {:hour 0}}))))
 
   (t/testing "minus"
     (matcho/match (sut/minus ^:delta{:day 1, :month 3})

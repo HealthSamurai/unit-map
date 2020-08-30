@@ -402,6 +402,7 @@
 (defn difference
   "Difference between two values"
   [x y]
-  (->> (if (gte? x y) [x y] [y x])
+  (->> (cond-> (process-binary-op-args-deltas x y)
+         (lt? x y) reverse)
        (map value->delta)
        (apply minus)))
