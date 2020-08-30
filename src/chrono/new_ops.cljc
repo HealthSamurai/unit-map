@@ -171,6 +171,7 @@
 (defn get-prev-unit [value unit]
   (u/get-prev-element (keys (definition value)) unit))
 
+;;;;;;;; delta ;;;;;;;;
 (defn strip-zeros [delta]
   (reduce-kv
    (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
@@ -181,12 +182,13 @@
   {:pre [(delta-type? x)]}
   (u/map-v - x))
 
-;;;;;;;; delta ;;;;;;;;
 (declare plus)
 
+(defn assoc-delta [value delta]
+  (assoc value (second (get-type delta)) delta))
+
 (defn apply-delta [value delta]
-  (assoc (plus value delta)
-         (second (get-type delta)) delta))
+  (-> (plus value delta) (assoc-delta delta)))
 
 (defn get-applied-deltas [value]
   (->> value
@@ -209,8 +211,32 @@
        (map (comp second get-type))
        (apply dissoc value)))
 
+(defn assoc-deltas [value deltas]
+  (reduce assoc-delta value deltas))
+
 (defn apply-deltas [value deltas]
   (reduce apply-delta value deltas))
+
+(defn to-deltas [value new-deltas]
+  (let [has-deltas? (seq (get-applied-deltas value))
+        new-deltas? (seq new-deltas)]
+    (cond
+      (and has-deltas? new-deltas?) (-> (remove-deltas value) (apply-deltas new-deltas))
+      new-deltas?                   (assoc-deltas value new-deltas)
+      has-deltas?                   (drop-deltas value)
+      :else                         value)))
+
+(defn try-strip-zeros [x]
+  (cond-> x (delta-type? x) strip-zeros))
+
+(defn process-binary-op-args-deltas
+  "If args are deltas, then zeros are stripped,
+   otherwhise x's delta applied to y"
+  [x y]
+  {:pre [(= (get-type x) (get-type y))]}
+  [(try-strip-zeros x)
+   (-> (try-strip-zeros y)
+       (to-deltas (get-applied-deltas x)))])
 
 ;;;;;;;; cmp ;;;;;;;;
 (defn sequence-cmp [s value x y]
@@ -222,18 +248,7 @@
     :else 1))
 
 (defn cmp [x y]
-  {:pre [(= (get-type x) (get-type y))]} ;;TODO: maybe allow to compare across different types?
-  (let [delta-cmp? (delta-type? x)
-        x'         (cond
-                     delta-cmp?                      (strip-zeros x)
-                     (empty? (get-applied-deltas y)) (drop-deltas x)
-                     :else                           x)
-        y'         (cond
-                     delta-cmp?                      (strip-zeros y)
-                     (empty? (get-applied-deltas x)) (drop-deltas y)
-                     (empty? (get-applied-deltas y)) y
-                     :else                           (-> (remove-deltas y)
-                                                         (apply-deltas (get-applied-deltas x))))]
+  (let [[x' y'] (process-binary-op-args-deltas x y)]
     (or (->> (definition x')
              reverse
              (map (fn [[unit sequence]] (sequence-cmp sequence x' (get x' unit) (get y' unit))))
