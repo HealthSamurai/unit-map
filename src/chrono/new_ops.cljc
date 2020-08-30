@@ -301,6 +301,9 @@
       has-deltas?                   (drop-deltas value)
       :else                         value)))
 
+(defn to-delta [value delta]
+  (to-deltas value [delta]))
+
 (defn value->delta [value & [delta-meta]]
   (->> (definition value)
        (reduce-kv
