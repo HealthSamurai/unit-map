@@ -6,9 +6,13 @@
             [matcho.core :as matcho]
             [clojure.test :as t]))
 
-(defmethod sut/definition :default-type [_] datetime/gregorian-military)
+(t/use-fixtures
+  :each
+  (fn [t]
+    (defmethod sut/definition :default-type [_] datetime/gregorian-military)
+    (t)))
 
-(t/deftest range-test
+(t/deftest ops-test
   (def base60   (:min  (sut/definition {})))
   (def days     (:day (sut/definition {})))
   (def months   (:month (sut/definition {})))
@@ -149,7 +153,6 @@
                         (partition-by :month))]
       (t/is (= 12 (count calendar)))
       (t/is (= 366 (count (flatten calendar))))))
-
 
   (t/testing "dec-unit"
     (let [value ^::time/am-pm{:hour 11, :period :pm}]

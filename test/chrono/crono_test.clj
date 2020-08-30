@@ -1,6 +1,15 @@
 (ns chrono.crono-test
   (:require [chrono.crono :as sut]
-            [clojure.test :refer :all]))
+            [chrono.new-ops :as new-ops]
+            [chrono.ops :as old-ops]
+            [clojure.test :refer :all]
+            [matcho.core :as matcho]))
+
+(use-fixtures
+  :each
+  (fn [t]
+    (defmethod new-ops/definition :default-type [_] old-ops/calendar)
+    (t)))
 
 (deftest crono-test
 
@@ -22,9 +31,9 @@
          (sut/next-time {:year 2020 :month 1 :day 1 :hour 10 :min 13}
                         {:every :hour :at [{:min 0} {:min 30}]})))
 
-  (is (= {:year 2020 :month 1 :day 1 :hour 12}
-         (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 43}
-                        {:every :hour :at [{:min 0} {:min 30}]})))
+  (is (matcho/match (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 43}
+                                   {:every :hour :at [{:min 0} {:min 30}]})
+                    {:year 2020 :month 1 :day 1 :hour 12}))
 
   (is (= {:year 2020 :month 1 :day 1 :hour 12 :min 10}
          (sut/next-time {:year 2020 :month 1 :day 1 :hour 12 :min 7}
@@ -41,32 +50,32 @@
                                            {:min 50}
                                            {:min 55}]})))
 
-  (is (= {:year 2020 :month 1 :day 1 :hour 11}
-         (sut/next-time {:year 2020 :month 1 :day 1 :hour 10 :min 55}
-                        {:every :hour :at [{:min 0}
-                                           {:min 5}
-                                           {:min 10}
-                                           {:min 15}
-                                           {:min 20}
-                                           {:min 25}
-                                           {:min 30}
-                                           {:min 35}
-                                           {:min 40}
-                                           {:min 45}
-                                           {:min 50}
-                                           {:min 55}]})))
+  (is (matcho/match (sut/next-time {:year 2020 :month 1 :day 1 :hour 10 :min 55}
+                                   {:every :hour :at [{:min 0}
+                                                      {:min 5}
+                                                      {:min 10}
+                                                      {:min 15}
+                                                      {:min 20}
+                                                      {:min 25}
+                                                      {:min 30}
+                                                      {:min 35}
+                                                      {:min 40}
+                                                      {:min 45}
+                                                      {:min 50}
+                                                      {:min 55}]})
+                    {:year 2020 :month 1 :day 1 :hour 11}))
 
-  (is (= {:year 2020 :month 1 :day 1 :hour 12}
-         (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
-                        {:every :hour})))
+  (is (matcho/match (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
+                                   {:every :hour})
+                    {:year 2020 :month 1 :day 1 :hour 12}))
 
-  (is (= {:year 2020 :month 1 :day 1 :hour 11 :min 10}
-         (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
-                        {:every :min})))
+  (is (matcho/match (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
+                                   {:every :min})
+                    {:year 2020 :month 1 :day 1 :hour 11 :min 10}))
 
-  (is (= {:year 2020 :month 1 :day 1 :hour 11 :min 10}
-         (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
-                        {:every :min :at {:sec 0}})))
+  (is (matcho/match (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
+                                   {:every :min :at {:sec 0}})
+                    {:year 2020 :month 1 :day 1 :hour 11 :min 10}))
 
   (is (= {:year 2020 :month 1 :day 1 :hour 11 :min 10 :sec 10}
          (sut/next-time {:year 2020 :month 1 :day 1 :hour 11 :min 9 :sec 10}
