@@ -171,119 +171,7 @@
 (defn get-prev-unit [value unit]
   (u/get-prev-element (keys (definition value)) unit))
 
-;;;;;;;; delta ;;;;;;;;
-(defn strip-zeros [delta]
-  (reduce-kv
-   (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
-   delta
-   delta))
-
-(defn invert [x] ;; TODO: map only over type's values, not all keys
-  {:pre [(delta-type? x)]}
-  (u/map-v - x))
-
-(declare plus)
-
-(defn assoc-delta [value delta]
-  (assoc value (second (get-type delta)) delta))
-
-(defn apply-delta [value delta]
-  (-> (plus value delta) (assoc-delta delta)))
-
-(defn get-applied-deltas [value]
-  (->> value
-       (remove (comp (partial contains? (-> value definition keys set)) key))
-       (map (fn [[k v]] (with-meta v {(first (get-type value)) k})))))
-
-(defn remove-deltas [value]
-  (->> (get-applied-deltas value)
-       (map invert)
-       (reduce (fn [v d]
-                 (let [delta-key (second (get-type d))]
-                   (-> v
-                       (dissoc delta-key)
-                       (apply-delta d)
-                       (dissoc delta-key))))
-               value)))
-
-(defn drop-deltas [value]
-  (->> (get-applied-deltas value)
-       (map (comp second get-type))
-       (apply dissoc value)))
-
-(defn assoc-deltas [value deltas]
-  (reduce assoc-delta value deltas))
-
-(defn apply-deltas [value deltas]
-  (reduce apply-delta value deltas))
-
-(defn to-deltas [value new-deltas]
-  (let [has-deltas? (seq (get-applied-deltas value))
-        new-deltas? (seq new-deltas)]
-    (cond
-      (and has-deltas? new-deltas?) (-> (remove-deltas value) (apply-deltas new-deltas))
-      new-deltas?                   (assoc-deltas value new-deltas)
-      has-deltas?                   (drop-deltas value)
-      :else                         value)))
-
-(defn try-strip-zeros [x]
-  (cond-> x (delta-type? x) strip-zeros))
-
-(defn process-binary-op-args-deltas
-  "If args are deltas, then zeros are stripped,
-   otherwhise x's delta applied to y"
-  [x y]
-  {:pre [(= (get-type x) (get-type y))]}
-  [(try-strip-zeros x)
-   (-> (try-strip-zeros y)
-       (to-deltas (get-applied-deltas x)))])
-
-;;;;;;;; cmp ;;;;;;;;
-(defn sequence-cmp [s value x y]
-  (cond
-    (= x y) 0
-    (nil? x) -1
-    (nil? y) 1
-    (= x (sequence-contains-some s value x y)) -1
-    :else 1))
-
-(defn cmp [x y]
-  (let [[x' y'] (process-binary-op-args-deltas x y)]
-    (or (->> (definition x')
-             reverse
-             (map (fn [[unit sequence]] (sequence-cmp sequence x' (get x' unit) (get y' unit))))
-             (drop-while zero?)
-             first)
-        0)))
-
-(defn eq?
-  ([_]          true)
-  ([x y]        (zero? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
-
-(def not-eq? (complement eq?))
-
-(defn lt?
-  ([_]          true)
-  ([x y]        (neg? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
-
-(defn gt?
-  ([_]          true)
-  ([x y]        (pos? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
-
-(defn lte?
-  ([_]          true)
-  ([x y]        (>= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
-
-(defn gte?
-  ([_]          true)
-  ([x y]        (<= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
-
-;;;;;;;; arithmetic ;;;;;;;;
+;;;;;;;; inc & dec ;;;;;;;;
 (defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
     (let [{:keys [step end]} (if (map? el) (concretize-range el value) {})]
@@ -357,6 +245,129 @@
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
 
+;;;;;;;; delta ;;;;;;;;
+(defn strip-zeros [delta]
+  (reduce-kv
+   (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
+   delta
+   delta))
+
+(defn invert [x] ;; TODO: map only over type's values, not all keys
+  {:pre [(delta-type? x)]}
+  (u/map-v - x))
+
+(defn assoc-delta [value delta]
+  (assoc value (second (get-type delta)) delta))
+
+(defn apply-delta [value delta]
+  (-> (reduce (fn [acc [k _]] (add-to-unit k acc (get delta k 0)))
+              value
+              (reverse (definition delta)))
+      (assoc-delta delta)))
+
+(defn get-applied-deltas [value]
+  (->> value
+       (remove (comp (partial contains? (-> value definition keys set)) key))
+       (map (fn [[k v]] (with-meta v {(first (get-type value)) k})))))
+
+(defn remove-deltas [value]
+  (->> (get-applied-deltas value)
+       (map invert)
+       (reduce (fn [v d]
+                 (let [delta-key (second (get-type d))]
+                   (-> v
+                       (dissoc delta-key)
+                       (apply-delta d)
+                       (dissoc delta-key))))
+               value)))
+
+(defn drop-deltas [value]
+  (->> (get-applied-deltas value)
+       (map (comp second get-type))
+       (apply dissoc value)))
+
+(defn assoc-deltas [value deltas]
+  (reduce assoc-delta value deltas))
+
+(defn apply-deltas [value deltas]
+  (reduce apply-delta value deltas))
+
+(defn to-deltas [value new-deltas]
+  (let [has-deltas? (seq (get-applied-deltas value))
+        new-deltas? (seq new-deltas)]
+    (cond
+      (and has-deltas? new-deltas?) (-> (remove-deltas value) (apply-deltas new-deltas))
+      new-deltas?                   (assoc-deltas value new-deltas)
+      has-deltas?                   (drop-deltas value)
+      :else                         value)))
+
+(defn value->delta [value & [delta-meta]]
+  (reduce-kv
+   (fn [acc k v]
+     (let [i (index-in-sequence (unit-type value k) value v)]
+       (cond-> acc (not (zero? i)) (assoc k i))))
+   (with-meta {} (make-delta-type (meta value) delta-meta))
+   value))
+
+(defn try-strip-zeros [x]
+  (cond-> x (delta-type? x) strip-zeros))
+
+(defn process-binary-op-args-deltas
+  "If args are deltas, then zeros are stripped,
+   otherwhise x's delta applied to y"
+  [x y]
+  {:pre [(= (get-type x) (get-type y))]}
+  [(try-strip-zeros x)
+   (-> (try-strip-zeros y)
+       (to-deltas (get-applied-deltas x)))])
+
+;;;;;;;; cmp ;;;;;;;;
+(defn sequence-cmp [s value x y]
+  (cond
+    (= x y) 0
+    (nil? x) -1
+    (nil? y) 1
+    (= x (sequence-contains-some s value x y)) -1
+    :else 1))
+
+(defn cmp [x y]
+  (let [[x' y'] (process-binary-op-args-deltas x y)]
+    (or (->> (definition x')
+             reverse
+             (map (fn [[unit sequence]] (sequence-cmp sequence x' (get x' unit) (get y' unit))))
+             (drop-while zero?)
+             first)
+        0)))
+
+(defn eq?
+  ([_]          true)
+  ([x y]        (zero? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
+
+(def not-eq? (complement eq?))
+
+(defn lt?
+  ([_]          true)
+  ([x y]        (neg? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
+
+(defn gt?
+  ([_]          true)
+  ([x y]        (pos? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
+
+(defn lte?
+  ([_]          true)
+  ([x y]        (>= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
+
+(defn gte?
+  ([_]          true)
+  ([x y]        (<= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
+
+;;;;;;;; arithmetic ;;;;;;;;
+
 (defn plus
   "  a   + delta =   a
    delta +   a   =   a
@@ -370,14 +381,6 @@
                              a))]
      (cond-> result (delta-type? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
-
-(defn value->delta [value & [delta-meta]]
-  (reduce-kv
-   (fn [acc k v]
-     (let [i (index-in-sequence (unit-type value k) value v)]
-       (cond-> acc (not (zero? i)) (assoc k i))))
-   (with-meta {} (make-delta-type (meta value) delta-meta))
-   value))
 
 (declare difference)
 
