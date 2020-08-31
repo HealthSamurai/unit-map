@@ -194,6 +194,12 @@
     (matcho/match (sut/plus {:day 1, :month :mar, :year 2019}
                             ^:delta{:year 1, :day 1})
                   {:day 2, :year 2020})
+    (matcho/match (sut/plus {:year 2021, :month :sep, :day 3}
+                            ^:delta{:month 2})
+                  {:year 2021, :month :nov, :day 3})
+    (matcho/match (sut/plus {:year 2021, :month :sep, :day 3}
+                            ^:delta{:month -2})
+                  {:year 2021, :month :jul, :day 3})
     (matcho/match (sut/plus {:day 1, :month :mar, :year 2019}
                             ^:delta{:day 99, :month -99, :year 0, :sec 30})
                   {:sec 30, :day 10, :month :mar :year 2011})

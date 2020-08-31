@@ -78,7 +78,7 @@
 (def epoch {:year 1970 :day 1 :month 1})
 
 (defn from-epoch [e]
-  (ops/plus {:sec e} epoch))
+  (ops/plus epoch {:sec e}))
 
 (defn to-epoch [date]
   (let [years (range (:year epoch) (:year date))

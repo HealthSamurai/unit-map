@@ -33,6 +33,12 @@
 (defn concretize-range [rng value]
   (u/map-v #(u/try-call % value) rng))
 
+(defn dynamic-sequence? [s]
+  (boolean (some fn? s)))
+
+(defn static-sequence? [s]
+  (not (dynamic-sequence? s)))
+
 ;;;;;;;; contains & length & index ;;;;;;;;
 (defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
@@ -103,6 +109,25 @@
                     (map? el) (index-in-range el value x))]
         (if (some? index)
           (+ i index)
+          (recur (+ i increment) rest-s))))))
+
+(defn range-nth [rng value index] ;; TODO: ranges with infinite start
+  (let [r (concretize-range rng value)]
+    (+ (:start r) (* (:step r) index))))
+
+(defn sequence-nth [s value index]
+  (loop [i 0, [el & rest-s] (process-sequence s)]
+    (when (some? el)
+      (let [increment (if (and (map? el) (u/finite? (:start el)))
+                        (range-length el value)
+                        1)
+
+            result (cond
+                     (not (<= i index (+ i increment -1))) nil
+                     (map? el) (range-nth el value (- index i))
+                     :else el)]
+        (if (some? result)
+          result
           (recur (+ i increment) rest-s))))))
 
 ;;;;;;;; type ;;;;;;;;
@@ -237,9 +262,29 @@
         (assoc $ unit (get-max-value $ unit)))))
 
 (defn add-to-unit [unit value x]
-  (let [f     (if (neg? x) dec-unit inc-unit)
-        abs-x (if (neg? x) (- x) x)]
-    (u/n-times abs-x (partial f unit) value)))
+  (cond
+    (neg? x)
+    (u/n-times (- x) (partial dec-unit unit) value)
+
+    (static-sequence? (unit-type value unit))
+    (let [sequence     (unit-type value unit)
+          idx          (if-let [v (get value unit)]
+                         (index-in-sequence sequence value v)
+                         (sequence-first-index sequence value))
+          sum          (+ idx x)
+          modulo       (sequence-length sequence value)
+          result-idx   (cond-> sum (u/finite? modulo) (mod modulo))
+          carry-delta  (if (u/infinite? modulo) 0 (quot sum modulo))
+          result       (sequence-nth sequence value result-idx)
+          result-value (assoc value unit result)]
+      (if (zero? carry-delta)
+        result-value
+        (recur (get-next-unit value unit)
+               result-value
+               carry-delta)))
+
+    :else
+    (u/n-times x (partial inc-unit unit) value)))
 
 (defn substract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
@@ -259,7 +304,9 @@
   (assoc value (second (get-type delta)) delta))
 
 (defn apply-delta [value delta]
-  (-> (reduce (fn [acc [k _]] (add-to-unit k acc (get delta k 0)))
+  (-> (reduce (fn [acc [k _]]
+                (let [d (get delta k 0)]
+                  (if (zero? d) acc (add-to-unit k acc d))))
               value
               (reverse (definition delta)))
       (assoc-delta delta)))
@@ -383,9 +430,13 @@
   ([x] x)
   ([x y] {:pre [(some delta-type? [x y])]}
    (let [[a b]  (if (delta-type? y) [x y] [y x])
-         result (->> (reverse (definition b))
-                     (reduce (fn [a' [k _]] (add-to-unit k a' (get b k 0)))
-                             a))]
+         result (reduce (fn [a' [k _]]
+                          (let [v (get b k 0)]
+                            (if (zero? v)
+                              a'
+                              (add-to-unit k a' v))))
+                        a
+                        (reverse (definition b)))]
      (cond-> result (delta-type? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
 
