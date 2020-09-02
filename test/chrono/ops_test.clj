@@ -191,7 +191,7 @@
     (is (= (sut/plus {:min 40} {:min 50})
            {:min 30 :hour 1}))
 
-    (is (= (sut/plus ^:delta{:hour 13} ^:delta{:hour 14})
+    (is (= (sut/plus {:hour 13} {:hour 14})
            {:hour 3 :day 1}))
 
     (is (= (sut/plus {:year 2011 :month 1 :day 1 :hour 23} {:hour 5})
@@ -239,7 +239,7 @@
     (is (= (sut/plus {:hour 4 :tz 2} {:hour 10})
            {:hour 14 :tz 2}))
 
-    (is (sut/eq? {:hour 0, :day 2, :tz -2}
+    (is (sut/eq? {:hour 0, :day 1, :tz -2}
                  (sut/plus {:hour 23 :tz -2} {:hour 1})))
 
     (is (= (sut/plus {:hour 1 :tz -2} {:hour 1})
@@ -309,7 +309,7 @@
     #_(is (= {:day -1 :hour 23 :tz 0}
            (sut/to-utc {:hour 1 :tz 2})))
 
-    (is (= {:day 2 :hour 1 :tz 0}
+    (is (= {:day 1 :hour 1 :tz 0}
            (sut/to-utc {:hour 23 :tz -2})))
 
     (is (sut/eq? {:hour 0 :tz 0}

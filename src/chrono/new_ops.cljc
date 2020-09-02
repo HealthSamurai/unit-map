@@ -245,15 +245,21 @@
       (u/try-call (:end end) value)
       end)))
 
-(defn inc-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)}, :as value}]
-  (or (some->> unit-value
-               (get-next-unit-value (unit-type value unit) value)
-               (assoc value unit))
-      (inc-unit (get-next-unit value unit)
-                (assoc value unit (get-min-value value unit)))))
+(defn inc-unit [unit {unit-value unit, #_#_:or {unit-value (get-min-value value unit)}, :as value}] ;; TODO: uncomment. Needed for compatibility with old chrono ops
+  (let [next-unit (get-next-unit value unit)]
+    (or (when (nil? unit-value) (assoc value unit (get-min-value value unit))) ;; TODO: remove. Needed for compatibility with old chrono ops
+        (some->> unit-value
+                 (get-next-unit-value (unit-type value unit) value)
+                 (assoc value unit))
+        (when (get value next-unit) ;; TODO: remove. Needed for compatibility with old chrono ops
+          (inc-unit next-unit
+                    (assoc value unit (get-min-value value unit))))
+        (assoc value
+               unit      (get-min-value value unit)
+               next-unit (get-min-value value next-unit)))))
 
-(defn dec-unit [unit {unit-value unit, :as value}]
-  (or (some->> (or unit-value (get-min-value value unit))
+(defn dec-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)} :as value}]
+  (or (some->> unit-value
                (get-prev-unit-value (unit-type value unit) value)
                (assoc value unit))
       (as-> value $
