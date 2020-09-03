@@ -69,7 +69,7 @@
   (let [{:keys [start step end]} (concretize-range rng value)]
     (when (range-contains-some rng value x)
       (if (u/infinite? start)
-        (quot (- end x) step)
+        (- (quot (- end x) step))
         (quot (- x start) step)))))
 
 (defn range-length [rng value]
