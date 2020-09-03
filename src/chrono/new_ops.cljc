@@ -365,13 +365,14 @@
 
 (defn value->delta [value & [delta-meta]]
   (->> (definition value)
-       (reduce-kv
-        (fn [acc k s]
+       reverse
+       (reduce
+        (fn [acc [k s]]
           (if-let [v (get value k)]
-            (assoc acc k (index-in-sequence s value v))
+            (assoc acc k (or (index-in-sequence s value v)
+                             (- v (get-min-value value k))))
             acc))
-        (with-meta {} (make-delta-type (meta value) delta-meta)))
-       strip-zeros))
+        (with-meta {} (make-delta-type (meta value) delta-meta)))))
 
 (defn try-strip-zeros [x]
   (cond-> x (delta-type? x) strip-zeros))
