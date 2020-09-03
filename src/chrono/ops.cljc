@@ -65,7 +65,7 @@
 
 (def minus (partial in-old-fmt ops/minus))
 
-(def normalize (partial in-old-fmt identity))
+(def normalize (partial in-old-fmt ops/normalize))
 
 (def to-normalized-utc (comp normalize #(to-tz % 0)))
 

@@ -356,4 +356,10 @@
     (t/is (= 0 (sut/cmp ^::time/military{:hour 20, :min 20, :tz {:hour 3}}
                         ^::time/military{:hour 20, :min 20})))
     (t/is (= 0 (sut/cmp ^::time/military{:hour 20, :min 20}
-                        ^::time/military{:hour 20, :min 20, :tz {:hour 3}})))))
+                        ^::time/military{:hour 20, :min 20, :tz {:hour 3}}))))
+
+  (t/testing "normalize"
+    (def d {:year 2020, :month :sep, :day 3, :hour 2, :min 56, :sec 46, :ms 652, :tz {:hour 2}})
+    (t/is (= d (sut/normalize d)))
+    (t/is (= (sut/plus d ^:delta{:day 1337})
+             (sut/normalize (update d :day + 1337))))))

@@ -473,3 +473,13 @@
      (cond-> (difference x y)
        (gt? y x) invert)))
   ([x y & more] (reduce minus (minus x y) more)))
+
+(defn normalize [value]
+  (let [deltas     (get-applied-deltas value)
+        deltalized (-> value drop-deltas value->delta)
+        default    (into value
+                         (comp (filter (comp (partial contains? value) first))
+                            (map (juxt key #(-> (second %) (sequence-nth value 0)))))
+                         (reverse (definition value)))]
+    (-> (plus default deltalized)
+        (assoc-deltas deltas))))
