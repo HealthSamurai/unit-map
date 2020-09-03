@@ -4,6 +4,7 @@
 
  :aliases {:test
            {:extra-paths ["test"]
+            :jvm-opts    ^:replace ["-XX:-OmitStackTraceInFastThrow"]
             :extra-deps  {healthsamurai/matcho {:mvn/version "0.3.7"}}}
 
            :kaocha
