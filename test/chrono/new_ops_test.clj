@@ -147,18 +147,19 @@
                   [11 10 9 8 7 6 5 4 3 2 1 12]))
 
   (t/testing "inc-unit"
-    (let [value ^::time/am-pm{:hour 12, :period :am}]
-      (matcho/match (take 24 (iterate (partial sut/inc-unit :hour) value))
-                    [{:hour 12, :period :am} {:hour 1, :period :am} {:hour 2, :period :am} {:hour 3, :period :am} {:hour 4, :period :am} {:hour 5, :period :am} {:hour 6, :period :am} {:hour 7, :period :am} {:hour 8, :period :am} {:hour 9, :period :am} {:hour 10, :period :am} {:hour 11, :period :am}
-                     {:hour 12, :period :pm} {:hour 1, :period :pm} {:hour 2, :period :pm} {:hour 3, :period :pm} {:hour 4, :period :pm} {:hour 5, :period :pm} {:hour 6, :period :pm} {:hour 7, :period :pm} {:hour 8, :period :pm} {:hour 9, :period :pm} {:hour 10, :period :pm} {:hour 11, :period :pm}]))
+    (def value ^::time/am-pm{:hour 12, :period :am})
 
-    (let [value ^::date/gregorian{:day 1, :month :jan, :year 2020}
-          calendar (->> value
-                        (iterate (partial sut/inc-unit :day))
-                        (take-while (comp #{2020} :year))
-                        (partition-by :month))]
-      (t/is (= 12 (count calendar)))
-      (t/is (= 366 (count (flatten calendar))))))
+    (matcho/match (take 24 (iterate (partial sut/inc-unit :hour) value))
+                  [{:hour 12, :period :am} {:hour 1, :period :am} {:hour 2, :period :am} {:hour 3, :period :am} {:hour 4, :period :am} {:hour 5, :period :am} {:hour 6, :period :am} {:hour 7, :period :am} {:hour 8, :period :am} {:hour 9, :period :am} {:hour 10, :period :am} {:hour 11, :period :am}
+                   {:hour 12, :period :pm} {:hour 1, :period :pm} {:hour 2, :period :pm} {:hour 3, :period :pm} {:hour 4, :period :pm} {:hour 5, :period :pm} {:hour 6, :period :pm} {:hour 7, :period :pm} {:hour 8, :period :pm} {:hour 9, :period :pm} {:hour 10, :period :pm} {:hour 11, :period :pm}])
+
+    (def value ^::date/gregorian{:day 1, :month :jan, :year 2020})
+    (def calendar (->> value
+                       (iterate (partial sut/inc-unit :day))
+                       (take-while (comp #{2020} :year))
+                       (partition-by :month)))
+    (t/is (= 12 (count calendar)))
+    (t/is (= 366 (count (flatten calendar)))))
 
   (t/testing "dec-unit"
     (let [value ^::time/am-pm{:hour 11, :period :pm}]
