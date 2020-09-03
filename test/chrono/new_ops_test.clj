@@ -92,7 +92,13 @@
 
     (t/is (= 11    (sut/sequence-last-index [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec] {})))
     (t/is (= ##Inf (sut/sequence-last-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
-    (t/is (= 999   (sut/sequence-last-index [0 1 '.. 999] {}))))
+    (t/is (= 999   (sut/sequence-last-index [0 1 '.. 999] {})))
+
+    (doseq [x [#_##-Inf -100 -3 -2 -1 #_0 1 2 3 100 #_##Inf]] ;; TODO: add non existent & infinite els support
+      (t/is (->> x
+                 (sut/index-in-sequence years {})
+                 (sut/sequence-nth years {})
+                 (= x)))))
 
   (t/testing "sequence-contains-some"
     (matcho/match (map (comp boolean (partial sut/sequence-contains-some base60 nil))

@@ -111,9 +111,11 @@
           (+ i index)
           (recur (+ i increment) rest-s))))))
 
-(defn range-nth [rng value index] ;; TODO: ranges with infinite start
-  (let [r (concretize-range rng value)]
-    (+ (:start r) (* (:step r) index))))
+(defn range-nth [rng value index]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (if (u/infinite? start)
+      (+ end (* step index))
+      (+ start (* step index)))))
 
 (defn sequence-nth [s value index]
   (loop [i 0, [el & rest-s] (process-sequence s)]
@@ -123,7 +125,8 @@
                         1)
 
             result (cond
-                     (not (<= i index (+ i increment -1))) nil
+                     (not (or (<= i index (+ i increment -1))
+                              (neg? index))) nil
                      (map? el) (range-nth el value (- index i))
                      :else el)]
         (if (some? result)
