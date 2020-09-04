@@ -217,6 +217,9 @@
                             ^:delta{:day 99}
                             ^:delta{:sec 30})
                   {:sec 30, :day 10, :month 3 :year 2011})
+    (matcho/match (sut/plus {:day 31, :month 8, :year 2020}
+                            ^:delta{:month 1})
+                  {:day 30, :month 9, :year 2020})
     (t/is (sut/eq? {:year 2010 :month 12 :day 31 :hour 23 :min 30}
                    (sut/plus {:year 2011 :month 1 :day 1 :hour 0}
                              ^:delta{:min -30}))))
@@ -286,6 +289,9 @@
     (t/is (= (sut/minus {:day 27, :month 7, :year 2020}
                         {:day 26, :month 7, :year 2020})
              ^:delta{:day 1}))
+    (matcho/match (sut/minus {:day 31, :month 7, :year 2020}
+                            ^:delta{:month 1})
+                  {:day 30, :month 6, :year 2020})
     (t/is (sut/eq? {:year 2020 :month 1 :day 31}
                    (sut/minus {:year 2020 :month 2} ^:delta{:day 1})))
     (t/is (sut/eq? ^:delta{:hour 2}
