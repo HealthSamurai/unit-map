@@ -121,16 +121,14 @@
 (defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
   (loop [i 0, [el & rest-s] (process-sequence s)]
     (when (some? el)
-      (let [increment (if (and (range? el) (u/finite? (:start el)))
+      (or (some-> (cond
+                    (= x el)    0
+                    (range? el) (index-in-range el value x))
+                  (+ i))
+          (recur (+ i (if (and (range? el) (u/finite? (:start el)))
                         (range-length el value)
-                        1)
-
-            index (cond
-                    (= x el)  0
-                    (range? el) (index-in-range el value x))]
-        (if (some? index)
-          (+ i index)
-          (recur (+ i increment) rest-s))))))
+                        1))
+                 rest-s)))))
 
 
 (defn range-nth [rng value index]
