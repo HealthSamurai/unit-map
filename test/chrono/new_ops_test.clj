@@ -6,11 +6,32 @@
             [matcho.core :as matcho]
             [clojure.test :as t]))
 
+
 (t/use-fixtures
   :each
   (fn [t]
     (defmethod sut/definition :default-type [_] datetime/gregorian-military)
     (t)))
+
+
+(t/deftest type-exception-test
+  (remove-method sut/definition :default-type)
+  (def exception nil)
+  (try (sut/definition {:hour 1})
+       (catch clojure.lang.ExceptionInfo e
+         (def exception (bean e)))
+       (finally (matcho/match exception
+                              (-> (sut/no-default-type-exception {:hour 1})
+                                  bean
+                                  (select-keys [:class :data])))))
+  (try (sut/definition ^:delta{:hour 1})
+       (catch clojure.lang.ExceptionInfo e
+         (def exception (bean e)))
+       (finally (matcho/match exception
+                              (-> (sut/no-default-type-exception ^:delta{:hour 1})
+                                  bean
+                                  (select-keys [:class :data]))))))
+
 
 (t/deftest ops-test
   (def base60   (:min  (sut/definition {})))

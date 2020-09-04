@@ -151,6 +151,11 @@
 
 
 ;;;;;;;; type ;;;;;;;;
+(defn no-default-type-exception [value]
+  (ex-info "No chrono type specified and no :default-type is defined"
+           {:value value, :meta (meta value)}))
+
+
 (declare get-type)
 
 
@@ -173,12 +178,14 @@
 
 
 (defn get-type [x]
-  (let [[v d] (first (meta x))] ;; TODO: maybe use namespaced-keywords instead?
+  (let [[v d]       (first (meta x)) ;; TODO: maybe use namespaced-keywords instead?
+        definitions (methods definition)]
     (cond
-      (nil? v)     [:default-type]
-      (keyword? d) [v d]
-      :else        (or (some-> (methods definition) (find v) key vector)
-                       [:default-type v]))))
+      (and (nil? v) (contains? definitions :default-type)) [:default-type]
+      (nil? v)                                             (throw (no-default-type-exception x))
+      (keyword? d)                                         [v d]
+      (contains? definitions v)                            [v]
+      :else                                                [:default-type v])))
 
 
 (defn to-delta-definition
@@ -203,12 +210,14 @@
 
 (defmethod definition :default [value]
   (let [t              (get-type value)
-        is-delta-type? (= 2 (count t))]
+        is-delta-type? (= 2 (count t)) ;; TODO: move to function. Needs a refactor of the delta-type? fn
+        definition-fn  (get (methods definition) (first t))]
+    (when (nil? definition-fn) (throw (no-default-type-exception value)))
     (reduce-kv (if is-delta-type?
                  (fn [acc k v] (assoc acc k (to-delta-definition v value)))
                  (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf])))
                {}
-               ((get-method definition (first t)) value))))
+               (definition-fn value))))
 
 
 (defn unit-type [value unit]
