@@ -10,7 +10,7 @@
 
 ;;;;;;;; range & sequence ;;;;;;;;
 (defn range? [x]
-  (and (map? x) (contains? (meta x) :range)))
+  (and (map? x) (:range (meta x))))
 
 
 (defn process-range [pprev prev next nnext]
@@ -106,17 +106,17 @@
 (defn sequence-first-index [s value]
   (let [e (first (process-sequence s))
         r (when (range? e) (concretize-range e value))]
-    (if (or (not (range? e)) (u/finite? (:start r)))
-      0
-      ##-Inf)))
+    (if (u/infinite? (:start r))
+      ##-Inf
+      0)))
 
 
 (defn sequence-last-index [s value] ;; TODO: check for empty sequence?
   (let [e (last (process-sequence s))
         r (when (range? e) (concretize-range e value))]
-    (if (or (not (range? e)) (u/finite? (:end r)))
-      (dec (sequence-length s value))
-      ##Inf)))
+    (if (u/infinite? (:end r))
+      ##Inf
+      (dec (sequence-length s value)))))
 
 
 (defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
