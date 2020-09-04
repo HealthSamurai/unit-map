@@ -23,6 +23,7 @@
 
 (defn process-sequence* [s]
   (loop [[pprev prev x next nnext & rest] (concat [nil nil] s [nil nil])
+
          result []
          buffer []]
     (cond
@@ -147,9 +148,11 @@
 
             result (cond
                      (not (or (<= i index (+ i increment -1))
-                              (neg? index))) nil
+                              (neg? index)))
+                     nil
+
                      (range? el) (range-nth el value (- index i))
-                     :else el)]
+                     :else       el)]
         (if (some? result)
           result
           (recur (+ i increment) rest-s))))))
@@ -164,16 +167,16 @@
 (declare get-type)
 
 
-(defn delta-type? [value]
-  (= 2 (count (get-type value))))
+(defn delta-type? [t] (= 2 (count t)))
+(defn value-type? [t] (= 1 (count t)))
 
 
-(defn value-type? [value]
-  (= 1 (count (get-type value))))
+(defn value? [value] (-> value get-type value-type?))
+(defn delta? [value] (-> value get-type delta-type?))
 
 
 (defn dispatch-definition [v]
-  (if (value-type? v)
+  (if (value? v)
     (first (get-type v))
     :default))
 
@@ -214,11 +217,11 @@
 
 
 (defmethod definition :default [value]
-  (let [t              (get-type value)
-        is-delta-type? (= 2 (count t)) ;; TODO: move to function. Needs a refactor of the delta-type? fn
-        definition-fn  (get (methods definition) (first t))]
+  (let [t             (get-type value)
+        is-delta?     (delta-type? t)
+        definition-fn (get (methods definition) (first t))]
     (when (nil? definition-fn) (throw (no-default-type-exception value)))
-    (reduce-kv (if is-delta-type?
+    (reduce-kv (if is-delta?
                  (fn [acc k v] (assoc acc k (to-delta-definition v value)))
                  (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf])))
                {}
@@ -386,7 +389,7 @@
 
 
 (defn invert [x] ;; TODO: map only over type's values, not all keys
-  {:pre [(delta-type? x)]}
+  {:pre [(delta? x)]}
   (u/map-v - x))
 
 
@@ -466,7 +469,7 @@
 
 
 (defn try-strip-zeros [x]
-  (cond-> x (delta-type? x) strip-zeros))
+  (cond-> x (delta? x) strip-zeros))
 
 
 (defn process-binary-op-args-deltas
@@ -539,8 +542,8 @@
    value + value = error"
   ([] {})
   ([x] x)
-  ([x y] {:pre [(some delta-type? [x y])]}
-   (let [[a b]  (if (delta-type? y) [x y] [y x])
+  ([x y] {:pre [(some delta? [x y])]}
+   (let [[a b]  (if (delta? y) [x y] [y x])
          result (reduce (fn [a' [k _]]
                           (let [v (get b k 0)]
                             (if (zero? v)
@@ -548,7 +551,7 @@
                               (add-to-unit k a' v))))
                         a
                         (reverse (definition b)))]
-     (cond-> result (delta-type? result) strip-zeros)))
+     (cond-> result (delta? result) strip-zeros)))
   ([x y & more] (reduce plus (plus x y) more)))
 
 
@@ -571,8 +574,8 @@
    delta - value = error"
   ([x] (invert x))
   ([x y]
-   {:pre [(or (value-type? x) (delta-type? y))]}
-   (if (delta-type? y)
+   {:pre [(or (value? x) (delta? y))]}
+   (if (delta? y)
      (substract-delta x y)
      (cond-> (difference x y)
        (gt? y x) invert)))
@@ -580,10 +583,10 @@
 
 
 (defn normalize [value]
-  (let [value?  (value-type? value)
-        default (into value
-                         (comp (filter (comp (partial contains? value) first))
-                            (map (juxt key #(-> (second %) (sequence-nth value 0)))))
-                         (reverse (definition value)))]
-    (cond-> (plus default (cond-> value value? (-> drop-deltas value->delta)))
-      value? (assoc-deltas (get-applied-deltas value)))))
+  (let [is-value? (value? value)
+        default   (into value
+                        (comp (filter (comp (partial contains? value) first))
+                           (map (juxt key #(-> (second %) (sequence-nth value 0)))))
+                        (reverse (definition value)))]
+    (cond-> (plus default (cond-> value is-value? (-> drop-deltas value->delta)))
+      is-value? (assoc-deltas (get-applied-deltas value)))))
