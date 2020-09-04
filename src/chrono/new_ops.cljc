@@ -471,11 +471,10 @@
   ([x y & more] (reduce minus (minus x y) more)))
 
 (defn normalize [value]
-  (let [deltas     (get-applied-deltas value)
-        deltalized (-> value drop-deltas value->delta)
-        default    (into value
+  (let [value?  (value-type? value)
+        default (into value
                          (comp (filter (comp (partial contains? value) first))
                             (map (juxt key #(-> (second %) (sequence-nth value 0)))))
                          (reverse (definition value)))]
-    (-> (plus default deltalized)
-        (assoc-deltas deltas))))
+    (cond-> (plus default (cond-> value value? (-> drop-deltas value->delta)))
+      value? (assoc-deltas (get-applied-deltas value)))))
