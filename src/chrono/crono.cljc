@@ -3,32 +3,35 @@
             [chrono.now :as now]
             [chrono.util :as util]))
 
+
 (def needed-for
   {:month [:year :month]
-   :day [:year :month :day]
-   :hour [:year :month :day :hour]
-   :min [:year :month :day :hour :min]
-   :sec [:year :month :day :hour :min :sec]})
+   :day   [:year :month :day]
+   :hour  [:year :month :day :hour]
+   :min   [:year :month :day :hour :min]
+   :sec   [:year :month :day :hour :min :sec]})
+
 
 (def default-at
   {:hour {:min 0}
-   :min {:sec 0}})
+   :min  {:sec 0}})
+
 
 (defn next-time-assumption [current-time {every :every at :at}])
 
+
 (def days-of-week [:sunday :monday :tuesday :wednesday :thursday :friday :saturday])
 
-(defn *next-time
-  ([current-time {every :every at :at :as when}]
-   (let [every (keyword every)
-         at (or at (get default-at every))
-         _ (if (nil? every) (throw (ex-info ":every must be specified" {:when when})))
-         _ (if (nil? at) (throw (ex-info ":at must be specified" {:when when})))
-         at (if (map? at) [at] at)
-         assumptions (map #(merge (select-keys current-time (get needed-for every)) %) at)]
-     (if (nil? (first (filter #(ch/< current-time %) assumptions)))
-       (ch/+ (first assumptions) {every 1})
-       (first (filter #(ch/< current-time %) assumptions))))))
+(defn *next-time [current-time {:keys [every at], :or {at (default-at every)}, :as when'}]
+  (when (nil? every) (throw (ex-info ":every must be specified" {:when when'})))
+  (when (nil? at)    (throw (ex-info ":at must be specified"    {:when when'})))
+  (let [every       (keyword every)
+        at          (cond-> at (map? at) vector)
+        assumptions (map #(merge (select-keys current-time (get needed-for every)) %) at)]
+    (if (nil? (first (filter #(ch/< current-time %) assumptions)))
+      (ch/+ (first assumptions) {every 1})
+      (first (filter #(ch/< current-time %) assumptions)))))
+
 
 (defn validate-cfg [cfg]
   (assert (:every cfg) ":every must be specified")
@@ -36,8 +39,10 @@
                      (keyword (:every cfg)))
           ":every must one of [month day hour min sunday monday tuesday wednesday thursday friday saturday]"))
 
+
 (defn next-time
   ([cfg] (next-time (now/utc) cfg))
+
   ([current-time cfg]
    (validate-cfg cfg)
    (if (contains? (set days-of-week) (keyword (:every cfg)))
@@ -50,13 +55,15 @@
                 current-time))))
      (*next-time current-time cfg))))
 
+
 (defn now?
   ([cfg] (now? (now/utc) cfg))
-  ([current-time {every :every until :until :as when}]
+  ([current-time {every :every until :until :as when'}]
    (if until
      (let [utmost-time (merge (select-keys current-time (get needed-for every)) until)]
        (ch/< current-time utmost-time))
      true)))
+
 
 (comment
   (next-time {} )
@@ -109,6 +116,4 @@
      (now? {:year 2020 :month 1 :day 1 :hour 12 :min 31}
            {:every :day
             :at {:hour 12}
-            :until {:hour 12 :min 30}}))
-
-  )
+            :until {:hour 12 :min 30}})))

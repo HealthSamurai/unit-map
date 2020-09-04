@@ -3,11 +3,13 @@
 
 (defmulti locale (fn[x] x))
 
+
 (defn NaN?
   "Test if this number is nan
    Nan is the only value for which equality is false"
   [x]
   (false? (== x x)))
+
 
 (def locale-en
   {:month
@@ -24,8 +26,12 @@
     11 {:name "November" :short "Nov" :regex "(?i)nov\\S*"}
     12 {:name "December" :short "Dec" :regex "(?i)dec\\S*"}}})
 
+
 (defmethod locale :en [_] locale-en)
+
+
 (defmethod locale :default [_] locale-en)
+
 
 (def parse-patterns
   {:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
@@ -37,6 +43,7 @@
    :sec   "(?:[0-5]\\d|\\d)"
    :ms    "(?:\\d\\d\\d|\\d\\d|\\d)"})
 
+
 (def format-patterns
   {:year  4
    :month 2
@@ -46,15 +53,19 @@
    :sec   2
    :ms    3})
 
+
 (defn sanitize [s]
   (str/replace s #"[-.\+*?\[^\]$(){}=!<>|:\\]" #(str \\ %)))
 
+
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
+
 
 (defn parse-int [x]
   (when (string? x)
     #?(:clj (try (Integer/parseInt x) (catch NumberFormatException e nil))
        :cljs (let [x* (js/parseInt x)] (when-not (NaN? x*) x*)))))
+
 
 (defn parse-name [name unit lang]
   (when name
@@ -63,14 +74,17 @@
             (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
             ffirst)))
 
+
 (defn parse-val [x unit lang]
   (or (parse-int x)
       (parse-name x unit lang)))
+
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))
        (or (pos? (rem y 100))
            (zero? (rem y 400)))))
+
 
 (defn days-in-month [{m :month, y :year}]
   (cond
@@ -78,6 +92,7 @@
     (and (leap-year? y) (= 2 m)) 29
     (= 2 m) 28
     :else 31))
+
 
 (defn- simplify
   ([key acc] (simplify key nil acc))
@@ -93,18 +108,22 @@
         (quot (+ r v) max)
         0)))))
 
+
 (defn- add-days [t r]
   (update t :day #(+ r (or % 1))))
+
 
 (defn- simplify-month [f]
   (-> f
       (update :month #(rem % 12))
       (update :year #(+ % (quot (:month f) 12)))))
 
+
 (defn- simplify-day [f]
   (-> f
       (update :day #(- % (days-in-month f)))
       (update :month inc)))
+
 
 (defn- simplify-date [f]
   (cond (< 12 (:month f))
@@ -112,6 +131,7 @@
         (< (days-in-month f) (:day f))
         (simplify-date (simplify-day f))
         :else f))
+
 
 (defn normalize [t]
   (case (:type t)
@@ -129,19 +149,23 @@
                first)
     t))
 
+
 (defn pad-str [p n s]
   (->> (concat (reverse s) (repeat p))
        (take n)
        reverse
        str/join))
 
+
 (def pad-zero (partial pad-str \0))
+
 
 (defn seconds [d]
   (+ (* (dec (:day d)) 60 60 24)
      (* (:hour d) 60 60)
      (* (:min d) 60)
      (:sec d)))
+
 
 (defn day-of-week
   "m 1-12; y > 1752"
@@ -160,6 +184,7 @@
         (if (< dow 0) 6 dow))
       dow)))
 
+
 (defn *more-or-eq [y m dw d]
   (let [dw' (day-of-week y m d)]
     (cond (= dw' dw) d
@@ -167,18 +192,23 @@
           (> dw' dw) (+ d (- 7 dw') dw)
           (< dw' dw) (+ d (- dw dw')))))
 
+
 (def more-or-eq (memoize *more-or-eq))
+
 
 (defn try-call [maybe-fn & args]
   (if (fn? maybe-fn)
     (apply maybe-fn args)
     maybe-fn))
 
+
 (defn get-next-element [s x]
   (second (drop-while (partial not= x) s)))
 
+
 (defn get-prev-element [s x]
   (last (take-while (partial not= x) s)))
+
 
 (defn n-times [n f x]
   (loop [i n, r x]
@@ -186,18 +216,23 @@
       (recur (dec i) (f r))
       r)))
 
+
 (defn apply-binary-pred [pred x y & more]
   (cond
     (not (pred x y)) false
     (next more)     (recur pred y (first more) (next more))
     :else           (pred y (first more))))
 
+
 (defn map-v [f m]
   (reduce-kv (fn [acc k v] (update acc k f)) m m))
+
 
 (defn map-kv [f m]
   (reduce-kv (fn [acc k v] (update acc k (partial f k))) m m))
 
+
 (defn infinite? [x] (or (= ##Inf x) (= ##-Inf x)))
+
 
 (defn finite? [x] (and (not= ##Inf x) (not= ##-Inf x)))

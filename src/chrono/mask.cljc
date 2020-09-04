@@ -5,12 +5,14 @@
             #?(:cljs [goog.string.format]))
   (:refer-clojure :exclude [resolve]))
 
+
 (defn- format-str [fmt & args]
   (apply
    #?(:clj  clojure.core/format
       :cljs goog.string/format)
    fmt
    args))
+
 
 (defn parse [s fmt]
   (let [fmt (map #(cond-> % (vector? %) first) fmt)
@@ -43,6 +45,7 @@
             (or match-s (= "0" s))  (assoc acc :not-parsed s)
             :else                   acc))))))
 
+
 (defn build [t fmt]
   (reduce (fn [acc f]
             (let [kw (cond-> f (vector? f) first)
@@ -60,6 +63,7 @@
                 :else (reduced acc))))
           ""
           fmt))
+
 
 (defn clean-build [t fmt]
   (let [clean-fmt
@@ -81,9 +85,11 @@
             :else              acc))]
     (build t (vec (:result clean-fmt)))))
 
+
 (defn resolve [s fmt]
   (let [{:keys [not-parsed] :as p} (parse s fmt)]
     (str (build p fmt) not-parsed)))
+
 
 (defn clean-resolve [s fmt]
   (clean-build (parse s fmt) fmt))

@@ -4,6 +4,7 @@
             [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
+
 (defn- format-str [v [fmt & fmt-args] lang]
   (if (and lang (contains? (util/locale lang) fmt))
     (let [short? (not (empty? (filter #(= % :short) fmt-args)))]
@@ -14,6 +15,7 @@
     (let [width (or (first (filter integer? fmt-args)) (util/format-patterns fmt))]
       (cond->> (str v)
         width (util/pad-zero width)))))
+
 
 (defn- internal-parse [s fmt strict?]
   (letfn [(match [f s] (-> (or (util/parse-patterns f) (util/sanitize f))
@@ -40,15 +42,18 @@
                      (nil? rest-f)))
         acc))))
 
+
 (defn parse
   ([s] (parse s util/iso-fmt))
   ([s fmt]
    (when-not (str/blank? s)
      (internal-parse s fmt false))))
 
+
 (defn strict-parse
   ([s] (strict-parse s util/iso-fmt))
   ([s fmt] (internal-parse s fmt true)))
+
 
 (defn format
   ([date-coll] (format date-coll util/iso-fmt))
@@ -66,19 +71,24 @@
                (format-fn (or v 0) fmt lang))))
           str/join))))
 
+
 (defn date-convertable? [value in out]
   (ops/eq?
    (parse value in)
    (parse (format (parse value in) out) out)))
 
+
 (defn date-valid? [value fmt]
   #?(:clj true ; TODO
      :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
 
+
 (def epoch {:year 1970 :day 1 :month 1})
+
 
 (defn from-epoch [e]
   (ops/plus epoch {:sec e}))
+
 
 (defn to-epoch [date]
   (let [years (range (:year epoch) (:year date))
