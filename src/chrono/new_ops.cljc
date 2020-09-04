@@ -388,9 +388,11 @@
    delta))
 
 
-(defn invert [x] ;; TODO: map only over type's values, not all keys
+(defn invert [x]
   {:pre [(delta? x)]}
-  (u/map-v - x))
+  (reduce-kv (fn [acc k _] (cond-> acc (contains? acc k) (update k -)))
+             x
+             (definition x)))
 
 
 (defn assoc-delta [value delta]

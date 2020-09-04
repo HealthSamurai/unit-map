@@ -7,6 +7,9 @@
             [clojure.test :as t]))
 
 
+;; TODO: use sut/eq? instead of matcho/match & t/is
+
+
 (t/use-fixtures
   :each
   (fn [t]
@@ -264,7 +267,9 @@
 
   (t/testing "invert"
     (matcho/match (sut/invert ^:delta{:day 1, :month 3})
-                  ^:delta{:day -1, :month -3}))
+                  ^:delta{:day -1, :month -3})
+    (matcho/match (sut/invert ^:delta{:day 1, :month 3, :foo "bar"})
+                  ^:delta{:day -1, :month -3, :foo "bar"}))
 
   (t/testing "difference"
     (matcho/match (sut/difference {:day 20, :month 7, :year 2020}
