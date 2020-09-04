@@ -236,3 +236,6 @@
 
 
 (defn finite? [x] (and (not= ##Inf x) (not= ##-Inf x)))
+
+
+(defn floor [x] (int (Math/floor x)))

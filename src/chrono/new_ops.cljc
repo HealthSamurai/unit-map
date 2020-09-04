@@ -348,9 +348,6 @@
 
 (defn add-to-unit' [unit value x]
   (cond
-    (neg? x)
-    (u/n-times (- x) (partial dec-unit unit) value)
-
     (static-sequence? (unit-type value unit))
     (let [sequence     (unit-type value unit)
           idx          (if-let [v (get value unit)]
@@ -359,7 +356,7 @@
           sum          (+ idx x)
           modulo       (sequence-length sequence value)
           result-idx   (cond-> sum (u/finite? modulo) (mod modulo))
-          carry-delta  (if (u/infinite? modulo) 0 (quot sum modulo))
+          carry-delta  (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
           result       (sequence-nth sequence value result-idx)
           result-value (assoc value unit result)]
       (if (zero? carry-delta)
@@ -367,6 +364,9 @@
         (recur (get-next-unit value unit)
                result-value
                carry-delta)))
+
+    (neg? x)
+    (u/n-times (- x) (partial dec-unit unit) value)
 
     :else
     (u/n-times x (partial inc-unit unit) value)))
