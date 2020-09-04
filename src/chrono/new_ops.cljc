@@ -278,18 +278,46 @@
         (recur (cons el rest))))))
 
 
-(defn get-min-value [value unit]
-  (let [start (first (process-sequence (unit-type value unit)))]
+(defn get-first-el [s value]
+  (let [start (-> s process-sequence first)]
     (if (map? start)
       (u/try-call (:start start) value)
       start)))
 
 
-(defn get-max-value [value unit]
-  (let [end (last (process-sequence (unit-type value unit)))]
+(defn get-min-value [value unit]
+  (get-first-el (unit-type value unit) value))
+
+
+(defn get-last-el [s value]
+  (let [end (-> s process-sequence last)]
     (if (map? end)
       (u/try-call (:end end) value)
       end)))
+
+
+(defn get-max-value [value unit]
+  (get-last-el (unit-type value unit) value))
+
+
+(defn ensure-unit [s value unit-value]
+  (cond-> unit-value
+    (and (not (sequence-contains-some s value unit-value)) ;; TODO: what if step changes?
+         (number? unit-value))
+    (-> (max (get-first-el s value))
+        (min (get-last-el s value)))))
+
+
+(defn ensure-less-significant-units [value & [unit]]
+  (->> (cond->> (->> value definition reverse)
+         (some? unit)
+         (drop-while (comp not #{unit} key)))
+       rest
+       (reduce (fn [v [u s]]
+                 (cond-> v
+                   (contains? v u)
+                   (update u (partial ensure-unit s value))))
+               value)))
 
 
 (defn inc-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)}, :as value}]
@@ -310,7 +338,7 @@
         (assoc $ unit (get-max-value $ unit)))))
 
 
-(defn add-to-unit [unit value x]
+(defn add-to-unit' [unit value x]
   (cond
     (neg? x)
     (u/n-times (- x) (partial dec-unit unit) value)
@@ -334,6 +362,10 @@
 
     :else
     (u/n-times x (partial inc-unit unit) value)))
+
+
+(defn add-to-unit [unit value x]
+  (ensure-less-significant-units (add-to-unit' unit value x) unit))
 
 
 (defn substract-from-unit [unit value x]

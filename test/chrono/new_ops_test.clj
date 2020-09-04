@@ -167,6 +167,23 @@
     (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value am-hours nil) 11))
                   [11 10 9 8 7 6 5 4 3 2 1 12]))
 
+  (t/testing "ensure value"
+    (t/is (= 1 (sut/ensure-unit (sut/unit-type {:year 2020, :month 1, :day 0} :day)
+                                {:year 2020, :month 1, :day 0}
+                                0)))
+    (t/is (= 29 (sut/ensure-unit (sut/unit-type {:year 2020, :month 1, :day 30} :day)
+                                 {:year 2020, :month 2, :day 30}
+                                 30)))
+    (t/is (= 28 (sut/ensure-unit (sut/unit-type {:year 2020, :month 1, :day 30} :day)
+                                 {:year 2019, :month 2, :day 30}
+                                 30)))
+    (t/is (= {:year 2020, :month 1, :day 1}
+             (sut/ensure-less-significant-units {:year 2020, :month 1, :day 0} :month)))
+    (t/is (= {:year 2020, :month 2, :day 29}
+             (sut/ensure-less-significant-units {:year 2020, :month 2, :day 30} :month)))
+    (t/is (= {:year 2019, :month 2, :day 28}
+             (sut/ensure-less-significant-units {:year 2019, :month 2, :day 30} :month))))
+
   (t/testing "inc-unit"
     (def value ^::time/am-pm{:hour 12, :period :am})
 
