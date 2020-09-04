@@ -1,18 +1,26 @@
 (ns chrono.new-ops
   (:require [chrono.util :as u]))
 
+
+;; TODO: refactor constantly repeating calls:
+;; - range?
+;; - process-sequence
+;; - concretize-range
+
+
 ;;;;;;;; range & sequence ;;;;;;;;
+(defn range? [x]
+  (and (map? x) (contains? (meta x) :range)))
+
+
 (defn process-range [pprev prev next nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next]))]}
-  {:start (or pprev prev)
-   :step  (if (nil? pprev) (- nnext next) (- prev pprev))
-   :end   (or nnext next)})
+  ^:range{:start (or pprev prev)
+          :step  (if (nil? pprev) (- nnext next) (- prev pprev))
+          :end   (or nnext next)})
 
 
-;; TODO: wrapping single enums into {:start :val :end :val :step 1} will help
-;; to not call map? each time
-;; but it may make harder to do fast arithmetics optimizations
 (defn process-sequence* [s]
   (loop [[pprev prev x next nnext & rest] (concat [nil nil] s [nil nil])
          result []
@@ -29,7 +37,6 @@
                        (conj buffer x)))))
 
 
-;; TODO: do this when defining the type instead of on each call
 (def process-sequence (memoize process-sequence*))
 
 
@@ -68,7 +75,7 @@
   [s value x & xs]
   (let [xs (cons x xs)]
     (some (some-fn (set xs)
-                   #(when (map? %) (apply range-contains-some % value xs)))
+                   #(when (range? %) (apply range-contains-some % value xs)))
           (process-sequence s))))
 
 
@@ -91,22 +98,22 @@
 
 (defn sequence-length [s value]
   (->> (process-sequence s)
-       (map #(if (map? %) (range-length % value) 1))
+       (map #(if (range? %) (range-length % value) 1))
        (reduce + 0)))
 
 
 (defn sequence-first-index [s value]
   (let [e (first (process-sequence s))
-        r (when (map? e) (concretize-range e value))]
-    (if (or (not (map? e)) (u/finite? (:start r)))
+        r (when (range? e) (concretize-range e value))]
+    (if (or (not (range? e)) (u/finite? (:start r)))
       0
       ##-Inf)))
 
 
 (defn sequence-last-index [s value] ;; TODO: check for empty sequence?
   (let [e (last (process-sequence s))
-        r (when (map? e) (concretize-range e value))]
-    (if (or (not (map? e)) (u/finite? (:end r)))
+        r (when (range? e) (concretize-range e value))]
+    (if (or (not (range? e)) (u/finite? (:end r)))
       (dec (sequence-length s value))
       ##Inf)))
 
@@ -114,13 +121,13 @@
 (defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
   (loop [i 0, [el & rest-s] (process-sequence s)]
     (when (some? el)
-      (let [increment (if (and (map? el) (u/finite? (:start el)))
+      (let [increment (if (and (range? el) (u/finite? (:start el)))
                         (range-length el value)
                         1)
 
             index (cond
                     (= x el)  0
-                    (map? el) (index-in-range el value x))]
+                    (range? el) (index-in-range el value x))]
         (if (some? index)
           (+ i index)
           (recur (+ i increment) rest-s))))))
@@ -136,14 +143,14 @@
 (defn sequence-nth [s value index]
   (loop [i 0, [el & rest-s] (process-sequence s)]
     (when (some? el)
-      (let [increment (if (and (map? el) (u/finite? (:start el)))
+      (let [increment (if (and (range? el) (u/finite? (:start el)))
                         (range-length el value)
                         1)
 
             result (cond
                      (not (or (<= i index (+ i increment -1))
                               (neg? index))) nil
-                     (map? el) (range-nth el value (- index i))
+                     (range? el) (range-nth el value (- index i))
                      :else el)]
         (if (some? result)
           result
@@ -242,15 +249,15 @@
 ;;;;;;;; inc & dec ;;;;;;;;
 (defn get-next-unit-value [s value x]
   (loop [[el next & rest] (process-sequence s)]
-    (let [{:keys [step end]} (if (map? el) (concretize-range el value) {})]
+    (let [{:keys [step end]} (if (range? el) (concretize-range el value) {})]
       (cond
         (nil? el)
         nil
 
         (or (= x el) (= x end))
-        (cond-> next (map? next) (-> :start (u/try-call value)))
+        (cond-> next (range? next) (-> :start (u/try-call value)))
 
-        (and (map? el)
+        (and (range? el)
              (range-contains-some el value x)
              (range-contains-some el value (+ x step)))
         (+ x step)
@@ -261,15 +268,15 @@
 
 (defn get-prev-unit-value [s value x]
   (loop [[prev el & rest] (cons nil (process-sequence s))]
-    (let [{:keys [start step]} (if (map? el) (concretize-range el value) {})]
+    (let [{:keys [start step]} (if (range? el) (concretize-range el value) {})]
       (cond
         (nil? el)
         nil
 
         (or (= x el) (= x start))
-        (cond-> prev (map? prev) (-> :end (u/try-call value)))
+        (cond-> prev (range? prev) (-> :end (u/try-call value)))
 
-        (and (map? el)
+        (and (range? el)
              (range-contains-some el value x)
              (range-contains-some el value (- x step)))
         (- x step)
@@ -280,7 +287,7 @@
 
 (defn get-first-el [s value]
   (let [start (-> s process-sequence first)]
-    (if (map? start)
+    (if (range? start)
       (u/try-call (:start start) value)
       start)))
 
@@ -291,7 +298,7 @@
 
 (defn get-last-el [s value]
   (let [end (-> s process-sequence last)]
-    (if (map? end)
+    (if (range? end)
       (u/try-call (:end end) value)
       end)))
 
