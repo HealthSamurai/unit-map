@@ -1,19 +1,16 @@
 (ns chrono.core
   (:require [chrono.ops :as ops]
+            [chrono.now :as now]
             [chrono.io :as io])
   (:refer-clojure :exclude [+ - = > >= < <= not= format compare]))
-
-(defn datetime [t]
-  (merge {:type  :datetime
-          :year  1900
-          :month 1
-          :day   1} t))
 
 (def parse io/parse)
 (def format io/format)
 (def strict-parse io/strict-parse)
 
-(defn timestamp [t]) ; TODO
+(defn timestamp
+  ([]  (timestamp (now/utc)))
+  ([t] (io/to-epoch t)))
 
 (defn diff [t t']) ; TODO
 
