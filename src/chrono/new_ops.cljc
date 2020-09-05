@@ -324,7 +324,7 @@
 (defn ensure-unit [ps value unit-value]
   (cond-> unit-value
     (and (not (sequence-contains-some ps value unit-value)) ;; TODO: what if step changes?
-         (number? unit-value))
+         (number? unit-value)) ;; TODO: make this work for non-number elements
     (-> (max (get-first-el ps value))
         (min (get-last-el ps value)))))
 
@@ -359,9 +359,19 @@
         (assoc $ unit (get-max-value $ unit)))))
 
 
+(def add-optimization-treshold 1)
+
+
+(defn try-use-add-optimization? [x]
+  (not (<= (- add-optimization-treshold)
+           x
+           add-optimization-treshold)))
+
+
 (defn add-to-unit' [unit value x]
   (cond
-    (static-sequence? (unit-definition value unit))
+    (and (try-use-add-optimization? x)
+         (static-sequence? (unit-definition value unit)))
     (let [sequence     (unit-rule value unit)
           idx          (if-let [v (get value unit)]
                          (index-in-sequence sequence value v)
