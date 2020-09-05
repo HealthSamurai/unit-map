@@ -37,11 +37,11 @@
 
 
 (t/deftest ops-test
-  (def base60   (:min  (sut/definition {})))
-  (def days     (:day (sut/definition {})))
-  (def months   (:month (sut/definition {})))
-  (def years    (:year (sut/definition {})))
-  (def am-hours (:hour (sut/definition ^::time/am-pm{})))
+  (def base60   (sut/unit-rules {} :min))
+  (def days     (sut/unit-rules {} :day))
+  (def months   (sut/unit-rules {} :month))
+  (def years    (sut/unit-rules {} :year))
+  (def am-hours (sut/unit-rules ^::time/am-pm{} :hour))
 
   (t/testing "type-test"
     (t/is (= [::time/military]        (sut/get-type ^::time/military{:hour 10})))
@@ -106,19 +106,19 @@
                   [{:start 1, :step 2, :end fn?} 13 15]))
 
   (t/testing "sequence-length"
-    (t/is (= 12    (sut/sequence-length [1 2 '.. 12] {})))
-    (t/is (= ##Inf (sut/sequence-length [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
-    (t/is (= 1000  (sut/sequence-length [0 1 '.. 999] {})))
+    (t/is (= 12    (sut/sequence-length (sut/process-sequence [1 2 '.. 12]) {})))
+    (t/is (= ##Inf (sut/sequence-length (sut/process-sequence [##-Inf '.. -2 -1 1 2 '.. ##Inf]) {})))
+    (t/is (= 1000  (sut/sequence-length (sut/process-sequence [0 1 '.. 999]) {})))
 
-    (t/is (= 0      (sut/sequence-first-index [1 2 '.. 12] {})))
-    (t/is (= ##-Inf (sut/sequence-first-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
-    (t/is (= 0      (sut/sequence-first-index [0 1 '.. 999] {})))
-    (t/is (= nil    (sut/sequence-first-index [] {})))
+    (t/is (= 0      (sut/sequence-first-index (sut/process-sequence [1 2 '.. 12]) {})))
+    (t/is (= ##-Inf (sut/sequence-first-index (sut/process-sequence [##-Inf '.. -2 -1 1 2 '.. ##Inf]) {})))
+    (t/is (= 0      (sut/sequence-first-index (sut/process-sequence [0 1 '.. 999]) {})))
+    (t/is (= nil    (sut/sequence-first-index (sut/process-sequence []) {})))
 
-    (t/is (= 11    (sut/sequence-last-index [1 2 '.. 12] {})))
-    (t/is (= ##Inf (sut/sequence-last-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
-    (t/is (= 999   (sut/sequence-last-index [0 1 '.. 999] {})))
-    (t/is (= nil   (sut/sequence-last-index [] {})))
+    (t/is (= 11    (sut/sequence-last-index (sut/process-sequence [1 2 '.. 12]) {})))
+    (t/is (= ##Inf (sut/sequence-last-index (sut/process-sequence [##-Inf '.. -2 -1 1 2 '.. ##Inf]) {})))
+    (t/is (= 999   (sut/sequence-last-index (sut/process-sequence [0 1 '.. 999]) {})))
+    (t/is (= nil   (sut/sequence-last-index (sut/process-sequence []) {})))
 
     (for [x [##-Inf -100 -3 -2 -1 1 2 3 100 ##Inf]]
       (t/is (->> x
@@ -154,10 +154,10 @@
 
     (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value am-hours nil) 12))
                   [12 1 2 3 4 5 6 7 8 9 10 11])
-    (t/is (= 13 (sut/get-next-unit-value [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+    (t/is (= 13 (sut/get-next-unit-value (sut/process-sequence [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15])
                                          {:bar 7}
                                          9)))
-    (t/is (= 11 (sut/get-next-unit-value [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+    (t/is (= 11 (sut/get-next-unit-value (sut/process-sequence [1 3 '.. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15])
                                          {:bar 8}
                                          9))))
 
@@ -175,13 +175,13 @@
                   [11 10 9 8 7 6 5 4 3 2 1 12]))
 
   (t/testing "ensure value"
-    (t/is (= 1 (sut/ensure-unit (sut/unit-type {:year 2020, :month 1, :day 0} :day)
+    (t/is (= 1 (sut/ensure-unit (sut/unit-rules {:year 2020, :month 1, :day 0} :day)
                                 {:year 2020, :month 1, :day 0}
                                 0)))
-    (t/is (= 29 (sut/ensure-unit (sut/unit-type {:year 2020, :month 1, :day 30} :day)
+    (t/is (= 29 (sut/ensure-unit (sut/unit-rules {:year 2020, :month 1, :day 30} :day)
                                  {:year 2020, :month 2, :day 30}
                                  30)))
-    (t/is (= 28 (sut/ensure-unit (sut/unit-type {:year 2020, :month 1, :day 30} :day)
+    (t/is (= 28 (sut/ensure-unit (sut/unit-rules {:year 2020, :month 1, :day 30} :day)
                                  {:year 2019, :month 2, :day 30}
                                  30)))
     (t/is (= {:year 2020, :month 1, :day 1}

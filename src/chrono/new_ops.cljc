@@ -4,7 +4,6 @@
 
 ;; TODO: refactor constantly repeating calls:
 ;; - range?
-;; - process-sequence
 ;; - concretize-range
 
 
@@ -73,11 +72,11 @@
 
 (defn sequence-contains-some
   "Returns first (i.e. min) x found in the sequence"
-  [s value x & xs]
+  [ps value x & xs]
   (let [xs (cons x xs)]
     (some (some-fn (set xs)
                    #(when (range? %) (apply range-contains-some % value xs)))
-          (process-sequence s))))
+          ps)))
 
 
 (defn index-in-range
@@ -99,14 +98,14 @@
       (-> (- end start) (quot step) inc))))
 
 
-(defn sequence-length [s value]
-  (->> (process-sequence s)
+(defn sequence-length [ps value]
+  (->> ps
        (map #(if (range? %) (range-length % value) 1))
        (reduce + 0)))
 
 
-(defn sequence-first-index [s value]
-  (let [e (first (process-sequence s))
+(defn sequence-first-index [ps value]
+  (let [e (first ps)
         r (when (range? e) (concretize-range e value))]
     (cond
       (nil? e)                 nil
@@ -114,17 +113,17 @@
       :else                    0)))
 
 
-(defn sequence-last-index [s value]
-  (let [e (last (process-sequence s))
+(defn sequence-last-index [ps value]
+  (let [e (last ps)
         r (when (range? e) (concretize-range e value))]
     (cond
       (nil? e)               nil
       (u/infinite? (:end r)) ##Inf
-      :else                  (dec (sequence-length s value)))))
+      :else                  (dec (sequence-length ps value)))))
 
 
-(defn index-in-sequence [s value x]
-  (loop [i 0, [el & rest-s] (process-sequence s)]
+(defn index-in-sequence [ps value x]
+  (loop [i 0, [el & rest-s] ps]
     (when (some? el)
       (or (some-> (cond
                     (= x el)    0
@@ -143,8 +142,8 @@
       (+ start (* step index)))))
 
 
-(defn sequence-nth [s value index]
-  (loop [i 0, [el & rest-s] (process-sequence s)]
+(defn sequence-nth [ps value index]
+  (loop [i 0, [el & rest-s] ps]
     (when (some? el)
       (let [increment (if (and (range? el) (u/finite? (:start el)))
                         (range-length el value)
@@ -200,15 +199,18 @@
       :else                                                [:default-type v])))
 
 
+(def integer [##-Inf '.. -2 -1 0 1 '.. ##Inf])
+
+
 (defn to-delta-definition
   "Does not save functions from the source definition
   result always is a static range sequence"
-  [s value]
-  (let [first-idx (sequence-first-index s value)
-        last-idx  (sequence-last-index s value)]
+  [ps value]
+  (let [first-idx (sequence-first-index ps value)
+        last-idx  (sequence-last-index ps value)]
     (cond
       (every? u/infinite? [first-idx last-idx])
-      [##-Inf '.. -2 -1 0 1 '.. ##Inf]
+      integer
 
       (u/infinite? last-idx)
       [first-idx  (inc first-idx) '.. ##Inf]
@@ -220,20 +222,27 @@
       [first-idx (inc first-idx) '.. last-idx])))
 
 
-(defmethod definition :default [value]
+(defmethod definition :default [value] ;; TODO: maybe allow to use not defined types? Will work just as map with some counters
   (let [t             (get-type value)
         is-delta?     (delta-type? t)
         definition-fn (get (methods definition) (first t))]
     (when (nil? definition-fn) (throw (no-default-type-exception value)))
     (reduce-kv (if is-delta?
-                 (fn [acc k v] (assoc acc k (to-delta-definition v value)))
-                 (fn [acc k _] (assoc acc k [##-Inf '.. -2 -1 0 1 2 '.. ##Inf])))
+                 (fn [acc k v] (assoc acc k (-> (process-sequence v) (to-delta-definition value))))
+                 (fn [acc k _] (assoc acc k integer)))
                {}
                (definition-fn value))))
 
 
-(defn unit-type [value unit]
+(defn unit-definition [value unit]
   (get (definition value) unit))
+
+
+(defn rules [v] (u/map-v process-sequence (definition v)))
+
+
+(defn unit-rules [value unit]
+  (process-sequence (get (definition value) unit)))
 
 
 (defn make-delta-type [value-meta delta-type]
@@ -252,8 +261,8 @@
 
 
 ;;;;;;;; inc & dec ;;;;;;;;
-(defn get-next-unit-value [s value x]
-  (loop [[el next & rest] (process-sequence s)]
+(defn get-next-unit-value [ps value x]
+  (loop [[el next & rest] ps]
     (let [{:keys [step end]} (if (range? el) (concretize-range el value) {})]
       (cond
         (nil? el)
@@ -271,8 +280,8 @@
         (recur (cons next rest))))))
 
 
-(defn get-prev-unit-value [s value x]
-  (loop [[prev el & rest] (cons nil (process-sequence s))]
+(defn get-prev-unit-value [ps value x]
+  (loop [[prev el & rest] (cons nil ps)]
     (let [{:keys [start step]} (if (range? el) (concretize-range el value) {})]
       (cond
         (nil? el)
@@ -290,51 +299,51 @@
         (recur (cons el rest))))))
 
 
-(defn get-first-el [s value]
-  (let [start (-> s process-sequence first)]
+(defn get-first-el [ps value]
+  (let [start (first ps)]
     (if (range? start)
       (u/try-call (:start start) value)
       start)))
 
 
 (defn get-min-value [value unit]
-  (get-first-el (unit-type value unit) value))
+  (get-first-el (unit-rules value unit) value))
 
 
-(defn get-last-el [s value]
-  (let [end (-> s process-sequence last)]
+(defn get-last-el [ps value]
+  (let [end (last ps)]
     (if (range? end)
       (u/try-call (:end end) value)
       end)))
 
 
 (defn get-max-value [value unit]
-  (get-last-el (unit-type value unit) value))
+  (get-last-el (unit-rules value unit) value))
 
 
-(defn ensure-unit [s value unit-value]
+(defn ensure-unit [ps value unit-value]
   (cond-> unit-value
-    (and (not (sequence-contains-some s value unit-value)) ;; TODO: what if step changes?
+    (and (not (sequence-contains-some ps value unit-value)) ;; TODO: what if step changes?
          (number? unit-value))
-    (-> (max (get-first-el s value))
-        (min (get-last-el s value)))))
+    (-> (max (get-first-el ps value))
+        (min (get-last-el ps value)))))
 
 
 (defn ensure-less-significant-units [value & [unit]]
-  (->> (cond->> (->> value definition reverse)
+  (->> (cond->> (->> value rules reverse)
          (some? unit)
          (drop-while (comp not #{unit} key)))
        rest
-       (reduce (fn [v [u s]]
+       (reduce (fn [v [u ps]]
                  (cond-> v
                    (contains? v u)
-                   (update u (partial ensure-unit s value))))
+                   (update u (partial ensure-unit ps value))))
                value)))
 
 
 (defn inc-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)}, :as value}]
   (or (some->> unit-value
-               (get-next-unit-value (unit-type value unit) value)
+               (get-next-unit-value (unit-rules value unit) value)
                (assoc value unit))
       (inc-unit (get-next-unit value unit)
                 (assoc value unit (get-min-value value unit)))))
@@ -342,7 +351,7 @@
 
 (defn dec-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)} :as value}]
   (or (some->> unit-value
-               (get-prev-unit-value (unit-type value unit) value)
+               (get-prev-unit-value (unit-rules value unit) value)
                (assoc value unit))
       (as-> value $
         (dissoc $ unit)
@@ -352,8 +361,8 @@
 
 (defn add-to-unit' [unit value x]
   (cond
-    (static-sequence? (unit-type value unit))
-    (let [sequence     (unit-type value unit)
+    (static-sequence? (unit-definition value unit))
+    (let [sequence     (unit-rules value unit)
           idx          (if-let [v (get value unit)]
                          (index-in-sequence sequence value v)
                          (sequence-first-index sequence value))
@@ -462,12 +471,12 @@
 
 
 (defn value->delta [value & [delta-meta]]
-  (->> (definition value)
+  (->> (rules value)
        reverse
        (reduce
-        (fn [acc [k s]]
+        (fn [acc [k ps]]
           (if-let [v (get value k)]
-            (assoc acc k (or (index-in-sequence s value v)
+            (assoc acc k (or (index-in-sequence ps value v)
                              (- v (get-min-value value k))))
             acc))
         (with-meta {} (make-delta-type (meta value) delta-meta)))))
@@ -488,20 +497,20 @@
 
 
 ;;;;;;;; cmp ;;;;;;;;
-(defn sequence-cmp [s value x y]
+(defn sequence-cmp [ps value x y]
   (cond
     (= x y) 0
     (nil? x) -1
     (nil? y) 1
-    (= x (sequence-contains-some s value x y)) -1
+    (= x (sequence-contains-some ps value x y)) -1
     :else 1))
 
 
 (defn cmp [x y]
   (let [[x' y'] (process-binary-op-args-deltas x y)]
-    (or (->> (definition x')
+    (or (->> (rules x')
              reverse
-             (map (fn [[unit sequence]] (sequence-cmp sequence x' (get x' unit) (get y' unit))))
+             (map (fn [[unit processed-sequence]] (sequence-cmp processed-sequence x' (get x' unit) (get y' unit))))
              (drop-while zero?)
              first)
         0)))
@@ -590,8 +599,8 @@
 (defn normalize [value]
   (let [is-value? (value? value)
         default   (into value
-                        (comp (filter (comp (partial contains? value) first))
-                           (map (juxt key #(-> (second %) (sequence-nth value 0)))))
-                        (reverse (definition value)))]
+                        (comp (filter (comp (partial contains? value) key))
+                           (map (juxt key #(-> % val (sequence-nth value 0)))))
+                        (reverse (rules value)))]
     (cond-> (plus default (cond-> value is-value? (-> drop-deltas value->delta)))
       is-value? (assoc-deltas (get-applied-deltas value)))))
