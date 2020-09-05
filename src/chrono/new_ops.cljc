@@ -241,7 +241,7 @@
 (defn rules [v] (u/map-v process-sequence (definition v)))
 
 
-(defn unit-rules [value unit]
+(defn unit-rule [value unit]
   (process-sequence (get (definition value) unit)))
 
 
@@ -307,7 +307,7 @@
 
 
 (defn get-min-value [value unit]
-  (get-first-el (unit-rules value unit) value))
+  (get-first-el (unit-rule value unit) value))
 
 
 (defn get-last-el [ps value]
@@ -318,7 +318,7 @@
 
 
 (defn get-max-value [value unit]
-  (get-last-el (unit-rules value unit) value))
+  (get-last-el (unit-rule value unit) value))
 
 
 (defn ensure-unit [ps value unit-value]
@@ -343,7 +343,7 @@
 
 (defn inc-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)}, :as value}]
   (or (some->> unit-value
-               (get-next-unit-value (unit-rules value unit) value)
+               (get-next-unit-value (unit-rule value unit) value)
                (assoc value unit))
       (inc-unit (get-next-unit value unit)
                 (assoc value unit (get-min-value value unit)))))
@@ -351,7 +351,7 @@
 
 (defn dec-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)} :as value}]
   (or (some->> unit-value
-               (get-prev-unit-value (unit-rules value unit) value)
+               (get-prev-unit-value (unit-rule value unit) value)
                (assoc value unit))
       (as-> value $
         (dissoc $ unit)
@@ -362,7 +362,7 @@
 (defn add-to-unit' [unit value x]
   (cond
     (static-sequence? (unit-definition value unit))
-    (let [sequence     (unit-rules value unit)
+    (let [sequence     (unit-rule value unit)
           idx          (if-let [v (get value unit)]
                          (index-in-sequence sequence value v)
                          (sequence-first-index sequence value))

@@ -37,11 +37,11 @@
 
 
 (t/deftest ops-test
-  (def base60   (sut/unit-rules {} :min))
-  (def days     (sut/unit-rules {} :day))
-  (def months   (sut/unit-rules {} :month))
-  (def years    (sut/unit-rules {} :year))
-  (def am-hours (sut/unit-rules ^::time/am-pm{} :hour))
+  (def base60   (sut/unit-rule {} :min))
+  (def days     (sut/unit-rule {} :day))
+  (def months   (sut/unit-rule {} :month))
+  (def years    (sut/unit-rule {} :year))
+  (def am-hours (sut/unit-rule ^::time/am-pm{} :hour))
 
   (t/testing "type-test"
     (t/is (= [::time/military]        (sut/get-type ^::time/military{:hour 10})))
@@ -175,13 +175,13 @@
                   [11 10 9 8 7 6 5 4 3 2 1 12]))
 
   (t/testing "ensure value"
-    (t/is (= 1 (sut/ensure-unit (sut/unit-rules {:year 2020, :month 1, :day 0} :day)
+    (t/is (= 1 (sut/ensure-unit (sut/unit-rule {:year 2020, :month 1, :day 0} :day)
                                 {:year 2020, :month 1, :day 0}
                                 0)))
-    (t/is (= 29 (sut/ensure-unit (sut/unit-rules {:year 2020, :month 1, :day 30} :day)
+    (t/is (= 29 (sut/ensure-unit (sut/unit-rule {:year 2020, :month 1, :day 30} :day)
                                  {:year 2020, :month 2, :day 30}
                                  30)))
-    (t/is (= 28 (sut/ensure-unit (sut/unit-rules {:year 2020, :month 1, :day 30} :day)
+    (t/is (= 28 (sut/ensure-unit (sut/unit-rule {:year 2020, :month 1, :day 30} :day)
                                  {:year 2019, :month 2, :day 30}
                                  30)))
     (t/is (= {:year 2020, :month 1, :day 1}
