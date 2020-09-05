@@ -1,6 +1,7 @@
 (ns chrono.io
   (:require [chrono.util :as util]
             [chrono.ops :as ops]
+            [chrono.new-ops :as new-ops]
             [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
@@ -75,12 +76,12 @@
 (defn date-convertable? [value in out]
   (ops/eq?
    (parse value in)
-   (parse (format (parse value in) out) out)))
+   (-> value (parse in) (format out) (parse out))))
 
 
-(defn date-valid? [value fmt]
-  #?(:clj true ; TODO
-     :cljs (not (js/isNaN (.parse js/Date (format (parse value fmt) [:year "-" :month "-" :day]))))))
+(defn date-valid? [s fmt]
+  (let [d (parse s fmt)]
+    (new-ops/eq? d (new-ops/ensure-less-significant-units d))))
 
 
 (def epoch {:year 1970 :day 1 :month 1})
