@@ -56,7 +56,7 @@
 ;;;;;;;; contains & length & index ;;;;;;;;
 (defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
-    (and (<= start x end)
+    (and (u/monotonic? [start x end])
          (or (= start x)
              (= end x)
              (and (not= ##-Inf start)
@@ -84,10 +84,12 @@
   "Returns negative index if range start is infinite, 0 index will be end of range."
   [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
-    (when (range-contains-some rng value x)
-      (if (u/infinite? start)
-        (- (quot (- end x) step))
-        (quot (- x start) step)))))
+    (cond
+      (not (range-contains-some rng value x))   nil
+      (and (u/infinite? x) (u/infinite? start)) ##-Inf
+      (u/infinite? x)                           ##Inf
+      (u/infinite? start)                       (- (quot (- end x) step))
+      :else                                     (quot (- x start) step))))
 
 
 (defn range-length [rng value]
@@ -119,7 +121,7 @@
       (dec (sequence-length s value)))))
 
 
-(defn index-in-sequence [s value x] ;; TODO: ##Inf & ##-Inf as x give an exception
+(defn index-in-sequence [s value x]
   (loop [i 0, [el & rest-s] (process-sequence s)]
     (when (some? el)
       (or (some-> (cond
@@ -382,10 +384,9 @@
 
 ;;;;;;;; delta ;;;;;;;;
 (defn strip-zeros [delta]
-  (reduce-kv
-   (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
-   delta
-   delta))
+  (reduce-kv (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
+             delta
+             delta))
 
 
 (defn invert [x]

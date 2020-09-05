@@ -235,7 +235,12 @@
 (defn infinite? [x] (or (= ##Inf x) (= ##-Inf x)))
 
 
-(defn finite? [x] (and (not= ##Inf x) (not= ##-Inf x)))
+(defn finite? [x] (not (infinite? x)))
 
 
 (defn floor [x] (int (Math/floor x)))
+
+
+(defn monotonic? [s]
+  (or (apply <= s)
+      (apply >= s)))
