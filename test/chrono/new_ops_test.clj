@@ -113,10 +113,12 @@
     (t/is (= 0      (sut/sequence-first-index [1 2 '.. 12] {})))
     (t/is (= ##-Inf (sut/sequence-first-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
     (t/is (= 0      (sut/sequence-first-index [0 1 '.. 999] {})))
+    (t/is (= nil    (sut/sequence-first-index [] {})))
 
     (t/is (= 11    (sut/sequence-last-index [1 2 '.. 12] {})))
     (t/is (= ##Inf (sut/sequence-last-index [##-Inf '.. -2 -1 1 2 '.. ##Inf] {})))
     (t/is (= 999   (sut/sequence-last-index [0 1 '.. 999] {})))
+    (t/is (= nil   (sut/sequence-last-index [] {})))
 
     (for [x [##-Inf -100 -3 -2 -1 1 2 3 100 ##Inf]]
       (t/is (->> x

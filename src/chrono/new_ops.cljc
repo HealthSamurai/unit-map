@@ -108,17 +108,19 @@
 (defn sequence-first-index [s value]
   (let [e (first (process-sequence s))
         r (when (range? e) (concretize-range e value))]
-    (if (u/infinite? (:start r))
-      ##-Inf
-      0)))
+    (cond
+      (nil? e)                 nil
+      (u/infinite? (:start r)) ##-Inf
+      :else                    0)))
 
 
-(defn sequence-last-index [s value] ;; TODO: check for empty sequence?
+(defn sequence-last-index [s value]
   (let [e (last (process-sequence s))
         r (when (range? e) (concretize-range e value))]
-    (if (u/infinite? (:end r))
-      ##Inf
-      (dec (sequence-length s value)))))
+    (cond
+      (nil? e)               nil
+      (u/infinite? (:end r)) ##Inf
+      :else                  (dec (sequence-length s value)))))
 
 
 (defn index-in-sequence [s value x]
