@@ -82,23 +82,3 @@
 (defn date-valid? [s fmt]
   (let [d (parse s fmt)]
     (new-ops/eq? d (new-ops/ensure-less-significant-units d))))
-
-
-(def epoch {:year 1970 :day 1 :month 1})
-
-
-(defn from-epoch [e]
-  (ops/plus epoch {:sec e}))
-
-
-(defn to-epoch [date]
-  (let [years (range (:year epoch) (:year date))
-        months (range 1 (:month date))]
-    (-> date
-        (dissoc :year :month)
-        (update :day #(reduce (fn [days year]
-                                (+ days (if (util/leap-year? year) 366 365))) % years))
-        (update :day #(reduce (fn [days month]
-                                (+ days (util/days-in-month
-                                         {:month month :year (:year date)}))) % months))
-        util/seconds)))
