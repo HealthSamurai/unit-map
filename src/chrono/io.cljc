@@ -26,24 +26,25 @@
                            (cond-> acc
                              (contains? util/parse-patterns f)
                              (assoc f (util/parse-int cur-s))))
+
             (not strict) acc))))))
-
-
-(defn format-el [value fmt-el]
-  (let [[fmt pad-width pad-str] (flatten (vector fmt-el))
-        unit-value              (or (get value fmt)
-                                    (new-ops/sequence-nth (new-ops/unit-rule value fmt) value 0)
-                                    fmt)
-        pad-width               (or pad-width (util/format-patterns fmt) (count (str unit-value)))
-        pad-str                 (or pad-str
-                                    (when (number? unit-value) 0)
-                                    " ")]
-    (util/pad-str pad-str pad-width (str unit-value))))
 
 
 (defn format
   ([t] (format t util/iso-fmt))
-  ([t fmt-vec] (str/join (map (partial format-el t) fmt-vec))))
+  ([t fmt-vec]
+   (letfn [(format-el [value fmt-el]
+             (let [[fmt pad-width pad-str] (flatten (vector fmt-el))
+
+                   unit-value (or (get value fmt)
+                                  (new-ops/sequence-nth (new-ops/unit-rule value fmt) value 0)
+                                  fmt)
+                   pad-width  (or pad-width (util/format-patterns fmt) (count (str unit-value)))
+                   pad-str    (or pad-str
+                                  (when (number? unit-value) 0)
+                                  " ")]
+               (util/pad-str pad-str pad-width (str unit-value))))]
+     (str/join (map (partial format-el t) fmt-vec)))))
 
 
 (defn date-convertable? [value in out]

@@ -109,6 +109,8 @@
            (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
     (is (= "20.03.06"
            (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day])))
+    (is (= "--1+ baz"
+           (sut/format {:foo 1, :bar "baz"} [[:foo 3 \-] \+ [:bar 4]])))
     (testing "custom keys"
       (is (= "5.000001234" (sut/format {:sec 5 :ns 1234} [[:sec 1] \. :ms [:ns 6]])))
       (is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
