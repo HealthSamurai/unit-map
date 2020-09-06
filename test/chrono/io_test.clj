@@ -1,6 +1,7 @@
 (ns chrono.io-test
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
+            [chrono.util :as u]
             [chrono.new-ops :as new-ops]
             [chrono.ops :as old-ops]
             [chrono.io :as sut]
@@ -13,28 +14,29 @@
     (defmethod new-ops/definition :default-type [_] old-ops/calendar)
     (t)))
 
+
+(deftest nil-safe
+  (matcho/match (sut/parse nil nil) {})
+  (matcho/match (sut/format nil [:day]) "01")
+  (matcho/match (sut/format nil nil) ""))
+
 (deftest parse-format-test
-  (testing "nil safe"
-    (matcho/match (sut/parse nil) {})
-    (matcho/match (sut/format nil [:day]) "01"))
-
   (testing "parse" ;; TODO: add meta tests
-
     (testing "numeral representation of month"
       (matcho/match
-       (sut/parse "2011-01-01")
+       (sut/parse "2011-01-01" u/iso-fmt)
        {:year 2011 :month 1 :day 1})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:00")
+       (sut/parse "2011-01-01T12:00" u/iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 0})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:00:00")
+       (sut/parse "2011-01-01T12:00:00" u/iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:04:05.100")
+       (sut/parse "2011-01-01T12:04:05.100" u/iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100})
 
       (matcho/match
@@ -47,7 +49,10 @@
 
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
-      (matcho/match (sut/parse (sut/format t)) t)))
+      (matcho/match (-> t
+                        (sut/format u/iso-fmt)
+                        (sut/parse u/iso-fmt))
+                    t)))
 
   (testing "format with specified width"
     (is (= "06.03.20"

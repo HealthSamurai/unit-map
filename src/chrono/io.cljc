@@ -5,8 +5,8 @@
   (:refer-clojure :exclude [format]))
 
 
-(defn parse [s & [fmt & {:keys [strict], :or {strict false}}]]
-  (let [fmts (map #(cond-> % (vector? %) first) (or fmt util/iso-fmt))
+(defn parse [s fmt & {:keys [strict], :or {strict false}}]
+  (let [fmts (map #(cond-> % (vector? %) first) fmt)
         pat  (map (some-fn util/parse-patterns util/sanitize) fmts)]
     (loop [s            s
            [f & rest-f] fmts
@@ -31,7 +31,6 @@
 
 
 (defn format
-  ([t] (format t util/iso-fmt))
   ([t fmt-vec]
    (letfn [(format-el [value fmt-el]
              (let [[fmt pad-width pad-str] (flatten (vector fmt-el))
