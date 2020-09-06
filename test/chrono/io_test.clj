@@ -8,8 +8,9 @@
             [chrono.locale-ru]
             [clojure.string :as str]))
 
+
 (use-fixtures
-  :each
+  :once
   (fn [t]
     (defmethod new-ops/definition :default-type [_] old-ops/calendar)
     (t)))
@@ -19,6 +20,7 @@
   (matcho/match (sut/parse nil nil) {})
   (matcho/match (sut/format nil [:day]) "01")
   (matcho/match (sut/format nil nil) ""))
+
 
 (deftest parse-format-test
   (testing "parse" ;; TODO: add meta tests
@@ -107,6 +109,7 @@
     (matcho/match
      (sut/parse "2011-12" [:month "-" :year] :strict true) nil)))
 
+
 (deftest ^:kaocha/pending format-str-test
   (testing "literal representation of month"
     (testing "default lang"
@@ -164,7 +167,7 @@
     (matcho/match
      (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7}))
   #_(testing "month names"
-    (is (= "November" (#'sut/format-str 11 [:month] :en)))
-    (is (= "Март" (#'sut/format-str 3 [:month] :ru)))
-    (is (= "Aug" (#'sut/format-str 8 [:month :short] :en)))
-    (is (= "09" (#'sut/format-str 9 [:month :short] nil)))))
+      (is (= "November" (#'sut/format-str 11 [:month] :en)))
+      (is (= "Март" (#'sut/format-str 3 [:month] :ru)))
+      (is (= "Aug" (#'sut/format-str 8 [:month :short] :en)))
+      (is (= "09" (#'sut/format-str 9 [:month :short] nil)))))
