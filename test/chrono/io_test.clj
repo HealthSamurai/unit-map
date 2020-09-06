@@ -5,8 +5,10 @@
             [chrono.new-ops :as new-ops]
             [chrono.ops :as old-ops]
             [chrono.io :as sut]
-            [chrono.locale-ru]
             [clojure.string :as str]))
+
+
+(def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 
 (use-fixtures
@@ -26,19 +28,19 @@
   (testing "parse" ;; TODO: add meta tests
     (testing "numeral representation of month"
       (matcho/match
-       (sut/parse "2011-01-01" u/iso-fmt)
+       (sut/parse "2011-01-01" iso-fmt)
        {:year 2011 :month 1 :day 1})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:00" u/iso-fmt)
+       (sut/parse "2011-01-01T12:00" iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 0})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:00:00" u/iso-fmt)
+       (sut/parse "2011-01-01T12:00:00" iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:04:05.100" u/iso-fmt)
+       (sut/parse "2011-01-01T12:04:05.100" iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100})
 
       (matcho/match
@@ -52,8 +54,8 @@
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
       (matcho/match (-> t
-                        (sut/format u/iso-fmt)
-                        (sut/parse u/iso-fmt))
+                        (sut/format iso-fmt)
+                        (sut/parse iso-fmt))
                     t)))
 
   (testing "format with specified width"
@@ -171,3 +173,18 @@
       (is (= "Март" (#'sut/format-str 3 [:month] :ru)))
       (is (= "Aug" (#'sut/format-str 8 [:month :short] :en)))
       (is (= "09" (#'sut/format-str 9 [:month :short] nil)))))
+
+
+(deftest parse-name-test
+  (testing "testing months parsing \n"
+    (let [cases {"jan" 1
+                 "FEB" 2
+                 "March" 3
+                 "april" 4
+                 "MaY." 5
+                 "JUNE" 6}
+          test-fn (fn [[inp res]]
+                    (testing (str "parsing: " inp)
+                      (is (= (sut/parse-name inp :month nil) res))))]
+      (doall
+       (map test-fn cases)))))

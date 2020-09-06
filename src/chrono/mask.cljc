@@ -6,6 +6,27 @@
   (:refer-clojure :exclude [resolve]))
 
 
+(def parse-patterns
+  {:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
+   :month #?(:clj  "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}+\\.?)"
+             :cljs "(?:1[0-2]|0[1-9]|[1-9]|\\w+\\.?)") ;; TODO: can't get \p{L} work in cljs
+   :day   "(?:3[0-1]|[1-2]\\d|0[1-9]|[1-9])"
+   :hour  "(?:2[0-3]|[0-1]\\d|\\d)"
+   :min   "(?:[0-5]\\d|\\d)"
+   :sec   "(?:[0-5]\\d|\\d)"
+   :ms    "(?:\\d\\d\\d|\\d\\d|\\d)"})
+
+
+(def format-patterns
+  {:year  4
+   :month 2
+   :day   2
+   :hour  2
+   :min   2
+   :sec   2
+   :ms    3})
+
+
 (defn- format-str [fmt & args]
   (apply
    #?(:clj  clojure.core/format
@@ -16,7 +37,7 @@
 
 (defn parse [s fmt]
   (let [fmt (map #(cond-> % (vector? %) first) fmt)
-        pat (map #(or (util/parse-patterns %) (util/sanitize %)) fmt)
+        pat (map #(or (parse-patterns %) (util/sanitize %)) fmt)
         drop-pat (-> (remove keyword? fmt)
                      str/join
                      (#(str \["^0-9" % \]))
@@ -31,8 +52,8 @@
         (let [ahead                  "(.+)?"
               pat                    (re-pattern (str "(" p ")" ahead))
               [match-s cur-s rest-s] (re-matches pat s)
-              key?                   (contains? util/format-patterns f)
-              f-len                  (util/format-patterns f)]
+              key?                   (contains? format-patterns f)
+              f-len                  (format-patterns f)]
           (cond
             (and match-s
                  (or (not key?)
@@ -51,11 +72,11 @@
             (let [kw (cond-> f (vector? f) first)
                   v  (get t kw)]
               (cond
-                (not (contains? util/format-patterns kw))
+                (not (contains? format-patterns kw))
                 (str acc f)
 
                 (number? v)
-                (str acc (format-str (str "%0" (if (vector? f) (second f) (util/format-patterns f)) \d) v))
+                (str acc (format-str (str "%0" (if (vector? f) (second f) (format-patterns f)) \d) v))
 
                 (string? v)
                 (str acc v)

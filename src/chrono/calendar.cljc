@@ -1,6 +1,40 @@
 (ns chrono.calendar
   (:require [chrono.util :as util]))
 
+
+(defn day-of-week
+  "m 1-12; y > 1752"
+  [y m d & [fmt]]
+  (let [t [nil 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+        y (- y (if (< m 3) 1 0))
+        dow (rem (+ y
+                    (int (/ y 4))
+                    (- (int (/ y 100)))
+                    (int (/ y 400))
+                    (nth t m)
+                    d) 7)]
+
+    (if (= :ru fmt)
+      (let [dow (- dow 1)]
+        (if (< dow 0) 6 dow))
+      dow)))
+
+
+(defn leap-year? [y]
+  (and (zero? (rem y 4))
+       (or (pos? (rem y 100))
+           (zero? (rem y 400)))))
+
+
+(defn days-in-month [{m :month, y :year, :as v}]
+  (cond
+    (some nil? [m y]) ##Inf
+    (contains? #{4 6 9 11} m) 30
+    (and (leap-year? y) (= 2 m)) 29
+    (= 2 m) 28
+    :else 31))
+
+
 (def months
   {0  {:name "January" :days 31}
    1  {:name "February" :days 28 :leap 29}
@@ -61,14 +95,14 @@
       :else [y m])))
 
 (defn for-month [y m & [fmt {today :today active :active}]]
-  (let [start-day (util/day-of-week y m 1 fmt)
+  (let [start-day (day-of-week y m 1 fmt)
         start-month (if (= 1 m) 12 (dec m))
-        pm-num-days (util/days-in-month {:year (if (= 1 m) (dec y) y), :month start-month})
+        pm-num-days (days-in-month {:year (if (= 1 m) (dec y) y), :month start-month})
         pm-last-day {:month start-month :day pm-num-days}
         start-cal (if (= 0 start-day)
                     {:month m :day 1}
                     {:month start-month :day (inc (- pm-num-days start-day))})
-        num-d     (util/days-in-month {:year y, :month m})]
+        num-d     (days-in-month {:year y, :month m})]
     {:year y :month m
      :cal (for [r (range 6)]
             (for [wd (range 7)]

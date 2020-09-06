@@ -4,6 +4,24 @@
             [chrono.util :as util]))
 
 
+(defn day-of-week
+  "m 1-12; y > 1752"
+  [y m d & [fmt]]
+  (let [t [nil 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+        y (- y (if (< m 3) 1 0))
+        dow (rem (+ y
+                    (int (/ y 4))
+                    (- (int (/ y 100)))
+                    (int (/ y 400))
+                    (nth t m)
+                    d) 7)]
+
+    (if (= :ru fmt)
+      (let [dow (- dow 1)]
+        (if (< dow 0) 6 dow))
+      dow)))
+
+
 (def needed-for
   {:month [:year :month]
    :day   [:year :month :day]
@@ -48,7 +66,7 @@
    (if (contains? (set days-of-week) (keyword (:every cfg)))
      (first
       (filter
-       #(= (util/day-of-week (:year %) (:month %) (:day %))
+       #(= (day-of-week (:year %) (:month %) (:day %))
            (.indexOf days-of-week (keyword (:every cfg))))
        (drop 1 (iterate
                 (fn [current-time] (*next-time current-time (assoc cfg :every :day)))

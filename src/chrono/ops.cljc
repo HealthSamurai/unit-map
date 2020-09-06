@@ -2,10 +2,21 @@
   (:require [chrono.new-ops :as ops]
             [chrono.util :as u]))
 
+
+(defn leap-year? [y]
+  (and (zero? (rem y 4))
+       (or (pos? (rem y 100))
+           (zero? (rem y 400)))))
+
+
 (defn days-in-month [{m :month, y :year, :as v}]
-  (if (some nil? [m y])
-    ##Inf
-    (u/days-in-month v)))
+  (cond
+    (some nil? [m y]) ##Inf
+    (contains? #{4 6 9 11} m) 30
+    (and (leap-year? y) (= 2 m)) 29
+    (= 2 m) 28
+    :else 31))
+
 
 (def calendar
   (array-map
@@ -17,7 +28,9 @@
    :month [1 2 '.. 12]
    :year  [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
 
+
 (defmethod ops/definition :default-type [_] calendar)
+
 
 (defn to-new-fmt [value]
   (let [default-value (into (with-meta
