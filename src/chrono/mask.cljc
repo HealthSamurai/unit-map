@@ -25,7 +25,7 @@
 
            [f & rest-f :as fmts] fmt
            [p & rest-p :as pats] pat
-           acc                   {}]
+           acc                   (with-meta {} (meta fmt))]
       (if-not (and s f)
         acc
         (let [ahead                  "(.+)?"

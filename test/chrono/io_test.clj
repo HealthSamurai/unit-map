@@ -15,10 +15,10 @@
 
 (deftest parse-format-test
   (testing "nil safe"
-    (matcho/match (sut/parse nil) nil)
-    (matcho/match (sut/format nil [:day]) "00"))
+    (matcho/match (sut/parse nil) {})
+    (matcho/match (sut/format nil [:day]) "01"))
 
-  (testing "parse"
+  (testing "parse" ;; TODO: add meta tests
 
     (testing "numeral representation of month"
       (matcho/match
@@ -94,32 +94,25 @@
              (sut/format {:month 1}
                          ^:en[[:month (fn [v [kw _ s] lc] (str/join [v kw lc s])) "test"]])))
       (is (= "3"
-             (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]]))))
-    (testing "custom keys"
-      (is (= "5.000001234" (sut/format {:sec 5 :ns 1234} [[:sec 1] \. :ms [:ns 6]])))
-      (is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
+             (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]])))))
 
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
       (matcho/match (sut/parse (sut/format t)) t)))
 
   (testing "format with specified width"
-    (is
-     (=
-      "06.03.20"
-      (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
-    (is
-     (=
-      "06.03.2020"
-      (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
-    (is
-     (=
-      "2020.03.06"
-      (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
-    (is
-     (=
-      "20.03.06"
-      (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day]))))
+    (is (= "06.03.20"
+           (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
+    (is (= "06.03.2020"
+           (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
+    (is (= "2020.03.06"
+           (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
+    (is (= "20.03.06"
+           (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day])))
+    (testing "custom keys"
+      (is (= "5.000001234" (sut/format {:sec 5 :ns 1234} [[:sec 1] \. :ms [:ns 6]])))
+      (is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
+
   (testing "parse should return parsed value even if format not strictly cosistent"
     (matcho/match
      (sut/parse "2011-01-01" [:year "-" :month]) {:year 2011 :month 1})
@@ -134,32 +127,32 @@
 (deftest strict-parse-test
   (testing "strict parse should return value when format exact match"
     (matcho/match
-     (sut/strict-parse "2011-01-01" [:year \- :month \- :day])
+     (sut/parse "2011-01-01" [:year \- :month \- :day] :strict true)
      {:year 2011 :month 1 :day 1})
 
     (matcho/match
-     (sut/strict-parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])
+     (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec] :strict true)
      {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
 
   (testing "strict parse should return nil when format not strictly consistent"
     (matcho/match
-     (sut/strict-parse "2011-01-01" [:year "-" :month])
+     (sut/parse "2011-01-01" [:year "-" :month] :strict true)
      nil)
 
     (matcho/match
-     (sut/strict-parse "2011-01-01" [:year "-" :month "-" :day "T" :hour])
+     (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour] :strict true)
      nil))
 
   (testing "parsing invalid strings should return nil"
         (matcho/match
-     (sut/strict-parse "2011-23" [:year "-" :month]) nil)
+     (sut/parse "2011-23" [:year "-" :month] :strict true) nil)
 
     (matcho/match
-     (sut/strict-parse "2011-12" [:month "-" :year]) nil))
+     (sut/parse "2011-12" [:month "-" :year] :strict true) nil))
 
   (testing "strict parsing month names"
     (matcho/match
-     (sut/strict-parse "2011-JUL" [:year "-" :month]) {:year 2011 :month 7})))
+     (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7})))
 
 (deftest format-str-test
   (testing "month names"
