@@ -21,11 +21,12 @@
                        re-pattern)
 
               [match-s cur-s rest-s] (re-matches pat s)]
-          (when match-s
-            (recur rest-s rest-f rest-p
-                   (cond-> acc
-                     (contains? util/parse-patterns f)
-                     (assoc f (util/parse-int cur-s))))))))))
+          (cond
+            match-s (recur rest-s rest-f rest-p
+                           (cond-> acc
+                             (contains? util/parse-patterns f)
+                             (assoc f (util/parse-int cur-s))))
+            (not strict) acc))))))
 
 
 (defn format-el [value fmt-el]

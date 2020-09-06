@@ -118,11 +118,13 @@
      (sut/parse "2011-01-01" [:year "-" :month]) {:year 2011 :month 1})
 
     (matcho/match
-     (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]) {:year 2011 :month 1})))
+     (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]) {:year 2011 :month 1}))
 
-(testing "parsing invalid strings should return only parsed part"
-  (matcho/match
-   (sut/parse "2020-12-ab" [:year "-" :month "-" :day]) {:year 2020 :month 12}))
+  (testing "parsing invalid strings should return only parsed part"
+    (matcho/match (sut/parse "2020-12-ab" [:year "-" :month "-" :day])
+                  {:year 2020 :month 12})))
+
+
 
 (deftest strict-parse-test
   (testing "strict parse should return value when format exact match"
