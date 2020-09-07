@@ -44,12 +44,12 @@
   (u/map-v #(u/try-call % value) rng))
 
 
-(defn dynamic-sequence? [s]
-  (boolean (some fn? s)))
+(defn dynamic-sequence? [ps]
+  (boolean (some (every-pred range? (comp (partial some fn?) vals)) ps)))
 
 
-(defn static-sequence? [s]
-  (not (dynamic-sequence? s)))
+(defn static-sequence? [ps]
+  (not (dynamic-sequence? ps)))
 
 
 ;;;;;;;; contains & length & index ;;;;;;;;
@@ -199,7 +199,7 @@
       :else                                                [:default-type v])))
 
 
-(def integer [##-Inf '.. -2 -1 0 1 '.. ##Inf])
+(def integer #chrono/sequence[##-Inf .. -2 -1 0 1 .. ##Inf])
 
 
 (defn to-delta-definition
@@ -213,13 +213,13 @@
       integer
 
       (u/infinite? last-idx)
-      [first-idx  (inc first-idx) '.. ##Inf]
+      (process-sequence [first-idx  (inc first-idx) '.. ##Inf])
 
       (u/infinite? first-idx)
-      [##-Inf '.. (dec last-idx) last-idx]
+      (process-sequence [##-Inf '.. (dec last-idx) last-idx])
 
       :else
-      [first-idx (inc first-idx) '.. last-idx])))
+      (process-sequence [first-idx (inc first-idx) '.. last-idx]))))
 
 
 (defmethod definition :default [value]
@@ -236,13 +236,6 @@
 
 (defn unit-definition [value unit]
   (get (definition value) unit))
-
-
-(defn rules [v] (u/map-v process-sequence (definition v)))
-
-
-(defn unit-rule [value unit]
-  (process-sequence (get (definition value) unit)))
 
 
 (defn make-delta-type [value-meta delta-type]
@@ -307,7 +300,7 @@
 
 
 (defn get-min-value [value unit]
-  (get-first-el (unit-rule value unit) value))
+  (get-first-el (unit-definition value unit) value))
 
 
 (defn get-last-el [ps value]
@@ -318,7 +311,7 @@
 
 
 (defn get-max-value [value unit]
-  (get-last-el (unit-rule value unit) value))
+  (get-last-el (unit-definition value unit) value))
 
 
 (defn ensure-unit [ps value unit-value]
@@ -330,7 +323,7 @@
 
 
 (defn ensure-less-significant-units [value & [unit]]
-  (->> (cond->> (->> value rules reverse)
+  (->> (cond->> (->> value definition reverse)
          (some? unit)
          (drop-while (comp not #{unit} key)))
        rest
@@ -343,7 +336,7 @@
 
 (defn inc-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)}, :as value}]
   (or (some->> unit-value
-               (get-next-unit-value (unit-rule value unit) value)
+               (get-next-unit-value (unit-definition value unit) value)
                (assoc value unit))
       (inc-unit (get-next-unit value unit)
                 (assoc value unit (get-min-value value unit)))))
@@ -351,7 +344,7 @@
 
 (defn dec-unit [unit {unit-value unit, :or {unit-value (get-min-value value unit)} :as value}]
   (or (some->> unit-value
-               (get-prev-unit-value (unit-rule value unit) value)
+               (get-prev-unit-value (unit-definition value unit) value)
                (assoc value unit))
       (as-> value $
         (dissoc $ unit)
@@ -372,7 +365,7 @@
   (cond
     (and (try-use-add-optimization? x)
          (static-sequence? (unit-definition value unit)))
-    (let [sequence     (unit-rule value unit)
+    (let [sequence     (unit-definition value unit)
           idx          (if-let [v (get value unit)]
                          (index-in-sequence sequence value v)
                          (sequence-first-index sequence value))
@@ -481,7 +474,7 @@
 
 
 (defn value->delta [value & [delta-meta]]
-  (->> (rules value)
+  (->> (definition value)
        reverse
        (reduce
         (fn [acc [k ps]]
@@ -518,7 +511,7 @@
 
 (defn cmp [x y]
   (let [[x' y'] (process-binary-op-args-deltas x y)]
-    (or (->> (rules x')
+    (or (->> (definition x')
              reverse
              (map (fn [[unit processed-sequence]] (sequence-cmp processed-sequence x' (get x' unit) (get y' unit))))
              (drop-while zero?)
@@ -611,6 +604,6 @@
         default   (into value
                         (comp (filter (comp (partial contains? value) key))
                            (map (juxt key #(-> % val (sequence-nth value 0)))))
-                        (reverse (rules value)))]
+                        (reverse (definition value)))]
     (cond-> (plus default (cond-> value is-value? (-> drop-deltas value->delta)))
       is-value? (assoc-deltas (get-applied-deltas value)))))

@@ -10,18 +10,17 @@
 
 (defn days-in-month [{m :month, y :year}]
   (cond
-    (some nil? [m y])                    ##Inf
-    (contains? #{4 6 9 11} m) 30
-    (and (leap-year? y) (= 2 m))      29
-    (= 2 m)                           28
-    :else                                31))
+    (some nil? [m y])            ##Inf
+    (contains? #{4 6 9 11} m)    30
+    (and (leap-year? y) (= 2 m)) 29
+    (= 2 m)                      28
+    :else                        31))
 
 
 (def gregorian
-  (array-map
-   :day    [1 2 '.. days-in-month]
-   :month  [1 2 '.. 12]
-   :year   [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
+  #chrono/definition[:day    [1 2 .. days-in-month]
+                     :month  [1 2 .. 12]
+                     :year   [##-Inf .. -2 -1 1 2 .. ##Inf]])
 
 
 (defmethod ops/definition ::gregorian [_] gregorian)
