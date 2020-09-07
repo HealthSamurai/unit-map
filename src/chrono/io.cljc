@@ -111,7 +111,7 @@
              (let [[fmt pad-width pad-str] (flatten (vector fmt-el))
 
                    unit-value (or (get value fmt)
-                                  (new-ops/sequence-nth (new-ops/unit-rule value fmt) value 0)
+                                  (new-ops/sequence-nth (new-ops/unit-definition value fmt) value 0)
                                   fmt)
                    pad-width  (or pad-width (format-patterns fmt) (count (str unit-value)))
                    pad-str    (or pad-str

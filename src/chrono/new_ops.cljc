@@ -52,6 +52,14 @@
   (not (dynamic-sequence? ps)))
 
 
+(defn read-sequence [form]
+  (vec (process-sequence form)))
+
+
+(defn read-definition [form]
+  (apply array-map (mapcat (fn [[u s]] [u (sequence s)]) (partition 2 form))))
+
+
 ;;;;;;;; contains & length & index ;;;;;;;;
 (defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
