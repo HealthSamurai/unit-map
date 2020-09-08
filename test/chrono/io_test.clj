@@ -112,7 +112,22 @@
      (sut/parse "2011-12" [:month "-" :year] :strict true) nil)))
 
 
-(deftest ^:kaocha/pending format-str-test
+(deftest parse-name-test
+  (testing "testing months parsing \n"
+    (let [cases {"jan" 1
+                 "FEB" 2
+                 "March" 3
+                 "april" 4
+                 "MaY." 5
+                 "JUNE" 6}
+          test-fn (fn [[inp res]]
+                    (testing (str "parsing: " inp)
+                      (is (= (sut/parse-name inp :month nil) res))))]
+      (doall
+       (map test-fn cases)))))
+
+
+(deftest format-str-test
   (testing "literal representation of month"
     (testing "default lang"
       (matcho/match
@@ -135,56 +150,47 @@
       (matcho/match
        (sut/parse "jun. 28 9999" [:month \space :day \space :year])
        {:day 28, :month 6, :year 9999}))
+
     (testing "en"
       (matcho/match
        (sut/parse "sep. 19 2023" ^:en[:month \space :day \space :year])
        {:day 19, :month 9, :year 2023}))
+
     (testing "ru"
       (matcho/match
-       (sut/parse "19 января" ^:ru[:day \space :month])
+       (sut/parse "19 января" [:day \space ^:ru[:month]])
        {:day 19 :month 1})
       (matcho/match
-       (sut/parse "февраль 19" ^:ru[:month \space :year])
+       (sut/parse "февраль 19" [^:ru[:month] \space :year])
        {:year 19 :month 2})
       (matcho/match
-       (sut/parse "окт 9:36" ^:ru[:month \space :hour \: :min])
+       (sut/parse "окт 9:36" [^:ru[:month] \space :hour \: :min])
        {:month 10 :hour 9 :min 36}))
+
     (testing "invalid month name"
-      (matcho/match (sut/parse "19 month" ^:ru[:year \space :month]) {:year 19})
-      (matcho/match (sut/parse "month 19" ^:ru[:month \space :year]) nil))
+      (matcho/match (sut/parse "19 month" [:year \space ^:ru[:month]]) {:year 19})
+      (matcho/match (sut/parse "month 19" [^:ru[:month] \space :year]) {:year 19, :month nil}))
 
     (testing "invalid locale name"
-      (matcho/match (sut/parse "январь 19" ^:en[:month \space :year]) nil)))
+      (matcho/match (sut/parse "январь 19" [^:en[:month] \space :year]) {:year 19, :month nil})))
+
   (testing "month-name"
     (is (= "Октябрь 2009"
-           (sut/format {:year 2009 :month 10} ^:ru [:month \space :year])))
+           (sut/format {:year 2009 :month 10} [^:ru[:month] \space :year])))
     (is (= "Sep. 1"
-           (sut/format {:month 9 :day 1} ^:en [[:month :short] \. \space [:day 1]])))
+           (sut/format {:month 9 :day 1} [^:en[:month :short] \. \space [:day 1]])))
     (is (= "1:month:entest"
            (sut/format {:month 1}
-                       ^:en[[:month (fn [v [kw _ s] lc] (str/join [v kw lc s])) "test"]])))
-    (is (= "3"
-           (sut/format {:month 9 :day 1} [[:month (fn [& args] (count args))]]))))
+                       [^:en[:month (fn [_ {:keys [lang pad-str]} fmt v] (str v fmt lang pad-str)) "test"]])))
+    (is (= "4"
+           (sut/format {:month 9 :day 1} [[:month 0 (fn [& args] (count args))]]))))
+
+  (testing "month names"
+    (is (= "November" (sut/format-el {:month 11} nil ^:en[:month])))
+    (is (= "Март" (sut/format-el {:month 3} nil ^:ru[:month])))
+    (is (= "Aug" (sut/format-el {:month 8} nil ^:en[:month :short])))
+    (is (= "09" (sut/format-el {:month 9} nil [:month :short]))))
+
   (testing "strict parsing month names"
     (matcho/match
-     (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7}))
-  #_(testing "month names"
-      (is (= "November" (#'sut/format-str 11 [:month] :en)))
-      (is (= "Март" (#'sut/format-str 3 [:month] :ru)))
-      (is (= "Aug" (#'sut/format-str 8 [:month :short] :en)))
-      (is (= "09" (#'sut/format-str 9 [:month :short] nil)))))
-
-
-(deftest parse-name-test
-  (testing "testing months parsing \n"
-    (let [cases {"jan" 1
-                 "FEB" 2
-                 "March" 3
-                 "april" 4
-                 "MaY." 5
-                 "JUNE" 6}
-          test-fn (fn [[inp res]]
-                    (testing (str "parsing: " inp)
-                      (is (= (sut/parse-name inp :month nil) res))))]
-      (doall
-       (map test-fn cases)))))
+     (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7})))

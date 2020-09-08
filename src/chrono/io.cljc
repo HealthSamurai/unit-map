@@ -31,24 +31,40 @@
 
 (def locale-en
   {:month
-   {1  {:name "January" :short "Jan" :regex "(?i)jan\\S*"}
-    2  {:name "February" :short "Feb" :regex "(?i)feb\\S*"}
-    3  {:name "March" :short "Mar" :regex "(?i)mar\\S*"}
-    4  {:name "April" :short "Apr" :regex "(?i)apr\\S*"}
-    5  {:name "May" :short "May" :regex "(?i)may\\S*"}
-    6  {:name "June" :short "June" :regex "(?i)jun\\S*"}
-    7  {:name "July" :short "July" :regex "(?i)jul\\S*"}
-    8  {:name "August" :short "Aug" :regex "(?i)aug\\S*"}
-    9  {:name "September" :short "Sep" :regex "(?i)sep\\S*"}
-    10 {:name "October" :short "Oct" :regex "(?i)oct\\S*"}
-    11 {:name "November" :short "Nov" :regex "(?i)nov\\S*"}
-    12 {:name "December" :short "Dec" :regex "(?i)dec\\S*"}}})
+   {1  {:full "January" :short "Jan" :regex "(?i)jan\\S*"}
+    2  {:full "February" :short "Feb" :regex "(?i)feb\\S*"}
+    3  {:full "March" :short "Mar" :regex "(?i)mar\\S*"}
+    4  {:full "April" :short "Apr" :regex "(?i)apr\\S*"}
+    5  {:full "May" :short "May" :regex "(?i)may\\S*"}
+    6  {:full "June" :short "June" :regex "(?i)jun\\S*"}
+    7  {:full "July" :short "July" :regex "(?i)jul\\S*"}
+    8  {:full "August" :short "Aug" :regex "(?i)aug\\S*"}
+    9  {:full "September" :short "Sep" :regex "(?i)sep\\S*"}
+    10 {:full "October" :short "Oct" :regex "(?i)oct\\S*"}
+    11 {:full "November" :short "Nov" :regex "(?i)nov\\S*"}
+    12 {:full "December" :short "Dec" :regex "(?i)dec\\S*"}}})
 
 
 (defmethod locale :en [_] locale-en)
 
 
 (defmethod locale :default [_] locale-en)
+
+
+(defmethod locale :ru [_]
+  {:month
+   {1 {:full "Январь", :short "Янв", :regex "(?iu)янв(ар(ь|я))?"}
+    2 {:full "Февраль", :short "Фев", :regex "(?iu)фев(рал(ь|я))?"}
+    3 {:full "Март", :short "Мар", :regex "(?iu)мар(та?)?"}
+    4 {:full "Апрель", :short "Апр", :regex "(?iu)апр(ел(ь|я)?)?"}
+    5 {:full "Май", :short "Май", :regex "(?iu)ма(й|я)?"}
+    6 {:full "Июнь", :short "Июн", :regex "(?iu)июн(ь|я)?"}
+    7 {:full "Июль", :short "Июл", :regex "(?iu)июл(ь|я)?"}
+    8 {:full "Август", :short "Авг", :regex "(?iu)авг(уста?)?"}
+    9 {:full "Сентябрь", :short "Сен", :regex "(?iu)сен(тябр(ь|я)?)?"}
+    10 {:full "Октябрь", :short "Окт", :regex "(?iu)окт(ябр(ь|я)?)?"}
+    11 {:full "Ноябрь", :short "Ноя", :regex "(?iu)ноя(бр(ь|я)?)?"}
+    12 {:full "Декабрь", :short "Дек", :regex "(?iu)дек(бр(ь|я)?)?"}}})
 
 
 (defn parse-name [name unit lang]
@@ -64,30 +80,47 @@
       (parse-name x unit lang)))
 
 
-(defmethod locale :ru [_]
-  {:month
-   {1 {:name "Январь", :short "Янв", :regex "(?iu)янв(ар(ь|я))?"}
-    2 {:name "Февраль", :short "Фев", :regex "(?iu)фев(рал(ь|я))?"}
-    3 {:name "Март", :short "Мар", :regex "(?iu)мар(та?)?"}
-    4 {:name "Апрель", :short "Апр", :regex "(?iu)апр(ел(ь|я)?)?"}
-    5 {:name "Май", :short "Май", :regex "(?iu)ма(й|я)?"}
-    6 {:name "Июнь", :short "Июн", :regex "(?iu)июн(ь|я)?"}
-    7 {:name "Июль", :short "Июл", :regex "(?iu)июл(ь|я)?"}
-    8 {:name "Август", :short "Авг", :regex "(?iu)авг(уста?)?"}
-    9 {:name "Сентябрь", :short "Сен", :regex "(?iu)сен(тябр(ь|я)?)?"}
-    10 {:name "Октябрь", :short "Окт", :regex "(?iu)окт(ябр(ь|я)?)?"}
-    11 {:name "Ноябрь", :short "Ноя", :regex "(?iu)ноя(бр(ь|я)?)?"}
-    12 {:name "Декабрь", :short "Дек", :regex "(?iu)дек(бр(ь|я)?)?"}}})
+(defn get-lang [fmt-vec fmt-el]
+  (ffirst (meta fmt-el)))
 
 
-(defn parse [s fmt & {:keys [strict], :or {strict false}}]
-  (let [fmts (map #(cond-> % (vector? %) first) fmt)
-        pat  (map (some-fn parse-patterns u/sanitize) fmts)]
-    (loop [s            s
-           [f & rest-f] fmts
-           [p & rest-p] pat
-           acc          (with-meta {} (meta fmt))]
-      (if-not (and s f)
+(defn read-fmt-el [fmt-vec fmt-el]
+  (let [[value & fmt-el'] (flatten (vector fmt-el))
+
+        {[pad-width] :pad-width
+         [pad-str]   :pad-str
+         [name-fmt]  :name-fmt
+         [function]  :function}
+        (group-by (fn [x]
+                    (cond
+                      (integer? x)               :pad-width
+                      (or (string? x) (char? x)) :pad-str
+                      (keyword? x)               :name-fmt
+                      (fn? x)                    :function))
+                  fmt-el')
+
+        lang (get-lang fmt-vec fmt-el)]
+    {:type      (new-ops/get-type fmt-vec)
+     :lang      lang
+     :name-fmt  (or name-fmt (when lang :full))
+     :value     value
+     :function  function
+     :pad-width pad-width
+     :pad-str   pad-str}))
+
+
+(defn try-first [maybe-coll]
+  (cond-> maybe-coll (seqable? maybe-coll) first))
+
+
+(defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
+  (let [fmt (map (partial read-fmt-el fmt-vec) fmt-vec)
+        pat (map (comp (some-fn parse-patterns u/sanitize) :value) fmt)]
+    (loop [s                                       s
+           [{:keys [lang], fmt-k :value} & rest-f] fmt
+           [p & rest-p]                            pat
+           acc                                     (with-meta {} (meta fmt-vec))]
+      (if-not (and s fmt-k)
         acc
         (let [pat (->> (if strict
                          (str \( (apply str rest-p) \))
@@ -95,30 +128,37 @@
                        (str "(" p ")")
                        re-pattern)
 
-              [match-s cur-s rest-s] (re-matches pat s)]
+              [match-s cur-s rest-s] (re-matches pat s)
+
+              r (when (and match-s (contains? parse-patterns fmt-k))
+                  (parse-val cur-s fmt-k lang))]
           (cond
             match-s (recur rest-s rest-f rest-p
-                           (cond-> acc
-                             (contains? parse-patterns f)
-                             (assoc f (u/parse-int cur-s))))
+                           (cond-> acc r (assoc fmt-k r)))
 
             (not strict) acc))))))
 
 
-(defn format
-  ([t fmt-vec]
-   (letfn [(format-el [value fmt-el]
-             (let [[fmt pad-width pad-str] (flatten (vector fmt-el))
+(defn format-el [value fmt-vec fmt-el]
+  (let [{:keys [lang function name-fmt pad-width pad-str], fmt :value :as fmt-el} (read-fmt-el fmt-vec fmt-el)
 
-                   unit-value (or (get value fmt)
-                                  (new-ops/sequence-nth (new-ops/unit-definition value fmt) value 0)
-                                  fmt)
-                   pad-width  (or pad-width (format-patterns fmt) (count (str unit-value)))
-                   pad-str    (or pad-str
-                                  (when (number? unit-value) 0)
-                                  " ")]
-               (u/pad-str pad-str pad-width (str unit-value))))]
-     (str/join (map (partial format-el t) fmt-vec)))))
+        v          (get value fmt)
+        unit-value (or (when function (function value fmt-el fmt v))
+                       (when lang (get-in (locale lang) [fmt v name-fmt]))
+                       v
+                       (new-ops/sequence-nth (new-ops/unit-definition value fmt) value 0)
+                       fmt)
+        pad-width  (or pad-width (max (format-patterns fmt 0) (count (str unit-value))))
+        pad-str    (or pad-str
+                       (when (number? unit-value) 0)
+                       " ")]
+    (cond->> (str unit-value)
+      (not (zero? pad-width))
+      (u/pad-str pad-str pad-width))))
+
+
+(defn format [t fmt-vec]
+  (str/join (map (partial format-el t fmt-vec) fmt-vec)))
 
 
 (defn date-convertable? [value in out]
