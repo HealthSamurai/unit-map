@@ -134,7 +134,7 @@
   (let [{:keys [lang function name-fmt pad-width pad-str], fmt :value :as fmt-el} (read-fmt-el fmt-vec fmt-el)
 
         v          (get value fmt)
-        unit-value (or (when function (function value fmt-el fmt v))
+        unit-value (or (when function (function value fmt-el))
                        (when lang (get-in (locale lang) [fmt v name-fmt]))
                        v
                        (ops/sequence-nth (ops/unit-definition value fmt) value 0)

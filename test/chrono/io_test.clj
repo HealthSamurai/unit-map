@@ -181,8 +181,8 @@
            (sut/format {:month 9 :day 1} [^:en[:month :short] \. \space [:day 1]])))
     (is (= "1:month:entest"
            (sut/format {:month 1}
-                       [^:en[:month (fn [_ {:keys [lang pad-str]} fmt v] (str v fmt lang pad-str)) "test"]])))
-    (is (= "4"
+                       [^:en[:month (fn [v {:keys [value lang pad-str]}] (str (get v value) value lang pad-str)) "test"]])))
+    (is (= "2"
            (sut/format {:month 9 :day 1} [[:month 0 (fn [& args] (count args))]]))))
 
   (testing "month names"
