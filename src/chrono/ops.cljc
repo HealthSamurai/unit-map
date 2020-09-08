@@ -19,14 +19,13 @@
 
 
 (def calendar
-  (array-map
-   :ms    [0 1 '.. 999]
-   :sec   [0 1 '.. 59]
-   :min   [0 1 '.. 59]
-   :hour  [0 1 '.. 23]
-   :day   [1 2 '.. days-in-month]
-   :month [1 2 '.. 12]
-   :year  [##-Inf '.. -2 -1 1 2 '.. ##Inf]))
+  #chrono/definition[:ms    [0 1 .. 999]
+                     :sec   [0 1 .. 59]
+                     :min   [0 1 .. 59]
+                     :hour  [0 1 .. 23]
+                     :day   [1 2 .. days-in-month]
+                     :month [1 2 .. 12]
+                     :year  [##-Inf .. -2 -1 1 2 .. ##Inf]])
 
 
 (defmethod ops/definition :default-type [_] calendar)

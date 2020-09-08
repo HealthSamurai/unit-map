@@ -57,7 +57,7 @@
 
 
 (defn read-definition [form]
-  (apply array-map (mapcat (fn [[u s]] [u (sequence s)]) (partition 2 form))))
+  (apply array-map (mapcat (fn [[u s]] [u (read-sequence s)]) (partition 2 form))))
 
 
 ;;;;;;;; contains & length & index ;;;;;;;;

@@ -17,7 +17,6 @@
     :else                        31))
 
 
-
 (def gregorian-military
   #chrono/definition[:ms    [0 1 .. 999]
                      :sec   [0 1 .. 59]
