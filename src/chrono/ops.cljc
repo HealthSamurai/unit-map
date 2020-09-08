@@ -636,6 +636,3 @@
 
 (defn realize-sequence [s value]
   (take-while some? (iterate (partial get-next-unit-value s value) (get-first-el s value))))
-
-(defn to-utc [value]
-  (to-delta value ^:tz{:hour 0}))
