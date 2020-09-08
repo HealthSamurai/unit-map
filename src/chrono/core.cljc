@@ -65,8 +65,8 @@
 (def to-normalized-utc ops/to-normalized-utc)
 
 
-(def date-convertable? io/date-convertable?)
-(def date-valid? io/date-valid?)
+(def convertable? io/convertable?)
+(def valid? io/valid?)
 
 
 (def + ops/plus)

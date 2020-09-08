@@ -152,11 +152,11 @@
   (str/join (map (partial format-el t fmt-vec) fmt-vec)))
 
 
-(defn date-convertable? [value in out]
+(defn convertable? [value in out]
   (let [v (parse value in)]
     (new-ops/eq? v (-> v  (format out) (parse out)))))
 
 
-(defn date-valid? [s fmt]
+(defn valid? [s fmt]
   (let [d (parse s fmt)]
     (new-ops/eq? d (new-ops/ensure-less-significant-units d))))
