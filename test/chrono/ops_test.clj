@@ -1,8 +1,8 @@
 (ns chrono.ops-test
   (:require [chrono.ops :as sut]
-            [chrono.type.datetime :as datetime]
-            [chrono.type.time :as time]
-            [chrono.type.date :as date]
+            [chrono.type.datetime.datetime :as datetime]
+            [chrono.type.datetime.time :as time]
+            [chrono.type.datetime.date :as date]
             [matcho.core :as matcho]
             [clojure.test :as t]))
 
@@ -161,9 +161,9 @@
                                          {:bar 8}
                                          9))))
 
-  (t/testing "realize-sequence"
+  (t/testing "sequence->vector"
     (t/is (= [11 10 9 8 7 6 5 4 3 2]
-             (vec (sut/realize-sequence #chrono/sequence[11 10 .. 2] nil)))))
+             (vec (sut/sequence->vector #chrono/sequence[11 10 .. 2] nil)))))
 
   (t/testing "get-prev-unit-value"
     (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))

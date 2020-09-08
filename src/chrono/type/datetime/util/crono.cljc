@@ -1,6 +1,6 @@
-(ns chrono.crono
+(ns chrono.type.datetime.util.crono
   (:require [chrono.core :as ch]
-            [chrono.now :as now]))
+            [chrono.type.datetime.util.now :as now]))
 
 
 (defn day-of-week

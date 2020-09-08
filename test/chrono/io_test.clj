@@ -3,7 +3,7 @@
             [matcho.core :as matcho]
             [chrono.util :as u]
             [chrono.ops :as ops]
-            [chrono.type.datetime :as datetime]
+            [chrono.type.datetime.datetime :as datetime]
             [chrono.io :as sut]
             [clojure.string :as str]))
 

@@ -43,7 +43,7 @@ Pure clojure time made simple for clj & cljs
             [:hour 30 "_" (fn [value fmt-el] (str "your formatting logic"))]])
 ;; => "29 January 18\n_________your formatting logic"
 
-(require '[chrono.now :as now])
+(require '[chrono.type.datetime.now :as now])
 
 (now/local)     ;; => {:year 2020, :month 9, :day 8, :hour 20, :min 3, :sec 27, :ms 846, :tz {:hour 2}}
 (now/utc)       ;; => {:year 2020, :month 9, :day 8, :hour 18, :min 3, :sec 27, :ms 846, :tz {:hour 0}}

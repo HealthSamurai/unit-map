@@ -1,5 +1,5 @@
-(ns chrono.calendar-test
-  (:require [chrono.calendar :as sut]
+(ns chrono.type.datetime.util.calendar-test
+  (:require [chrono.type.datetime.util.calendar :as sut]
             [clojure.test :refer [deftest]]
             [matcho.core :as matcho]))
 

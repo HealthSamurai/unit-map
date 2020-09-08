@@ -1,9 +1,7 @@
-(ns chrono.now
+(ns chrono.type.datetime.util.now
   (:require [chrono.ops :as ops]))
 
-
 ;; TODO:
-;; - unhardcode :year :month :day :hour :min :sec :ms keywords?
 ;;   If someone wants to use :second & :nanosecond for example
 ;; - Add am pm period support
 

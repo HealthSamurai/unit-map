@@ -1,6 +1,4 @@
-(ns chrono.type.date
-  (:require [chrono.ops :as ops]))
-
+(ns chrono.type.datetime.util.misc)
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))
@@ -15,12 +13,3 @@
     (and (leap-year? y) (= 2 m)) 29
     (= 2 m)                      28
     :else                        31))
-
-
-(def gregorian
-  #chrono/definition[:day    [1 2 .. days-in-month]
-                     :month  [1 2 .. 12]
-                     :year   [##-Inf .. -2 -1 1 2 .. ##Inf]])
-
-
-(defmethod ops/definition ::gregorian [_] gregorian)

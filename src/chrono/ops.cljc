@@ -335,6 +335,10 @@
   (get-last-el (unit-definition value unit) value))
 
 
+(defn sequence->vector [s value]
+  (take-while some? (iterate (partial get-next-unit-value s value) (get-first-el s value))))
+
+
 (defn ensure-unit [ps value unit-value]
   (cond-> unit-value
     (and (not (sequence-contains-some ps value unit-value)) ;; TODO: what if step changes?
@@ -636,7 +640,3 @@
                         (reverse (definition value)))]
     (cond-> (plus default (cond-> value is-value? (-> drop-deltas value->delta)))
       is-value? (assoc-deltas (get-applied-deltas value)))))
-
-
-(defn realize-sequence [s value]
-  (take-while some? (iterate (partial get-next-unit-value s value) (get-first-el s value))))

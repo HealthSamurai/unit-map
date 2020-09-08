@@ -1,7 +1,6 @@
 (ns chrono.core
   (:require [chrono.ops :as ops]
-            [chrono.now :as now]
-            [chrono.util :as util]
+            [chrono.type.datetime.util.now :as now]
             [chrono.io :as io])
   (:refer-clojure :exclude [+ - = > >= < <= not= format compare]))
 

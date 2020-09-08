@@ -1,4 +1,4 @@
-(ns chrono.type.time
+(ns chrono.type.datetime.time
   (:require [chrono.ops :as ops]))
 
 

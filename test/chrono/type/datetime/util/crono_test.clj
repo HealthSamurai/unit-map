@@ -1,8 +1,8 @@
-(ns chrono.crono-test
-  (:require [chrono.crono :as sut]
+(ns chrono.type.datetime.util.crono-test
+  (:require [chrono.type.datetime.util.crono :as sut]
             [chrono.ops :as ops]
             [clojure.test :refer :all]
-            [chrono.type.datetime :as datetime]
+            [chrono.type.datetime.datetime :as datetime]
             [matcho.core :as matcho]))
 
 (use-fixtures

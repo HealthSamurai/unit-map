@@ -1,7 +1,7 @@
 (ns chrono.core-test
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
-            [chrono.type.datetime :as datetime]
+            [chrono.type.datetime.datetime :as datetime]
             [chrono.ops :as ops]
             [chrono.core :as sut]))
 
