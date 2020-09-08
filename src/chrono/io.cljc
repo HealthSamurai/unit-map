@@ -1,6 +1,6 @@
 (ns chrono.io
   (:require [chrono.util :as u]
-            [chrono.new-ops :as new-ops]
+            [chrono.ops :as ops]
             [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
@@ -92,7 +92,7 @@
         lang              (get-lang fmt-vec fmt-el)]
     {:value     value
      :lang      lang
-     :type      (new-ops/get-type fmt-vec)
+     :type      (ops/get-type fmt-vec)
      :name-fmt  (or (u/ffilter keyword? rest-fmt)
                     (when lang :full))
      :function  (u/ffilter fn? rest-fmt)
@@ -137,7 +137,7 @@
         unit-value (or (when function (function value fmt-el fmt v))
                        (when lang (get-in (locale lang) [fmt v name-fmt]))
                        v
-                       (new-ops/sequence-nth (new-ops/unit-definition value fmt) value 0)
+                       (ops/sequence-nth (ops/unit-definition value fmt) value 0)
                        fmt)
         pad-width  (or pad-width (max (format-patterns fmt 0) (count (str unit-value))))
         pad-str    (or pad-str
@@ -154,9 +154,9 @@
 
 (defn convertable? [value in out]
   (let [v (parse value in)]
-    (new-ops/eq? v (-> v  (format out) (parse out)))))
+    (ops/eq? v (-> v  (format out) (parse out)))))
 
 
 (defn valid? [s fmt]
   (let [d (parse s fmt)]
-    (new-ops/eq? d (new-ops/ensure-less-significant-units d))))
+    (ops/eq? d (ops/ensure-less-significant-units d))))

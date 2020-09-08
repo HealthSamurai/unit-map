@@ -1,5 +1,5 @@
 (ns chrono.now
-  (:require [chrono.new-ops :as ops]))
+  (:require [chrono.ops :as ops]))
 
 
 ;; TODO:

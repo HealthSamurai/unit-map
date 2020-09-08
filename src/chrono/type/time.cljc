@@ -1,5 +1,5 @@
 (ns chrono.type.time
-  (:require [chrono.new-ops :as ops]))
+  (:require [chrono.ops :as ops]))
 
 
 (def military

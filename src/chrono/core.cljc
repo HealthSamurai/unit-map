@@ -10,7 +10,7 @@
 
 
 (defn from-epoch [e]
-  (ops/plus epoch {:sec e}))
+  (ops/plus epoch ^:delta{:sec e}))
 
 
 (defn leap-year? [y]
@@ -36,6 +36,7 @@
 
 
 (defn to-epoch [date]
+
   (let [years (range (:year epoch) (:year date))
         months (range 1 (:month date))]
     (-> date
@@ -47,37 +48,26 @@
         seconds)))
 
 
-(def parse io/parse)
-(def format io/format)
-
-
 (defn timestamp
   ([]  (timestamp (now/utc)))
   ([t] (to-epoch t)))
 
 
-(defn diff [t t']) ; TODO
-
-
+(def + ops/plus)
+(def - ops/minus)
+(def = ops/eq?)
+(def not= ops/not-eq?)
+(def eq? ops/eq?)
+(def > ops/gt?)
+(def >= ops/gte?)
+(def < ops/lt?)
+(def <= ops/lte?)
+(def compare ops/cmp)
+(def difference ops/difference)
 (def normalize ops/normalize)
-(def to-utc ops/to-utc)
-(def to-tz ops/to-tz)
-(def to-normalized-utc ops/to-normalized-utc)
-
-
 (def convertable? io/convertable?)
 (def valid? io/valid?)
 
 
-(def + ops/plus)
-(def - ops/minus) ; TODO: add tests
-(def = ops/eq?)
-(def not= ops/not-eq?)
-(def eq? ops/eq?)
-(def > ops/gt)
-(def >= ops/gte)
-(def < ops/lt)
-(def <= ops/lte)
-(def compare ops/cmp)
-
-
+(def parse io/parse)
+(def format io/format)

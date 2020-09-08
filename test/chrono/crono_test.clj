@@ -1,14 +1,14 @@
 (ns chrono.crono-test
   (:require [chrono.crono :as sut]
-            [chrono.new-ops :as new-ops]
-            [chrono.ops :as old-ops]
+            [chrono.ops :as ops]
             [clojure.test :refer :all]
+            [chrono.type.datetime :as datetime]
             [matcho.core :as matcho]))
 
 (use-fixtures
   :each
   (fn [t]
-    (defmethod new-ops/definition :default-type [_] old-ops/calendar)
+    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
     (t)))
 
 (deftest crono-test

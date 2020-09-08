@@ -1,7 +1,6 @@
 (ns chrono.crono
   (:require [chrono.core :as ch]
-            [chrono.now :as now]
-            [chrono.util :as util]))
+            [chrono.now :as now]))
 
 
 (defn day-of-week
@@ -47,7 +46,7 @@
         at          (cond-> at (map? at) vector)
         assumptions (map #(merge (select-keys current-time (get needed-for every)) %) at)]
     (if (nil? (first (filter #(ch/< current-time %) assumptions)))
-      (ch/+ (first assumptions) {every 1})
+      (ch/+ (first assumptions) ^:delta{every 1})
       (first (filter #(ch/< current-time %) assumptions)))))
 
 

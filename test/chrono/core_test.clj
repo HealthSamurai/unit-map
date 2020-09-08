@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
             [chrono.type.datetime :as datetime]
-            [chrono.new-ops :as ops]
+            [chrono.ops :as ops]
             [chrono.core :as sut]))
 
 (use-fixtures

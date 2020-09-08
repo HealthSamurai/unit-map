@@ -2,8 +2,8 @@
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
             [chrono.util :as u]
-            [chrono.new-ops :as new-ops]
-            [chrono.ops :as old-ops]
+            [chrono.ops :as ops]
+            [chrono.type.datetime :as datetime]
             [chrono.io :as sut]
             [clojure.string :as str]))
 
@@ -14,7 +14,7 @@
 (use-fixtures
   :once
   (fn [t]
-    (defmethod new-ops/definition :default-type [_] old-ops/calendar)
+    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
     (t)))
 
 

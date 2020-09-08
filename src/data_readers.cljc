@@ -1,2 +1,2 @@
-{chrono/sequence chrono.new-ops/read-sequence
- chrono/definition chrono.new-ops/read-definition}
+{chrono/sequence chrono.ops/read-sequence
+ chrono/definition chrono.ops/read-definition}

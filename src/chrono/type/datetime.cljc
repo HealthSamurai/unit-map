@@ -1,5 +1,5 @@
 (ns chrono.type.datetime
-  (:require [chrono.new-ops :as ops]))
+  (:require [chrono.ops :as ops]))
 
 
 (defn leap-year? [y]
