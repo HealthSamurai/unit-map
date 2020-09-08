@@ -85,28 +85,16 @@
 
 
 (defn read-fmt-el [fmt-vec fmt-el]
-  (let [[value & fmt-el'] (flatten (vector fmt-el))
-
-        {[pad-width] :pad-width
-         [pad-str]   :pad-str
-         [name-fmt]  :name-fmt
-         [function]  :function}
-        (group-by (fn [x]
-                    (cond
-                      (integer? x)               :pad-width
-                      (or (string? x) (char? x)) :pad-str
-                      (keyword? x)               :name-fmt
-                      (fn? x)                    :function))
-                  fmt-el')
-
-        lang (get-lang fmt-vec fmt-el)]
-    {:type      (new-ops/get-type fmt-vec)
+  (let [[value & rest-fmt] (flatten (vector fmt-el))
+        lang              (get-lang fmt-vec fmt-el)]
+    {:value     value
      :lang      lang
-     :name-fmt  (or name-fmt (when lang :full))
-     :value     value
-     :function  function
-     :pad-width pad-width
-     :pad-str   pad-str}))
+     :type      (new-ops/get-type fmt-vec)
+     :name-fmt  (or (u/ffilter keyword? rest-fmt)
+                    (when lang :full))
+     :function  (u/ffilter fn? rest-fmt)
+     :pad-width (u/ffilter integer? rest-fmt)
+     :pad-str   (u/ffilter (some-fn string? char?) rest-fmt)}))
 
 
 (defn try-first [maybe-coll]

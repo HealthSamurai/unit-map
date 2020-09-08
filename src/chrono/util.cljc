@@ -77,3 +77,6 @@
 (defn monotonic? [s]
   (or (apply <= s)
       (apply >= s)))
+
+
+(def ffilter (comp first filter))
