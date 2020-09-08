@@ -52,13 +52,13 @@ Pure clojure time made simple for clj & cljs
 (now/now)       ;; => {:hour 20, :min 3, :sec 27, :ms 846, :tz {:hour 2}}
 (now/utc-now)   ;; => {:hour 18, :min 3, :sec 27, :ms 846, :tz {:hour 0}}
 (now/tz-offset) ;; => {:hour 2}
-
-
-readme TODO:
- - locale
- - ops
- - custom calendars
 ```
+
+TODO:
+ - type readme
+ - locale readme
+ - ops readme
+ - custom calendars readme
 
 ## License
 
