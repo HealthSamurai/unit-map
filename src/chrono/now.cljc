@@ -72,8 +72,8 @@
 
 
 (defn now [& [value-type]]
-  (select-keys (local value-type) [:hour :min :sec :tz]))
+  (select-keys (local value-type) [:hour :min :sec :ms :tz]))
 
 
 (defn utc-now [& [value-type]]
-  (select-keys (utc value-type) [:hour :min :sec :tz]))
+  (select-keys (utc value-type) [:hour :min :sec :ms :tz]))
