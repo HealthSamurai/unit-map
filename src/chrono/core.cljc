@@ -6,6 +6,9 @@
   (:refer-clojure :exclude [+ - = > >= < <= not= format compare]))
 
 
+;; TODO: move this epoch logic to time type utils
+
+
 (def epoch {:year 1970 :day 1 :month 1})
 
 

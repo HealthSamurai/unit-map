@@ -66,7 +66,7 @@
      (first
       (filter
        #(= (day-of-week (:year %) (:month %) (:day %))
-           (.indexOf days-of-week (keyword (:every cfg))))
+           (ffirst (filter (comp #{(keyword (:every cfg))} second) (map-indexed vector days-of-week))))
        (drop 1 (iterate
                 (fn [current-time] (*next-time current-time (assoc cfg :every :day)))
                 current-time))))
