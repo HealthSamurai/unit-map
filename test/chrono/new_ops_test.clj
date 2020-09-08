@@ -161,6 +161,10 @@
                                          {:bar 8}
                                          9))))
 
+  (t/testing "realize-sequence"
+    (t/is (= [11 10 9 8 7 6 5 4 3 2]
+             (vec (sut/realize-sequence #chrono/sequence[11 10 .. 2] nil)))))
+
   (t/testing "get-prev-unit-value"
     (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))
                   (range 59 -1 -1))

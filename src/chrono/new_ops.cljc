@@ -615,3 +615,7 @@
                         (reverse (definition value)))]
     (cond-> (plus default (cond-> value is-value? (-> drop-deltas value->delta)))
       is-value? (assoc-deltas (get-applied-deltas value)))))
+
+
+(defn realize-sequence [s value]
+  (take-while some? (iterate (partial get-next-unit-value s value) (get-first-el s value))))
