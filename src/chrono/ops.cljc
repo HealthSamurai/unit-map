@@ -212,6 +212,10 @@
       :else                                                [:default-type v])))
 
 
+(defn get-main-type [x]
+  (first (get-type x)))
+
+
 (defn get-delta-type [x]
   (second (get-type x)))
 
@@ -584,7 +588,7 @@
    value + value = error"
   ([] {})
   ([x] x)
-  ([x y] {:pre [(some delta? [x y])]}
+  ([x y] {:pre [(some delta? [x y]) (= (get-main-type x) (get-main-type y))]}
    (let [[a b]  (if (delta? y) [x y] [y x])
          result (reduce (fn [a' [k _]]
                           (let [v (get b k 0)]
