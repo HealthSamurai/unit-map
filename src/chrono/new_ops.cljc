@@ -207,6 +207,10 @@
       :else                                                [:default-type v])))
 
 
+(defn get-delta-type [x]
+  (second (get-type x)))
+
+
 (def integer #chrono/sequence[##-Inf .. -2 -1 0 1 .. ##Inf])
 
 
@@ -419,16 +423,35 @@
 
 
 (defn assoc-delta [value delta]
-  (assoc value (second (get-type delta)) delta))
+  (assoc value (get-delta-type delta) delta))
+
+
+(defn value->delta [value & [delta-meta]]
+  (->> (definition value)
+       reverse
+       (reduce
+        (fn [acc [k ps]]
+          (if-let [v (get value k)]
+            (assoc acc k (or (index-in-sequence ps value v)
+                             (- v (get-min-value value k))))
+            acc))
+        (with-meta {} (make-delta-type (meta value) delta-meta)))))
+
+
+(defn ensure-delta [delta]
+  (if (delta? delta)
+    delta
+    (value->delta delta)))
 
 
 (defn apply-delta [value delta]
-  (-> (reduce (fn [acc [k _]]
-                (let [d (get delta k 0)]
-                  (if (zero? d) acc (add-to-unit k acc d))))
-              value
-              (reverse (definition delta)))
-      (assoc-delta delta)))
+  (let [delta (ensure-delta delta)]
+    (-> (reduce (fn [acc [k _]]
+                  (let [d (get delta k 0)]
+                    (if (zero? d) acc (add-to-unit k acc d))))
+                value
+                (reverse (definition (ensure-delta delta))))
+        (assoc-delta delta))))
 
 
 (defn get-applied-deltas [value]
@@ -460,7 +483,7 @@
 
 
 (defn apply-deltas [value deltas]
-  (reduce apply-delta value deltas))
+  (reduce apply-delta value (remove empty? deltas)))
 
 
 (defn to-deltas [value new-deltas]
@@ -479,18 +502,6 @@
 
 (defn to-delta [value delta]
   (to-deltas value [delta]))
-
-
-(defn value->delta [value & [delta-meta]]
-  (->> (definition value)
-       reverse
-       (reduce
-        (fn [acc [k ps]]
-          (if-let [v (get value k)]
-            (assoc acc k (or (index-in-sequence ps value v)
-                             (- v (get-min-value value k))))
-            acc))
-        (with-meta {} (make-delta-type (meta value) delta-meta)))))
 
 
 (defn try-strip-zeros [x]

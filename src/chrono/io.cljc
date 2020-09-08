@@ -5,6 +5,9 @@
   (:refer-clojure :exclude [format]))
 
 
+;; TODO: move all date time related consts to type definition
+
+
 (def parse-patterns
   {:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
    :month #?(:clj  "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}+\\.?)"
