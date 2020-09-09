@@ -4,11 +4,9 @@
             [unit-map.util :as u]
             [unit-map.ops :as ops]
             [unit-map.type.chrono.datetime :as datetime]
+            [unit-map.type.chrono.util.misc :as chrono.misc]
             [unit-map.io :as sut]
             [clojure.string :as str]))
-
-
-(def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 
 (use-fixtures
@@ -28,19 +26,19 @@
   (testing "parse" ;; TODO: add meta tests
     (testing "numeral representation of month"
       (matcho/match
-       (sut/parse "2011-01-01" iso-fmt)
+       (sut/parse "2011-01-01" chrono.misc/iso-fmt)
        {:year 2011 :month 1 :day 1})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:00" iso-fmt)
+       (sut/parse "2011-01-01T12:00" chrono.misc/iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 0})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:00:00" iso-fmt)
+       (sut/parse "2011-01-01T12:00:00" chrono.misc/iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0})
 
       (matcho/match
-       (sut/parse "2011-01-01T12:04:05.100" iso-fmt)
+       (sut/parse "2011-01-01T12:04:05.100" chrono.misc/iso-fmt)
        {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100})
 
       (matcho/match
@@ -54,8 +52,8 @@
   (testing "roundtrip"
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
       (matcho/match (-> t
-                        (sut/format iso-fmt)
-                        (sut/parse iso-fmt))
+                        (sut/format chrono.misc/iso-fmt)
+                        (sut/parse chrono.misc/iso-fmt))
                     t)))
 
   (testing "format with specified width"

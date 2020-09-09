@@ -2,6 +2,11 @@
   (:require [unit-map.ops :as ops]
             [unit-map.type.chrono.util.now :as now]))
 
+
+;; TODO: tz fmt support
+(def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
+
+
 (defn leap-year? [y]
   (and (zero? (rem y 4))
        (or (pos? (rem y 100))
