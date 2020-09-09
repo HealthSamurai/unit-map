@@ -1,5 +1,5 @@
 (ns unit-map.type.chrono.util.crono
-  (:require [unit-map.core :as ch]
+  (:require [unit-map.ops :as ops]
             [unit-map.type.chrono.util.now :as now]))
 
 
@@ -45,9 +45,9 @@
   (let [every       (keyword every)
         at          (cond-> at (map? at) vector)
         assumptions (map #(merge (select-keys current-time (get needed-for every)) %) at)]
-    (if (nil? (first (filter #(ch/< current-time %) assumptions)))
-      (ch/+ (first assumptions) ^:delta{every 1})
-      (first (filter #(ch/< current-time %) assumptions)))))
+    (if (nil? (first (filter #(ops/lt? current-time %) assumptions)))
+      (ops/plus (first assumptions) ^:delta{every 1})
+      (first (filter #(ops/lt? current-time %) assumptions)))))
 
 
 (defn validate-cfg [cfg]
@@ -78,7 +78,7 @@
   ([current-time {every :every until :until :as when'}]
    (if until
      (let [utmost-time (merge (select-keys current-time (get needed-for every)) until)]
-       (ch/< current-time utmost-time))
+       (ops/lt? current-time utmost-time))
      true)))
 
 
