@@ -1,5 +1,5 @@
-(ns chrono.ops
-  (:require [chrono.util :as u]))
+(ns unit-map.ops
+  (:require [unit-map.util :as u]))
 
 
 ;; TODO: refactor constantly repeating calls:
@@ -171,7 +171,7 @@
 
 ;;;;;;;; type ;;;;;;;;
 (defn no-default-type-exception [value]
-  (ex-info "No chrono type specified and no :default-type is defined"
+  (ex-info "No unit-map type specified and no :default-type is defined"
            {:value value, :meta (meta value)}))
 
 
@@ -220,7 +220,7 @@
   (second (get-type x)))
 
 
-(def integer #chrono/sequence[##-Inf .. -2 -1 0 1 .. ##Inf])
+(def integer #unit-map/sequence[##-Inf .. -2 -1 0 1 .. ##Inf])
 
 
 (defn to-delta-definition

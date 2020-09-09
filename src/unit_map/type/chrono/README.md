@@ -7,7 +7,7 @@ Pure clojure time made simple for clj & cljs
 ## Usage
 
 ```clj
-(require '[chrono.core :as ch])
+(require '[unit-map.type.chrono.datetime :as ch])
 
 (def t
   {:year  2018
@@ -43,7 +43,7 @@ Pure clojure time made simple for clj & cljs
             [:hour 30 "_" (fn [value fmt-el] (str "your formatting logic"))]])
 ;; => "29 January 18\n_________your formatting logic"
 
-(require '[chrono.type.datetime.now :as now])
+(require '[chrono.type.chrono.now :as now])
 
 (now/local)     ;; => {:year 2020, :month 9, :day 8, :hour 20, :min 3, :sec 27, :ms 846, :tz {:hour 2}}
 (now/utc)       ;; => {:year 2020, :month 9, :day 8, :hour 18, :min 3, :sec 27, :ms 846, :tz {:hour 0}}

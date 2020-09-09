@@ -1,8 +1,8 @@
-(ns chrono.ops-test
-  (:require [chrono.ops :as sut]
-            [chrono.type.datetime.datetime :as datetime]
-            [chrono.type.datetime.time :as time]
-            [chrono.type.datetime.date :as date]
+(ns unit-map.ops-test
+  (:require [unit-map.ops :as sut]
+            [unit-map.type.chrono.datetime :as datetime]
+            [unit-map.type.chrono.time :as time]
+            [unit-map.type.chrono.date :as date]
             [matcho.core :as matcho]
             [clojure.test :as t]))
 
@@ -56,19 +56,19 @@
     (t/is (= [:default-type :delta]   (sut/get-type (sut/value->delta {:hour 1}))))
 
     (matcho/match (sut/definition ^::time/military{:hour 20})
-                  #chrono/definition[:ms   [0 1 .. 999]
+                  #unit-map/definition[:ms   [0 1 .. 999]
                                      :sec  [0 1 .. 59]
                                      :min  [0 1 .. 59]
                                      :hour [0 1 .. 23]])
 
     (matcho/match (sut/definition ^{::time/military :tz}{:hour 20})
-                  #chrono/definition[:ms   [0 1 .. 999]
+                  #unit-map/definition[:ms   [0 1 .. 999]
                                      :sec  [0 1 .. 59]
                                      :min  [0 1 .. 59]
                                      :hour [0 1 .. 23]])
 
     (matcho/match (sut/definition ^::datetime/military{:hour 20, :year 2020, :day 26, :month 8})
-                  #chrono/definition[:ms    [0 1 .. 999]
+                  #unit-map/definition[:ms    [0 1 .. 999]
                                      :sec   [0 1 .. 59]
                                      :min   [0 1 .. 59]
                                      :hour  [0 1 .. 23]
@@ -77,7 +77,7 @@
                                      :year  [##-Inf .. -2 -1 1 2 .. ##Inf]])
 
     (matcho/match (sut/definition ^{::datetime/military :tz}{:hour 2, :month 12, :year 2020})
-                  #chrono/definition[:ms    [0 1 .. 999]
+                  #unit-map/definition[:ms    [0 1 .. 999]
                                      :sec   [0 1 .. 59]
                                      :min   [0 1 .. 59]
                                      :hour  [0 1 .. 23]
@@ -102,23 +102,23 @@
     (matcho/match (sut/process-sequence days)
                   [{:start 1, :step 1, :end fn?}])
 
-    (matcho/match #chrono/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+    (matcho/match #unit-map/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                   [{:start 1, :step 2, :end fn?} 13 15]))
 
   (t/testing "sequence-length"
-    (t/is (= 12    (sut/sequence-length #chrono/sequence[1 2 .. 12] {})))
-    (t/is (= ##Inf (sut/sequence-length #chrono/sequence[##-Inf .. -2 -1 1 2 .. ##Inf] {})))
-    (t/is (= 1000  (sut/sequence-length #chrono/sequence[0 1 .. 999] {})))
+    (t/is (= 12    (sut/sequence-length #unit-map/sequence[1 2 .. 12] {})))
+    (t/is (= ##Inf (sut/sequence-length #unit-map/sequence[##-Inf .. -2 -1 1 2 .. ##Inf] {})))
+    (t/is (= 1000  (sut/sequence-length #unit-map/sequence[0 1 .. 999] {})))
 
-    (t/is (= 0      (sut/sequence-first-index #chrono/sequence[1 2 .. 12] {})))
-    (t/is (= ##-Inf (sut/sequence-first-index #chrono/sequence[##-Inf .. -2 -1 1 2 .. ##Inf] {})))
-    (t/is (= 0      (sut/sequence-first-index #chrono/sequence[0 1 .. 999] {})))
+    (t/is (= 0      (sut/sequence-first-index #unit-map/sequence[1 2 .. 12] {})))
+    (t/is (= ##-Inf (sut/sequence-first-index #unit-map/sequence[##-Inf .. -2 -1 1 2 .. ##Inf] {})))
+    (t/is (= 0      (sut/sequence-first-index #unit-map/sequence[0 1 .. 999] {})))
     (t/is (= nil    (sut/sequence-first-index (sut/process-sequence []) {})))
 
-    (t/is (= 11    (sut/sequence-last-index #chrono/sequence[1 2 .. 12] {})))
-    (t/is (= ##Inf (sut/sequence-last-index #chrono/sequence[##-Inf .. -2 -1 1 2 .. ##Inf] {})))
-    (t/is (= 999   (sut/sequence-last-index #chrono/sequence[0 1 .. 999] {})))
-    (t/is (= nil   (sut/sequence-last-index #chrono/sequence[] {})))
+    (t/is (= 11    (sut/sequence-last-index #unit-map/sequence[1 2 .. 12] {})))
+    (t/is (= ##Inf (sut/sequence-last-index #unit-map/sequence[##-Inf .. -2 -1 1 2 .. ##Inf] {})))
+    (t/is (= 999   (sut/sequence-last-index #unit-map/sequence[0 1 .. 999] {})))
+    (t/is (= nil   (sut/sequence-last-index #unit-map/sequence[] {})))
 
     (for [x [##-Inf -100 -3 -2 -1 1 2 3 100 ##Inf]]
       (t/is (->> x
@@ -154,16 +154,16 @@
 
     (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value am-hours nil) 12))
                   [12 1 2 3 4 5 6 7 8 9 10 11])
-    (t/is (= 13 (sut/get-next-unit-value #chrono/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+    (t/is (= 13 (sut/get-next-unit-value #unit-map/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                          {:bar 7}
                                          9)))
-    (t/is (= 11 (sut/get-next-unit-value #chrono/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+    (t/is (= 11 (sut/get-next-unit-value #unit-map/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                          {:bar 8}
                                          9))))
 
   (t/testing "sequence->vector"
     (t/is (= [11 10 9 8 7 6 5 4 3 2]
-             (vec (sut/sequence->vector #chrono/sequence[11 10 .. 2] nil)))))
+             (vec (sut/sequence->vector #unit-map/sequence[11 10 .. 2] nil)))))
 
   (t/testing "get-prev-unit-value"
     (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))

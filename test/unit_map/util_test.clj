@@ -1,6 +1,6 @@
-(ns chrono.util-test
+(ns unit-map.util-test
   (:require [clojure.test :as t]
-            [chrono.util :as sut]))
+            [unit-map.util :as sut]))
 
 
 (t/deftest pad-zero-test

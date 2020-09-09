@@ -1,9 +1,9 @@
-(ns chrono.core-test
+(ns unit-map.core-test
   (:require [clojure.test :refer :all]
             [matcho.core :as matcho]
-            [chrono.type.datetime.datetime :as datetime]
-            [chrono.ops :as ops]
-            [chrono.core :as sut]))
+            [unit-map.type.chrono.datetime :as datetime]
+            [unit-map.ops :as ops]
+            [unit-map.core :as sut]))
 
 (use-fixtures
   :each

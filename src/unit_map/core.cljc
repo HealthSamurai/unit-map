@@ -1,7 +1,7 @@
-(ns chrono.core
-  (:require [chrono.ops :as ops]
-            [chrono.type.datetime.util.now :as now]
-            [chrono.io :as io])
+(ns unit-map.core
+  (:require [unit-map.ops :as ops]
+            [unit-map.type.chrono.util.now :as now]
+            [unit-map.io :as io])
   (:refer-clojure :exclude [+ - = > >= < <= not= format compare]))
 
 

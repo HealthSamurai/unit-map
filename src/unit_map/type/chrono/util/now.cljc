@@ -1,5 +1,5 @@
-(ns chrono.type.datetime.util.now
-  (:require [chrono.ops :as ops]))
+(ns unit-map.type.chrono.util.now
+  (:require [unit-map.ops :as ops]))
 
 ;; TODO:
 ;;   If someone wants to use :second & :nanosecond for example

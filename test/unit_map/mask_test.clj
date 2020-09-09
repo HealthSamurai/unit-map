@@ -1,7 +1,7 @@
-(ns chrono.mask-test
-  (:require [chrono.mask :as sut]
+(ns unit-map.mask-test
+  (:require [unit-map.mask :as sut]
             [clojure.test :as t]
-            [chrono.io :as io]))
+            [unit-map.io :as io]))
 
 (t/deftest mask-test
   (let [cases {[:hour \: :min \: :sec]

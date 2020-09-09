@@ -1,9 +1,9 @@
-(ns chrono.type.datetime.time
-  (:require [chrono.ops :as ops]))
+(ns unit-map.type.chrono.time
+  (:require [unit-map.ops :as ops]))
 
 
 (def military
-  #chrono/definition[:ms   [0 1 .. 999]
+  #unit-map/definition[:ms   [0 1 .. 999]
                      :sec  [0 1 .. 59]
                      :min  [0 1 .. 59]
                      :hour [0 1 .. 23]])
@@ -13,7 +13,7 @@
 
 
 (def am-pm
-  #chrono/definition [:ms     [0 1 .. 999]
+  #unit-map/definition [:ms     [0 1 .. 999]
                       :sec    [0 1 .. 59]
                       :min    [0 1 .. 59]
                       :hour   [12 1 2 .. 11]

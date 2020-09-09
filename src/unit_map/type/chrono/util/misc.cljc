@@ -1,4 +1,4 @@
-(ns chrono.type.datetime.util.misc)
+(ns unit-map.type.chrono.util.misc)
 
 (defn leap-year? [y]
   (and (zero? (rem y 4))

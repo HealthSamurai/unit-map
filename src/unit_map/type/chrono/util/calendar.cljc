@@ -1,5 +1,5 @@
-(ns chrono.type.datetime.util.calendar
-  (:require [chrono.type.datetime.util.misc :as um]))
+(ns unit-map.type.chrono.util.calendar
+  (:require [unit-map.type.chrono.util.misc :as um]))
 
 
 (defn day-of-week
