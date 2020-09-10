@@ -33,6 +33,13 @@
        (finally (matcho/match exception
                               (-> (sut/no-default-type-exception ^:delta{:hour 1})
                                   bean
+                                  (select-keys [:class :data])))))
+  (try (sut/get-type ^:date{})
+       (catch clojure.lang.ExceptionInfo e
+         (def exception (bean e)))
+       (finally (matcho/match exception
+                              (-> (sut/no-default-type-exception ^:date{})
+                                  bean
                                   (select-keys [:class :data]))))))
 
 

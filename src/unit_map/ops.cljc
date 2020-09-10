@@ -202,14 +202,23 @@
 
 
 (defn get-type [x]
-  (let [[v d]       (first (meta x)) ;; TODO: maybe use namespaced-keywords instead?
-        definitions (methods definition)]
+  (let [[v d]                 (first (meta x)) ;; TODO: maybe use namespaced-keywords instead?
+        definitions           (methods definition)
+        default-type-defined? (contains? definitions :default-type)
+        default-type-delta?   (true? d)
+        default-type-value?   (nil? v)
+        typed-delta?          (keyword? d)
+        defined-type?         (contains? definitions v)]
     (cond
-      (and (nil? v) (contains? definitions :default-type)) [:default-type]
-      (nil? v)                                             (throw (no-default-type-exception x))
-      (keyword? d)                                         [v d]
-      (contains? definitions v)                            [v]
-      :else                                                [:default-type v])))
+      (and (not default-type-defined?)
+           (or default-type-value?
+               default-type-delta?))
+      (throw (no-default-type-exception x))
+
+      typed-delta?              [v d]
+      defined-type?             [v]
+      default-type-value?       [:default-type]
+      default-type-delta?       [:default-type v])))
 
 
 (defn get-main-type [x]
