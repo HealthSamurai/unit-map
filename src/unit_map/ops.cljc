@@ -221,12 +221,15 @@
       default-type-delta?       [:default-type v])))
 
 
-(defn get-main-type [x]
-  (first (get-type x)))
+(defn main-type [t] (first t))
 
 
-(defn get-delta-type [x]
-  (second (get-type x)))
+(defn get-main-type [x] (main-type (get-type x)))
+
+
+(defn delta-type [t] (second t))
+
+(defn get-delta-type [x] (delta-type (get-type x)))
 
 
 (def integer #unit-map/sequence[##-Inf .. -2 -1 0 1 .. ##Inf])

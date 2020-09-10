@@ -72,11 +72,11 @@
       (is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
 
   (testing "parse should return parsed value even if format not strictly cosistent"
-    (matcho/match
-     (sut/parse "2011-01-01" [:year "-" :month]) {:year 2011 :month 1})
+    (is (= {:year 2011}
+           (sut/parse "2011-01-01" [:year "-" :month])))
 
-    (matcho/match
-     (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]) {:year 2011 :month 1}))
+    (matcho/match (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour])
+                  {:year 2011 :month 1}))
 
   (testing "parsing invalid strings should return only parsed part"
     (matcho/match (sut/parse "2020-12-ab" [:year "-" :month "-" :day])
@@ -85,18 +85,15 @@
 
 (deftest strict-parse-test
   (testing "strict parse should return value when format exact match"
-    (matcho/match
-     (sut/parse "2011-01-01" [:year \- :month \- :day] :strict true)
-     {:year 2011 :month 1 :day 1})
+    (matcho/match (sut/parse "2011-01-01" [:year \- :month \- :day] :strict true)
+                  {:year 2011 :month 1 :day 1})
 
-    (matcho/match
-     (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec] :strict true)
-     {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
+    (matcho/match (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec] :strict true)
+                  {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}))
 
   (testing "strict parse should return nil when format not strictly consistent"
-    (matcho/match
-     (sut/parse "2011-01-01" [:year "-" :month] :strict true)
-     nil)
+    (matcho/match (sut/parse "2011-01-" [:year "-" :month "-" :day] :strict true)
+                  nil)
 
     (matcho/match
      (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour] :strict true)
@@ -104,10 +101,12 @@
 
   (testing "parsing invalid strings should return nil"
     (matcho/match
-     (sut/parse "2011-23" [:year "-" :month] :strict true) nil)
+     (sut/parse "2011!23" [:year "-" :month] :strict true)
+     nil)
 
     (matcho/match
-     (sut/parse "2011-12" [:month "-" :year] :strict true) nil)))
+     (sut/parse "2011-12" [:year "-" :month "-" :day] :strict true)
+     nil)))
 
 
 (deftest parse-name-test
@@ -166,8 +165,10 @@
        {:month 10 :hour 9 :min 36}))
 
     (testing "invalid month name"
-      (matcho/match (sut/parse "19 month" [:year \space ^:ru[:month]]) {:year 19})
-      (matcho/match (sut/parse "month 19" [^:ru[:month] \space :year]) {:year 19, :month nil}))
+      (matcho/match (sut/parse "19 month" [:year \space ^:ru[:month]])
+                    {:year 19})
+      (matcho/match (sut/parse "month 19" [^:ru[:month] \space :year])
+                    {:year 19, :month nil}))
 
     (testing "invalid locale name"
       (matcho/match (sut/parse "январь 19" [^:en[:month] \space :year]) {:year 19, :month nil})))

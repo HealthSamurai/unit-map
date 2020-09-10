@@ -80,3 +80,15 @@
 
 
 (def ffilter (comp first filter))
+
+
+(defn regex? [x]
+  (= (type #"") (type x)))
+
+
+(defn partition-after
+  "Like split-with, but splits after fn returns new result"
+  [fn coll]
+  (->> (partition-by fn coll)
+       (partition 2 2 [])
+       (map (partial apply concat))))

@@ -8,17 +8,6 @@
 ;; TODO: move all date time related consts to type definition
 
 
-(def parse-patterns
-  {:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
-   :month #?(:clj  "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}+\\.?)"
-             :cljs "(?:1[0-2]|0[1-9]|[1-9]|\\w+\\.?)") ;; TODO: can't get \p{L} work in cljs
-   :day   "(?:3[0-1]|[1-2]\\d|0[1-9]|[1-9])"
-   :hour  "(?:2[0-3]|[0-1]\\d|\\d)"
-   :min   "(?:[0-5]\\d|\\d)"
-   :sec   "(?:[0-5]\\d|\\d)"
-   :ms    "(?:\\d\\d\\d|\\d\\d|\\d)"})
-
-
 (def format-patterns
   {:year  4
    :month 2
@@ -78,16 +67,23 @@
         ffirst)))
 
 
-(defn parse-val [x unit lang]
+(defn parse-val [fmt-el x]
   (or (u/parse-int x)
-      (parse-name x unit lang)))
+      (parse-name x (:value fmt-el) (:lang fmt-el))))
 
 
 (defn get-lang [fmt-vec fmt-el]
   (ffirst (meta fmt-el)))
 
 
-(defn read-fmt-el [fmt-vec fmt-el]
+(defn el->regex [{:keys [value]}]
+  (cond
+    (u/regex? value)   value
+    (keyword? value) ".+?"
+    :else            (u/sanitize value)))
+
+
+(defn read-fmt-el [fmt-vec fmt-el] ;; TODO: maybe make this as date-reader for fmt-vec?
   (let [[value & rest-fmt] (flatten (vector fmt-el))
         lang              (get-lang fmt-vec fmt-el)]
     {:value     value
@@ -97,37 +93,43 @@
                     (when lang :full))
      :function  (u/ffilter fn? rest-fmt)
      :pad-width (u/ffilter integer? rest-fmt)
-     :pad-str   (u/ffilter (some-fn string? char?) rest-fmt)}))
+     :pad-str   (u/ffilter (some-fn string? char?) rest-fmt)
+     :regex     (el->regex {:value value})}))
 
 
-(defn try-first [maybe-coll]
-  (cond-> maybe-coll (seqable? maybe-coll) first))
+(defn mk-group-regex [cur-group next-group]
+  (let [{el-regex :regex, :as el} (last cur-group)
+        cur-group-border  (map :regex (butlast cur-group))
+        next-group-border (:regex (first next-group))
+        group-regex       (str \("?:"
+                               (str/join cur-group-border)
+                               \( el-regex \)
+                               \( "?=" \( "?:" next-group-border \| "$" \) \) \))]
+    (assoc el :group-regex group-regex)))
 
 
 (defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
-  (let [fmt (map (partial read-fmt-el fmt-vec) fmt-vec)
-        pat (map (comp (some-fn parse-patterns u/sanitize) :value) fmt)]
-    (loop [s                                       s
-           [{:keys [lang], fmt-k :value} & rest-f] fmt
-           [p & rest-p]                            pat
-           acc                                     (with-meta {} (meta fmt-vec))]
-      (if-not (and s fmt-k)
-        acc
-        (let [pat (->> (if strict
-                         (str \( (apply str rest-p) \))
-                         "(.+)?")
-                       (str "(" p ")")
-                       re-pattern)
+  (let [fmt           (map (partial read-fmt-el fmt-vec)
+                           (concat [#"^"] fmt-vec [#"$"]))
+        groups        (as-> fmt $
+                        (u/partition-after (comp keyword? :value) $)
+                        (map mk-group-regex $ (rest $)))]
+    (loop [s               s
+           [el & rest-els] groups
+           acc             (with-meta {} (meta fmt-vec))]
+      (cond
+        (not (str/blank? s))
+        (let [pat                    (re-pattern (str (:group-regex el) "(.*$)?"))
+              [match-s cur-s rest-s] (re-find pat s)
+              found?                 (not (str/blank? match-s))
+              parsed-value           (when found? (parse-val el cur-s))]
+          (when (or (not strict) found?)
+            (recur rest-s
+                   rest-els
+                   (cond-> acc parsed-value (assoc (:value el) parsed-value)))))
 
-              [match-s cur-s rest-s] (re-matches pat s)
-
-              r (when (and match-s (contains? parse-patterns fmt-k))
-                  (parse-val cur-s fmt-k lang))]
-          (cond
-            match-s (recur rest-s rest-f rest-p
-                           (cond-> acc r (assoc fmt-k r)))
-
-            (not strict) acc))))))
+        (or (not strict) (empty? el))
+        acc))))
 
 
 (defn format-el [value fmt-vec fmt-el]
