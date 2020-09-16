@@ -436,9 +436,21 @@
 
 ;;;;;;;; delta ;;;;;;;;
 (defn strip-zeros [delta]
-  (reduce-kv (fn [acc k v] (cond-> acc (zero? v) (dissoc k)))
-             delta
-             delta))
+  (let [ks (->> (definition delta)
+                keys
+                (filter (partial contains? delta)))
+        stripped (reduce (fn [acc k]
+                           (cond-> acc
+                             (zero? (get acc k))
+                             (dissoc k)))
+                         delta
+                         ks)
+        most-significant-unit (last ks) ;;TODO: maybe this should be least significant unit?
+        most-significant-unit-value (get delta most-significant-unit 0)]
+    (if (or (empty? stripped)
+            (not (zero? most-significant-unit-value)))
+      (assoc stripped most-significant-unit most-significant-unit-value)
+      (dissoc stripped most-significant-unit))))
 
 
 (defn invert [x]

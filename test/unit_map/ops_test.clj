@@ -306,7 +306,7 @@
                   ^:delta{:year 1})
     (matcho/match (sut/difference {:year -1} {:year 1})
                   ^:delta{:year 1})
-    (t/is (sut/eq? ^:delta{}
+    (t/is (sut/eq? ^:delta{:year 0}
                    (sut/difference {:day 27, :month 7, :year 2020}
                                    {:day 27, :month 7, :year 2020})))
     (t/is (sut/eq? ^:delta{:day 1}
