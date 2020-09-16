@@ -31,9 +31,9 @@
 
 (defn seconds [d]
   (+ (* (dec (:day d)) 60 60 24)
-                  (* (:hour d) 60 60)
-                  (* (:min d) 60)
-                  (:sec d)))
+     (* (:hour d) 60 60)
+     (* (:min d) 60)
+     (:sec d)))
 
 
 (defn to-epoch [date]
