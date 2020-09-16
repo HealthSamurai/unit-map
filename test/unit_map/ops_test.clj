@@ -40,7 +40,10 @@
        (finally (matcho/match exception
                               (-> (sut/no-default-type-exception ^:date{})
                                   bean
-                                  (select-keys [:class :data]))))))
+                                  (select-keys [:class :data])))))
+
+  (t/is (= [::datetime/military]
+           (sut/get-type ^::datetime/military{}))))
 
 
 (t/deftest ops-test

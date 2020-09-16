@@ -210,7 +210,8 @@
         typed-delta?          (keyword? d)
         defined-type?         (contains? definitions v)]
     (cond
-      (and (not default-type-defined?)
+      (and (not defined-type?)
+           (not default-type-defined?)
            (or default-type-value?
                default-type-delta?))
       (throw (no-default-type-exception x))
