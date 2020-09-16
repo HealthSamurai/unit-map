@@ -1,5 +1,6 @@
 (ns unit-map.util
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:refer-clojure :exclude [infinite?]))
 
 
 (defn NaN?
@@ -58,32 +59,29 @@
 
 
 (defn map-v [f m]
-  (reduce-kv (fn [acc k v] (update acc k f)) m m))
+  (reduce-kv (fn [acc k _] (update acc k f)) m m))
 
 
 (defn map-kv [f m]
-  (reduce-kv (fn [acc k v] (update acc k (partial f k))) m m))
+  (reduce-kv (fn [acc k _] (update acc k (partial f k))) m m))
 
 
-(defn infinite? [x] (or (= ##Inf x) (= ##-Inf x)))
+(def infinite? (partial contains? #{##-Inf ##Inf}))
 
 
-(defn finite? [x] (not (infinite? x)))
+(def finite? (complement infinite?))
 
 
 (defn floor [x] (int (Math/floor x)))
 
 
-(defn monotonic? [s]
-  (or (apply <= s)
-      (apply >= s)))
+(def monotonic? (some-fn (partial apply <=) (partial apply >=)))
 
 
 (def ffilter (comp first filter))
 
 
-(defn regex? [x]
-  (= (type #"") (type x)))
+(def regex? (comp (partial = (type #"")) type))
 
 
 (defn partition-after
