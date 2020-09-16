@@ -272,8 +272,8 @@
   (get (definition value) unit))
 
 
-(defn make-delta-type [value-meta delta-type]
-  (or (some-> (ffirst value-meta)
+(defn make-delta-type [value delta-type]
+  (or (some-> (ffirst (meta value))
               (hash-map (or delta-type :delta)))
       (some-> delta-type (hash-map true))
       {:delta true}))
@@ -474,7 +474,7 @@
                 (assoc acc k (or (index-in-sequence ps value v)
                                  (- v (get-min-value value k))))
                 acc))
-            (with-meta {} (make-delta-type (meta value) delta-meta)))))
+            (with-meta {} (make-delta-type value delta-meta)))))
 
 
 (defn ensure-delta [delta]
@@ -558,6 +558,9 @@
 
 
 ;;;;;;;; cmp ;;;;;;;;
+;; TODO: add zero?
+
+
 (defn sequence-cmp [ps value x y]
   (cond
     (= x y) 0

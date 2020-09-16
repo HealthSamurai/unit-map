@@ -6,12 +6,11 @@
 ;; - Add am pm period support
 
 
-(defn tz-offset
-  ([] (tz-offset #?(:clj  {:sec (-> (java.time.ZonedDateTime/now) bean :offset bean :totalSeconds)}
-                    :cljs {:min (-> (js/Date.) .getTimezoneOffset -)})))
-  ([offset] (-> (with-meta offset {:tz true})
-                ops/normalize
-                ops/strip-zeros)))
+(defn tz-offset [& [value offset]]
+  (let [offset (or offset
+                   #?(:clj  {:sec (-> (java.time.ZonedDateTime/now) bean :offset bean :totalSeconds)}
+                      :cljs {:min (-> (js/Date.) .getTimezoneOffset -)}))]
+    (ops/normalize (with-meta offset (ops/make-delta-type value :tz)))))
 
 
 (defn local [& [value-type]]
@@ -34,7 +33,8 @@
                      :cljs (-> now .getSeconds))
            :ms    #?(:clj  (-> now :nano (quot 1000000))
                      :cljs (-> now .getMilliseconds))
-           :tz    (tz-offset #?(:clj  {:sec (-> now :offset bean :totalSeconds)}
+           :tz    (tz-offset typed-value
+                             #?(:clj  {:sec (-> now :offset bean :totalSeconds)}
                                 :cljs {:min (-> now .getTimezoneOffset -)})))))
 
 
@@ -58,7 +58,7 @@
                      :cljs (-> now .getUTCSeconds))
            :ms    #?(:clj  (-> now :nano (quot 1000000))
                      :cljs (-> now .getUTCMilliseconds))
-           :tz    {:hour 0})))
+           :tz    (tz-offset {} {:hour 0}))))
 
 
 (defn today [& [value-type]]
