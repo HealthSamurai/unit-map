@@ -184,10 +184,14 @@
 
 
 (defn delta-type? [t] (= 2 (count t)))
+
+
 (defn value-type? [t] (= 1 (count t)))
 
 
 (defn value? [value] (-> value get-type value-type?))
+
+
 (defn delta? [value] (-> value get-type delta-type?))
 
 
@@ -229,6 +233,7 @@
 
 
 (defn delta-type [t] (second t))
+
 
 (defn get-delta-type [x] (delta-type (get-type x)))
 
@@ -492,6 +497,7 @@
                 (reverse (definition (ensure-delta delta))))
         (assoc-delta delta))
     value))
+
 
 (defn get-applied-deltas [value]
   (->> value
