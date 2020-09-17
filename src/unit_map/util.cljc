@@ -16,7 +16,7 @@
 
 (defn parse-int [x]
   (when (string? x)
-    #?(:clj (try (Integer/parseInt x) (catch NumberFormatException e nil))
+    #?(:clj  (try (Integer/parseInt x) (catch NumberFormatException e nil))
        :cljs (let [x* (js/parseInt x)] (when-not (NaN? x*) x*)))))
 
 
@@ -81,7 +81,10 @@
 (def ffilter (comp first filter))
 
 
-(def regex? (comp (partial = (type #"")) type))
+(defn regex? [x]
+  (instance? #?(:clj  java.util.regex.Pattern
+                :cljs js/RegExp)
+             x))
 
 
 (defn partition-after
