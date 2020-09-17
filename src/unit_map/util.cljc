@@ -63,8 +63,8 @@
 (defn apply-binary-pred [pred x y & more]
   (cond
     (not (pred x y)) false
-    (next more)     (recur pred y (first more) (next more))
-    :else           (pred y (first more))))
+    (next more)      (recur pred y (first more) (next more))
+    :else            (pred y (first more))))
 
 
 (defn map-v [f m]
@@ -87,11 +87,3 @@
 (def regex?
   (let [Regex (type #"")]
     #(instance? Regex %)))
-
-
-(defn partition-after
-  "Like split-with, but splits after fn returns new result"
-  [fn coll]
-  (->> (partition-by fn coll)
-       (partition 2 2 [])
-       (map (partial apply concat))))

@@ -108,28 +108,33 @@
     (assoc el :group-regex group-regex)))
 
 
-(defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
-  (let [fmt           (map (partial read-fmt-el fmt-vec)
-                           (concat [#"^"] fmt-vec [#"$"]))
-        groups        (as-> fmt $
-                        (u/partition-after (comp keyword? :value) $)
-                        (map mk-group-regex $ (rest $)))]
-    (loop [s               s
-           [el & rest-els] groups
-           acc             (with-meta {} (meta fmt-vec))]
-      (cond
-        (not (str/blank? s))
-        (let [pat                    (re-pattern (str (:group-regex el) "(.*$)?"))
-              [match-s cur-s rest-s] (re-find pat s)
-              found?                 (not (str/blank? match-s))
-              parsed-value           (when found? (parse-val el cur-s))]
-          (when (or (not strict) found?)
-            (recur rest-s
-                   rest-els
-                   (cond-> acc parsed-value (assoc (:value el) parsed-value)))))
+(defn make-regex-groups [fmt-vec]
+  (as-> fmt-vec $
+    (concat [#"^"] $ [#"$"])
+    (map (partial read-fmt-el fmt-vec) $)
+    (partition-by (comp keyword? :value) $)
+    (partition 2 2 [] $)
+    (map (partial apply concat) $)
+    (map mk-group-regex $ (rest $))))
 
-        (or (not strict) (empty? el))
-        acc))))
+
+(defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
+  (loop [s               s
+         [el & rest-els] (make-regex-groups fmt-vec)
+         acc             (with-meta {} (meta fmt-vec))]
+    (cond
+      (not (str/blank? s))
+      (let [pat                    (re-pattern (str (:group-regex el) "(.*$)?"))
+            [match-s cur-s rest-s] (re-find pat s)
+            found?                 (not (str/blank? match-s))
+            parsed-value           (when found? (parse-val el cur-s))]
+        (when (or (not strict) found?)
+          (recur rest-s
+                 rest-els
+                 (cond-> acc parsed-value (assoc (:value el) parsed-value)))))
+
+      (or (not strict) (empty? el))
+      acc)))
 
 
 (defn format-el [value fmt-vec fmt-el]
