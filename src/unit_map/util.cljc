@@ -10,14 +10,23 @@
   (false? (== x x)))
 
 
+(def infinite? (partial contains? #{##-Inf ##Inf}))
+
+
+(def finite? (complement infinite?))
+
+
+(defn parseInt [^String s]
+  #?(:clj  (Integer/parseInt s)
+     :cljs (js/parseInt s)))
+
+
+(defn try-parse-int [s]
+  (some->> s str (re-matches #"[-+]?\d+") parseInt))
+
+
 (defn sanitize [s]
   (str/replace s #"[-.\+*?\[^\]$(){}=!<>|:\\]" #(str \\ %)))
-
-
-(defn parse-int [x]
-  (when (string? x)
-    #?(:clj  (try (Integer/parseInt x) (catch NumberFormatException e nil))
-       :cljs (let [x* (js/parseInt x)] (when-not (NaN? x*) x*)))))
 
 
 (defn pad-str [p n s]
@@ -66,12 +75,6 @@
   (reduce-kv (fn [acc k _] (update acc k (partial f k))) m m))
 
 
-(def infinite? (partial contains? #{##-Inf ##Inf}))
-
-
-(def finite? (complement infinite?))
-
-
 (defn floor [x] (int (Math/floor x)))
 
 
@@ -81,10 +84,9 @@
 (def ffilter (comp first filter))
 
 
-(defn regex? [x]
-  (instance? #?(:clj  java.util.regex.Pattern
-                :cljs js/RegExp)
-             x))
+(def regex?
+  (let [Regex (type #"")]
+    #(instance? Regex %)))
 
 
 (defn partition-after

@@ -68,7 +68,7 @@
 
 
 (defn parse-val [fmt-el x]
-  (or (u/parse-int x)
+  (or (u/try-parse-int x)
       (parse-name x (:value fmt-el) (:lang fmt-el))))
 
 

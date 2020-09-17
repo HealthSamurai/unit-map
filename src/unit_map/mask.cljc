@@ -60,7 +60,7 @@
                      (= f-len (count cur-s))
                      (some? rest-s)
                      (not (re-matches (re-pattern p) (str cur-s \0)))))
-            (recur rest-s rest-f rest-p (cond-> acc key? (assoc f (util/parse-int cur-s))))
+            (recur rest-s rest-f rest-p (cond-> acc key? (assoc f (util/try-parse-int cur-s))))
 
             (not (or match-s key?)) (recur (str f s) fmts pats acc)
             (or match-s (= "0" s))  (assoc acc :not-parsed s)
