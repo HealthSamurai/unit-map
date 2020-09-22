@@ -261,7 +261,7 @@
       (process-sequence [first-idx (inc first-idx) '.. last-idx]))))
 
 
-(defmethod definition :default [value]
+(defmethod definition :default [value] ;; TODO: maybe allow to use not defined types? Will work just as map with some counters
   (let [t             (get-type value)
         is-delta?     (delta-type? t)
         definition-fn (get (methods definition) (first t))]
