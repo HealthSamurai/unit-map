@@ -1,7 +1,7 @@
 .PHONY: repl test
 
 repl:
-	rm -rf .cpcache/ && DEBUG=true clj -A:test:nrepl
+	rm -rf .cpcache/ && clojure -A:test:nrepl
 
 test:
 	clj -A:test:kaocha
