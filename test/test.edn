@@ -22,5 +22,5 @@
                                                     "orchestra."
                                                     "nrepl."
                                                     "kaocha."] }
- :kaocha.plugin.randomize/randomize? false
+ :kaocha.plugin.randomize/randomize? true
  :kaocha.plugin.profiling/profiling? false}
