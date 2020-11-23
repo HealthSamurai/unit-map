@@ -8,13 +8,20 @@
             [unit-map.io :as sut]
             [clojure.string :as str]))
 
+(def gregorian-kw
+  #unit-map/definition[:day   [1 2 .. chrono.misc/days-in-month]
+                       :month1 [:jan :feb :mar :apr :may :jun :jul :aug :sep :oct :nov :dec]
+                       :year  [##-Inf .. -2 -1 1 2 .. ##Inf]])
 
 (use-fixtures
   :once
   (fn [t]
     (defmethod ops/definition :default-type [_] datetime/gregorian-military)
-    (t)))
-
+    (defmethod ops/definition :gregorian-kw [_] gregorian-kw)
+    (defmethod sut/field-locale [:month1 :default] [_ _]
+      {:jan {:full "Январь", :short "Янв", :regex "01"}})
+    (t)
+    (remove-method sut/field-settings :month1)))
 
 (deftest nil-safe
   (matcho/match (sut/parse nil nil) {})
@@ -193,3 +200,8 @@
   (testing "strict parsing month names"
     (matcho/match
      (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7})))
+
+(deftest month-keyword-test
+  (testing "month keywords"
+    (is (= {:year 2020, :month1 :jan, :day 10}
+           (sut/parse "2020-01-10" ^:gregorian-kw[:year \- :month1 \- :day])))))

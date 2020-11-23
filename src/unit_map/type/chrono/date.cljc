@@ -46,11 +46,19 @@
 (defmethod io/field-settings :day [_]
   {:default-pad-width 2})
 
+
 (defmethod io/field-settings :month [_]
-  {:locale {:default locale-month-en
-            :en locale-month-en
-            :ru locale-month-ru}
-   :default-pad-width 2})
+  {:default-pad-width 2})
+
+
+(defmethod io/field-locale [:month :default] [_ _] locale-month-en)
+
+
+(defmethod io/field-locale [:month :en] [_ _] locale-month-en)
+
+
+(defmethod io/field-locale [:month :ru] [_ _] locale-month-ru)
+
 
 (defmethod io/field-settings :year [_]
   {:default-pad-width 4})

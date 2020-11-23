@@ -9,26 +9,32 @@
 
 (defmulti field-settings (fn [x] x))
 
+
 (defmethod field-settings :default [_] {})
 
-(defn fs-locale [field locale]
-  (get-in (field-settings field) [:locale locale]))
+
+(defmulti field-locale (fn [x y] [x y]))
+
+
+(defmethod field-locale :default [_ _] {})
+
 
 (defn fs-default-pad-width [field]
   (if (keyword? field)
     (get (field-settings field) :default-pad-width 0)
     0))
 
+
 (defn parse-name [name unit lang]
   (when name
-    (-> (fs-locale unit (or lang :default))
+    (-> (field-locale unit (or lang :default))
         (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
         ffirst)))
 
 
 (defn parse-val [fmt-el x]
-  (or (u/try-parse-int x)
-      (parse-name x (:value fmt-el) (:lang fmt-el))))
+  (or (parse-name x (:value fmt-el) (:lang fmt-el))
+      (u/try-parse-int x)))
 
 
 (defn get-lang [fmt-vec fmt-el]
