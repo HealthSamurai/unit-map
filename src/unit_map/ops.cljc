@@ -60,6 +60,11 @@
   (apply array-map (mapcat (fn [[u s]] [u (read-sequence s)]) (partition 2 form))))
 
 
+(defn merge-definitions [def1 def2]
+  (apply array-map (concat (mapcat identity def1)
+                           (mapcat identity def2))))
+
+
 ;;;;;;;; contains & length & index ;;;;;;;;
 (defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]

@@ -4,7 +4,7 @@
 
 
 ;; TODO: tz fmt support
-(def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
+(def iso-fmt ^:unit-map.type.chrono.datetime/military [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 
 (defn leap-year? [y]
