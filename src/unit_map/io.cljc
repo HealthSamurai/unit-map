@@ -7,62 +7,21 @@
 
 ;; TODO: move all date time related consts to type definition
 
+(defmulti field-settings (fn [x] x))
 
-(def format-patterns
-  {:year  4
-   :month 2
-   :day   2
-   :hour  2
-   :min   2
-   :sec   2
-   :ms    3})
+(defmethod field-settings :default [_] {})
 
+(defn fs-locale [field locale]
+  (get-in (field-settings field) [:locale locale]))
 
-(defmulti locale (fn[x] x))
-
-
-(def locale-en
-  {:month
-   {1  {:full "January" :short "Jan" :regex "(?i)jan\\S*"}
-    2  {:full "February" :short "Feb" :regex "(?i)feb\\S*"}
-    3  {:full "March" :short "Mar" :regex "(?i)mar\\S*"}
-    4  {:full "April" :short "Apr" :regex "(?i)apr\\S*"}
-    5  {:full "May" :short "May" :regex "(?i)may\\S*"}
-    6  {:full "June" :short "June" :regex "(?i)jun\\S*"}
-    7  {:full "July" :short "July" :regex "(?i)jul\\S*"}
-    8  {:full "August" :short "Aug" :regex "(?i)aug\\S*"}
-    9  {:full "September" :short "Sep" :regex "(?i)sep\\S*"}
-    10 {:full "October" :short "Oct" :regex "(?i)oct\\S*"}
-    11 {:full "November" :short "Nov" :regex "(?i)nov\\S*"}
-    12 {:full "December" :short "Dec" :regex "(?i)dec\\S*"}}})
-
-
-(defmethod locale :en [_] locale-en)
-
-
-(defmethod locale :default [_] locale-en)
-
-
-(defmethod locale :ru [_]
-  {:month
-   {1 {:full "Январь", :short "Янв", :regex "(?iu)янв(ар(ь|я))?"}
-    2 {:full "Февраль", :short "Фев", :regex "(?iu)фев(рал(ь|я))?"}
-    3 {:full "Март", :short "Мар", :regex "(?iu)мар(та?)?"}
-    4 {:full "Апрель", :short "Апр", :regex "(?iu)апр(ел(ь|я)?)?"}
-    5 {:full "Май", :short "Май", :regex "(?iu)ма(й|я)?"}
-    6 {:full "Июнь", :short "Июн", :regex "(?iu)июн(ь|я)?"}
-    7 {:full "Июль", :short "Июл", :regex "(?iu)июл(ь|я)?"}
-    8 {:full "Август", :short "Авг", :regex "(?iu)авг(уста?)?"}
-    9 {:full "Сентябрь", :short "Сен", :regex "(?iu)сен(тябр(ь|я)?)?"}
-    10 {:full "Октябрь", :short "Окт", :regex "(?iu)окт(ябр(ь|я)?)?"}
-    11 {:full "Ноябрь", :short "Ноя", :regex "(?iu)ноя(бр(ь|я)?)?"}
-    12 {:full "Декабрь", :short "Дек", :regex "(?iu)дек(бр(ь|я)?)?"}}})
-
+(defn fs-default-pad-width [field]
+  (if (keyword? field)
+    (get (field-settings field) :default-pad-width 0)
+    0))
 
 (defn parse-name [name unit lang]
   (when name
-    (-> (locale lang)
-        (get unit)
+    (-> (fs-locale unit (or lang :default))
         (->> (filter #(re-matches (-> % val :regex re-pattern) name)))
         ffirst)))
 
@@ -85,7 +44,7 @@
 
 (defn read-fmt-el [fmt-vec fmt-el] ;; TODO: maybe make this as date-reader for fmt-vec?
   (let [[value & rest-fmt] (flatten (vector fmt-el))
-        lang              (get-lang fmt-vec fmt-el)]
+        lang               (get-lang fmt-vec fmt-el)]
     {:value     value
      :lang      lang
      :type      (ops/get-type fmt-vec)
@@ -142,11 +101,11 @@
 
         v          (get value fmt)
         unit-value (or (when function (function value fmt-el))
-                       (when lang (get-in (locale lang) [fmt v name-fmt]))
+                       (when lang (get-in (fs-locale fmt lang) [v name-fmt]))
                        v
                        (ops/sequence-nth (ops/unit-definition value fmt) value 0)
                        fmt)
-        pad-width  (or pad-width (max (format-patterns fmt 0) (count (str unit-value))))
+        pad-width  (or pad-width (max (fs-default-pad-width fmt) (count (str unit-value))))
         pad-str    (or pad-str
                        (when (number? unit-value) 0)
                        " ")]
