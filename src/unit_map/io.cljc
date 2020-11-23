@@ -107,7 +107,7 @@
 
         v          (get value fmt)
         unit-value (or (when function (function value fmt-el))
-                       (when lang (get-in (fs-locale fmt lang) [v name-fmt]))
+                       (when lang (get-in (field-locale fmt (or lang :default)) [v name-fmt]))
                        v
                        (ops/sequence-nth (ops/unit-definition value fmt) value 0)
                        fmt)
