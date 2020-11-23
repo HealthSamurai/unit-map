@@ -4,13 +4,13 @@
             [unit-map.type.chrono.time :as time]))
 
 
-(def gregorian-military (merge time/military date/gregorian))
+(def gregorian-military (ops/merge-definitions time/military date/gregorian))
 
 
 (defmethod ops/definition ::military [_] gregorian-military)
 
 
-(def gregorian-am-pm (merge time/am-pm date/gregorian))
+(def gregorian-am-pm (ops/merge-definitions time/am-pm date/gregorian))
 
 
 (defmethod ops/definition ::am-pm [_] gregorian-am-pm)
