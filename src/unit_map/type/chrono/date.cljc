@@ -40,7 +40,7 @@
    9 {:full "Сентябрь", :short "Сен", :regex "(?iu)сен(тябр(ь|я)?)?"}
    10 {:full "Октябрь", :short "Окт", :regex "(?iu)окт(ябр(ь|я)?)?"}
    11 {:full "Ноябрь", :short "Ноя", :regex "(?iu)ноя(бр(ь|я)?)?"}
-   12 {:full "Декабрь", :short "Дек", :regex "(?iu)дек(бр(ь|я)?)?"}})
+   12 {:full "Декабрь", :short "Дек", :regex "(?iu)дек(абр(ь|я)?)?"}})
 
 
 (defmethod io/field-settings :day [_]
