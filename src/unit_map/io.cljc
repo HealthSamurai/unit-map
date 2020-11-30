@@ -32,8 +32,8 @@
 
 
 (defn parse-val [fmt-el x]
-  (or (u/try-parse-int x)
-      (parse-name x fmt-el)))
+  (or (parse-name x fmt-el)
+      (u/try-parse-int x)))
 
 
 (defn get-lang [fmt-vec fmt-el]
