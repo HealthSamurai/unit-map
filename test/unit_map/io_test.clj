@@ -11,8 +11,8 @@
 (use-fixtures
   :once
   (fn [t]
-    (defmethod ops/definition :type/default-type [_] datetime/gregorian-military)
-    (derive :type/default-type :unit-map.type.chrono.date/date)
+    (defmethod ops/definition :unit-map.type/default [_] datetime/gregorian-military)
+    (derive :unit-map.type/default :unit-map.type.chrono.date/date)
     (t)))
 
 
@@ -119,7 +119,7 @@
                  "JUNE" 6}
           test-fn (fn [[inp res]]
                     (testing (str "parsing: " inp)
-                      (is (= res (sut/parse-name inp {:type [:type/default-type] :value :month})))))]
+                      (is (= res (sut/parse-name inp {:type [:unit-map.type/default] :value :month})))))]
       (doall
        (map test-fn cases)))))
 

@@ -171,7 +171,7 @@
 
 ;;;;;;;; type ;;;;;;;;
 (defn no-default-type-exception [value]
-  (ex-info "No unit-map type specified and no :type/default-type is defined"
+  (ex-info "No unit-map type specified and no :unit-map.type/default is defined"
            {:value value, :meta (meta value)}))
 
 
@@ -208,7 +208,7 @@
 (defn get-type [x]
   (let [[v d]                 (first (meta x)) ;; TODO: maybe use namespaced-keywords instead?
         definitions           (methods definition)
-        default-type-defined? (contains? definitions :type/default-type)
+        default-type-defined? (contains? definitions :unit-map.type/default)
         default-type-delta?   (true? d)
         default-type-value?   (nil? v)
         typed-delta?          (keyword? d)
@@ -222,8 +222,8 @@
 
       typed-delta?              [v d]
       defined-type?             [v]
-      default-type-value?       [:type/default-type]
-      default-type-delta?       [:type/default-type v])))
+      default-type-value?       [:unit-map.type/default]
+      default-type-delta?       [:unit-map.type/default v])))
 
 
 (defn main-type [t] (first t))
