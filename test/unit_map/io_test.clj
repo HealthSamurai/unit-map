@@ -1,18 +1,18 @@
 (ns unit-map.io-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [matcho.core :as matcho]
-            [unit-map.util :as u]
             [unit-map.ops :as ops]
+            [unit-map.type.chrono.date]
             [unit-map.type.chrono.datetime :as datetime]
             [unit-map.type.chrono.util.misc :as chrono.misc]
-            [unit-map.io :as sut]
-            [clojure.string :as str]))
+            [unit-map.io :as sut]))
 
 
 (use-fixtures
   :once
   (fn [t]
     (defmethod ops/definition :type/default-type [_] datetime/gregorian-military)
+    (derive :type/default-type :unit-map.type.chrono.date/date)
     (t)))
 
 
@@ -119,7 +119,7 @@
                  "JUNE" 6}
           test-fn (fn [[inp res]]
                     (testing (str "parsing: " inp)
-                      (is (= (sut/parse-name inp :month nil) res))))]
+                      (is (= res (sut/parse-name inp {:type [:type/default-type] :value :month})))))]
       (doall
        (map test-fn cases)))))
 
@@ -150,7 +150,7 @@
 
     (testing "en"
       (matcho/match
-       (sut/parse "sep. 19 2023" ^:en[:month \space :day \space :year])
+       (sut/parse "sep. 19 2023" [^:en[:month] \space :day \space :year])
        {:day 19, :month 9, :year 2023}))
 
     (testing "ru"
