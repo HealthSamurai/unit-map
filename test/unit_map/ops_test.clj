@@ -13,12 +13,12 @@
 (t/use-fixtures
   :each
   (fn [t]
-    (defmethod sut/definition :default-type [_] datetime/gregorian-military)
+    (defmethod sut/definition :type/default-type [_] datetime/gregorian-military)
     (t)))
 
 
 (t/deftest type-exception-test
-  (remove-method sut/definition :default-type)
+  (remove-method sut/definition :type/default-type)
   (def exception nil)
   (try (sut/definition {:hour 1})
        (catch clojure.lang.ExceptionInfo e
@@ -58,12 +58,12 @@
     (t/is (= [::time/military :delta] (sut/get-type ^{::time/military :delta}{:hour 1})))
     (t/is (= [::time/military :tz]    (sut/get-type ^{::time/military :tz}{:hour 1})))
 
-    (t/is (= [:default-type]        (sut/get-type {:hour 10})))
-    (t/is (= [:default-type :delta] (sut/get-type ^:delta{:hour 1})))
-    (t/is (= [:default-type :tz]    (sut/get-type ^:tz{:hour 1})))
+    (t/is (= [:type/default-type]        (sut/get-type {:hour 10})))
+    (t/is (= [:type/default-type :delta] (sut/get-type ^:delta{:hour 1})))
+    (t/is (= [:type/default-type :tz]    (sut/get-type ^:tz{:hour 1})))
 
     (t/is (= [::time/military :delta] (sut/get-type (sut/value->delta ^::time/military{:hour 1}))))
-    (t/is (= [:default-type :delta]   (sut/get-type (sut/value->delta {:hour 1}))))
+    (t/is (= [:type/default-type :delta]   (sut/get-type (sut/value->delta {:hour 1}))))
 
     (matcho/match (sut/definition ^::time/military{:hour 20})
                   #unit-map/definition[:ms   [0 1 .. 999]

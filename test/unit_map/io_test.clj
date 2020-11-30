@@ -12,7 +12,7 @@
 (use-fixtures
   :once
   (fn [t]
-    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
+    (defmethod ops/definition :type/default-type [_] datetime/gregorian-military)
     (t)))
 
 

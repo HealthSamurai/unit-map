@@ -8,7 +8,7 @@
 (t/use-fixtures
   :each
   (fn [t]
-    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
+    (defmethod ops/definition :type/default-type [_] datetime/gregorian-military)
     (t)))
 
 (t/deftest from-epoch-test
