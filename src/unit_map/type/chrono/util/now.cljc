@@ -2,63 +2,42 @@
   (:require [unit-map.ops :as ops]))
 
 ;; TODO:
-;;   If someone wants to use :second & :nanosecond for example
+;; - What if someone wants to use :second & :nanosecond?
 ;; - Add am pm period support
 
 
 (defn tz-offset [& [value offset]]
   (let [offset (or offset
-                   #?(:clj  {:sec (-> (java.time.ZonedDateTime/now) bean :offset bean :totalSeconds)}
-                      :cljs {:min (-> (js/Date.) .getTimezoneOffset -)}))]
+                   {:min (-> #?(:clj  (java.util.Date.)
+                                :cljs (js/Date.))
+                             .getTimezoneOffset -)})]
     (ops/normalize (with-meta offset (ops/make-delta-type value :tz)))))
 
 
 (defn local [& [value-type]]
-  (let [now #?(:clj  (bean (java.time.ZonedDateTime/now))
+  (let [now #?(:clj  (java.util.Date.)
                :cljs (js/Date.))
         typed-value (cond-> {} (some? value-type) (with-meta {value-type true}))]
     (assoc typed-value
-           :year  #?(:clj  (-> now :year)
-                     :cljs (-> now .getFullYear))
-           :month (->> #?(:clj  (-> now :month bean :value dec)
-                          :cljs (-> now .getMonth))
+           :year  (-> (.getYear now)
+                      (+ 1900))
+           :month (->> (.getMonth now)
                        (ops/sequence-nth (ops/unit-definition typed-value :month) typed-value))
-           :day   #?(:clj  (-> now :dayOfMonth)
-                     :cljs (-> now .getDate))
-           :hour  #?(:clj  (-> now :hour)
-                     :cljs (-> now .getHours))
-           :min   #?(:clj  (-> now :minute)
-                     :cljs (-> now .getMinutes))
-           :sec   #?(:clj  (-> now :second)
-                     :cljs (-> now .getSeconds))
-           :ms    #?(:clj  (-> now :nano (quot 1000000))
-                     :cljs (-> now .getMilliseconds))
-           :tz    (tz-offset typed-value
-                             #?(:clj  {:sec (-> now :offset bean :totalSeconds)}
-                                :cljs {:min (-> now .getTimezoneOffset -)})))))
+           :day   (.getDate now)
+           :hour  (.getHours now)
+           :min   (.getMinutes now)
+           :sec   (.getSeconds now)
+           :ms    (-> (.getTime now)
+                      (rem 1000))
+           :tz    (->> {:min (-> now .getTimezoneOffset -)}
+                       (tz-offset typed-value)))))
 
 
 (defn utc [& [value-type]]
-  (let [now #?(:clj  (bean (java.time.ZonedDateTime/now java.time.ZoneOffset/UTC))
-               :cljs (js/Date.))
-        typed-value (cond-> {} (some? value-type) (with-meta {value-type true}))]
-    (assoc typed-value
-           :year  #?(:clj  (-> now :year)
-                     :cljs (-> now .getUTCFullYear))
-           :month (->> #?(:clj  (-> now :month bean :value dec)
-                          :cljs (-> now .getUTCMonth))
-                       (ops/sequence-nth (ops/unit-definition typed-value :month) typed-value))
-           :day   #?(:clj  (-> now :dayOfMonth)
-                     :cljs (-> now .getUTCDate))
-           :hour  #?(:clj  (-> now :hour)
-                     :cljs (-> now .getUTCHours))
-           :min   #?(:clj  (-> now :minute)
-                     :cljs (-> now .getUTCMinutes))
-           :sec   #?(:clj  (-> now :second)
-                     :cljs (-> now .getUTCSeconds))
-           :ms    #?(:clj  (-> now :nano (quot 1000000))
-                     :cljs (-> now .getUTCMilliseconds))
-           :tz    (tz-offset {} {:hour 0}))))
+  (let [now     (local value-type)
+        tz-meta (meta (:tz now))]
+    (assoc (ops/remove-deltas now)
+           :tz (with-meta {:hour 0} tz-meta))))
 
 
 (defn today [& [value-type]]
