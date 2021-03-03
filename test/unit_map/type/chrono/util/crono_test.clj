@@ -8,7 +8,7 @@
 (use-fixtures
   :each
   (fn [t]
-    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
+    (defmethod ops/definition :unit-map.type/default [_] datetime/gregorian-military)
     (t)))
 
 (deftest crono-test

@@ -3,6 +3,10 @@
             [unit-map.type.chrono.util.misc :as um]))
 
 
+(derive ::military :unit-map.type.chrono.date/date)
+(derive ::am-pm :unit-map.type.chrono.date/date)
+
+
 (def gregorian-military
   #unit-map/definition[:ms    [0 1 .. 999]
                        :sec   [0 1 .. 59]

@@ -17,7 +17,7 @@ Pure clojure time made simple for clj & cljs
 
 
 ;; You can define default type for whole project
-(defmethod ops/definition :default-type [_] datetime/gregorian-military)
+(defmethod ops/definition :unit-map.type/default [_] datetime/gregorian-military)
 
 (def t' {:year 2018, :month 1, :day 29, :hour 10, :min 30})
 
