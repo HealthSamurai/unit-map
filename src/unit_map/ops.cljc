@@ -209,7 +209,7 @@
   (let [[v d]                 (first (meta x)) ;; TODO: maybe use namespaced-keywords instead?
         definitions           (methods definition)
         default-type-defined? (contains? definitions :default-type)
-        default-type-delta?   (true? d)
+        default-type-delta?   (some? d)
         default-type-value?   (nil? v)
         typed-delta?          (keyword? d)
         defined-type?         (contains? definitions v)]
@@ -223,7 +223,7 @@
       typed-delta?              [v d]
       defined-type?             [v]
       default-type-value?       [:default-type]
-      default-type-delta?       [:default-type v])))
+      default-type-delta?       [:default-type v]))) ;; TODO default-type-delta unreachable code
 
 
 (defn main-type [t] (first t))
