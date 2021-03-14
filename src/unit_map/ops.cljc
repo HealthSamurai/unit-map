@@ -171,12 +171,12 @@
 
 ;;;;;;;; type ;;;;;;;;
 (defn no-default-type-exception [value]
-  (ex-info "No unit-map type specified and no :default-type is defined"
+  (ex-info "No known unit-map type specified and no :default-type is defined"
            {:value value, :meta (meta value)}))
 
 
 (defn unit-value-is-incorrect [args]
-  (ex-info "Chrono value has incorrect unit value"
+  (ex-info "Unit-map has incorrect unit value"
            args))
 
 
