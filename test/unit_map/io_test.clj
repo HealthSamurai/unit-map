@@ -192,4 +192,12 @@
 
   (testing "strict parsing month names"
     (matcho/match
-     (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7})))
+     (sut/parse "2011-JUL" [:year "-" :month] :strict true) {:year 2011 :month 7}))
+
+  (testing "parsing formatting without separators"
+    (testing "fmt vec with regex"
+      (let [fmt [[:year #"\d\d" 2] [:month #"\d\d"] [:day #"\d\d"] [:hour #"\d\d"] [:min #"\d\d"]]]
+        (matcho/match (sut/parse "2103020805" fmt)
+                      {:year 21 :month 3 :day 2 :hour 8 :min 5})
+
+        (is (= "2103020805" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt)))))))

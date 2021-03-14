@@ -94,7 +94,9 @@
      :function  (u/ffilter fn? rest-fmt)
      :pad-width (u/ffilter integer? rest-fmt)
      :pad-str   (u/ffilter (some-fn string? char?) rest-fmt)
-     :regex     (el->regex {:value value})}))
+     :regex     (or (and (keyword? value)
+                         (u/ffilter u/regex? rest-fmt))
+                    (el->regex {:value value}))}))
 
 
 (defn mk-group-regex [cur-group next-group]
@@ -109,13 +111,20 @@
 
 
 (defn make-regex-groups [fmt-vec]
-  (as-> fmt-vec $
-    (concat [#"^"] $ [#"$"])
-    (map (partial read-fmt-el fmt-vec) $)
-    (partition-by (comp keyword? :value) $)
-    (partition 2 2 [] $)
-    (map (partial apply concat) $)
-    (map mk-group-regex $ (rest $))))
+  (transduce
+   (map (partial read-fmt-el fmt-vec))
+   (fn
+     ([acc el]
+      (if (keyword? (:value el))
+        {:group []
+         :result (conj (:result acc) (conj (:group acc) el))}
+        (update acc :group conj el)))
+     ([acc]
+      (let [result (conj (:result acc) (:group acc))]
+        (mapv mk-group-regex result (rest result)))))
+   {:group []
+    :result []}
+   (concat [#"^"] fmt-vec [#"$"])))
 
 
 (defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
