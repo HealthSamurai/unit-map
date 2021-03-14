@@ -76,27 +76,29 @@
   (ffirst (meta fmt-el)))
 
 
-(defn el->regex [{:keys [value]}]
+(defn el->regex [{:keys [value width]}]
   (cond
-    (u/regex? value)   value
+    (u/regex? value) value
+    (some? width)    (apply str (repeat width \.))
     (keyword? value) ".+?"
     :else            (u/sanitize value)))
 
 
 (defn read-fmt-el [fmt-vec fmt-el] ;; TODO: maybe make this as date-reader for fmt-vec?
   (let [[value & rest-fmt] (flatten (vector fmt-el))
-        lang              (get-lang fmt-vec fmt-el)]
+        lang               (get-lang fmt-vec fmt-el)
+        width              (u/ffilter integer? rest-fmt)]
     {:value     value
      :lang      lang
      :type      (ops/get-type fmt-vec)
      :name-fmt  (or (u/ffilter keyword? rest-fmt)
                     (when lang :full))
      :function  (u/ffilter fn? rest-fmt)
-     :pad-width (u/ffilter integer? rest-fmt)
+     :pad-width width
      :pad-str   (u/ffilter (some-fn string? char?) rest-fmt)
      :regex     (or (and (keyword? value)
                          (u/ffilter u/regex? rest-fmt))
-                    (el->regex {:value value}))}))
+                    (el->regex {:value value, :width width}))}))
 
 
 (defn mk-group-regex [cur-group next-group]

@@ -200,4 +200,11 @@
         (matcho/match (sut/parse "2103020805" fmt)
                       {:year 21 :month 3 :day 2 :hour 8 :min 5})
 
+        (is (= "2103020805" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt)))))
+
+    (testing "fmt vec with width"
+      (let [fmt [[:year 2] [:month 2] [:day 2] [:hour 2] [:min 2]]]
+        (matcho/match (sut/parse "2103020805" fmt)
+                      {:year 21 :month 3 :day 2 :hour 8 :min 5})
+
         (is (= "2103020805" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt)))))))
