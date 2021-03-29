@@ -675,3 +675,39 @@
                         (reverse (definition value)))]
     (cond-> (plus default (cond-> value is-value? (-> drop-deltas value->delta)))
       is-value? (assoc-deltas (get-applied-deltas value)))))
+
+
+(defn extract  [value unit]
+  (let [r
+        (->>
+          (definition value)
+          (reverse)
+          (reduce
+            (fn [a d]
+              (let [[un dseq] d
+                    dlen (sequence-length dseq value)
+                    val  (get value un)
+                    {:keys [result div ratio]} a
+                    div     (if ratio (* div dlen) div)
+                    ratio   (or ratio (= unit un))]
+                { :result (+ (* result dlen) val)
+                  :div div
+                  :ratio ratio}))
+            {:result 0 :div 1 :ratio false}))]
+    (/ (:result r) (:div r))))
+
+
+(defn extract-int [value unit] 
+  (let [d (drop-while #(not= unit (key %)) (definition value))]
+    (:result
+      (reduce
+        (fn [a d]
+          (let [[unit dseq] d
+                dlen (sequence-length dseq value)
+                val  (get value unit)
+                res  (:result a)
+                mult (:mult a)]
+            {:result  (+ res (* mult val))
+             :mult    (* mult dlen)}))
+        {:result 0 :mult 1}
+        d))))
