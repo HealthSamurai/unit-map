@@ -820,3 +820,14 @@
 
   (t/is (= (sut/to-delta {:year 2018 :month 2 :day 2 :hour 19} :ny)
          {:year 2018 :month 2 :day 2 :hour 19 :tz :ny})))
+
+
+(t/deftest cast
+  (t/testing "cast time into seconds"
+    (def t {:hour 14, :min 11, :sec 12, :ms 111})
+
+    (t/is (= (-> 14 (* 60) (+ 11) (* 60) (+ (/ 111 1000)))
+             (sut/extract t :sec)))
+
+    (t/is (= (-> 14 (* 60) (+ 11) (* 60))
+             (sut/extract-int t :sec)))))
