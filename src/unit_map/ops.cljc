@@ -63,7 +63,8 @@
 ;;;;;;;; contains & length & index ;;;;;;;;
 (defn range-contains? [rng value x]
   (let [{:keys [start step end]} (concretize-range rng value)]
-    (and (u/monotonic? [start x end])
+    (and (or (<= start x end)
+             (>= start x end))
          (or (= start x)
              (= end x)
              (and (not= ##-Inf start)

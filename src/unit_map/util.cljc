@@ -78,9 +78,6 @@
 (defn floor [x] (int (Math/floor x)))
 
 
-(def monotonic? (some-fn (partial apply <=) (partial apply >=)))
-
-
 (def ffilter (comp first filter))
 
 
