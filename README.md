@@ -1,4 +1,5 @@
 # unit-map
+[![Build Status](https://github.com/HealthSamurai/unit-map/actions/workflows/clojure.yml/badge.svg?branch=master)](https://github.com/HealthSamurai/unit-map/actions/workflows/clojure.yml?query=event%3Apush++branch%3Amaster+)
 
 This is ex [chrono](https://github.com/HealthSamurai/chrono) library. This readme WIP. Chrono readme is [here](https://github.com/HealthSamurai/unit-map/tree/master/src/unit_map/type/chrono)
 
