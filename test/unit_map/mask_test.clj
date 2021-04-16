@@ -52,4 +52,14 @@
     (doseq [[fmt facts] cases
             [inp res]   facts]
       (t/testing (str "resolve: " fmt " " inp)
-        (t/is (= res (sut/clean-resolve inp fmt)))))))
+        (t/is (= res (sut/clean-resolve inp fmt))))))
+
+  (let [cases {(re-pattern (:month sut/parse-patterns))
+               {"Apr"    "Apr"
+                "Apr."   "Apr."
+                "Апрель" "Апрель"
+                "Апр."   "Апр."}}]
+    (doseq [[month-pattern facts] cases
+            [inp res]             facts]
+      (t/testing (str "match named month: " inp " " res)
+        (t/is (= res (re-matches month-pattern inp)))))))

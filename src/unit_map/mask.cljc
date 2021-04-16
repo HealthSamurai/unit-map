@@ -1,15 +1,17 @@
 (ns unit-map.mask
   (:require [unit-map.util :as util]
+            [unit-map.helper.regex :as regex-helper]
             [clojure.string :as str]
             #?(:cljs [goog.string])
             #?(:cljs [goog.string.format]))
   (:refer-clojure :exclude [resolve]))
 
 
+(def letter-sequence-pattern (str regex-helper/cross-platform-letter-pattern "+"))
+
 (def parse-patterns
   {:year  "(?:\\d\\d\\d\\d|\\d\\d\\d|\\d\\d|\\d)"
-   :month #?(:clj  "(?:1[0-2]|0[1-9]|[1-9]|\\p{L}+\\.?)"
-             :cljs "(?:1[0-2]|0[1-9]|[1-9]|\\w+\\.?)") ;; TODO: can't get \p{L} work in cljs
+   :month (str "(?:1[0-2]|0[1-9]|[1-9]|" letter-sequence-pattern "\\.?)")
    :day   "(?:3[0-1]|[1-2]\\d|0[1-9]|[1-9])"
    :hour  "(?:2[0-3]|[0-1]\\d|\\d)"
    :min   "(?:[0-5]\\d|\\d)"
