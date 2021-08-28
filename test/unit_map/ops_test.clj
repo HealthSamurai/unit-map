@@ -244,12 +244,12 @@
     (matcho/match (sut/add-to-unit :day {:day 1, :month 1, :year 2020} 0)
                   {:day 1, :month 1, :year 2020}))
 
-  (t/testing "substract-from-unit"
-    (matcho/match (sut/substract-from-unit :day {:day 1, :month 1, :year 2020} 9000)
+  (t/testing "subtract-from-unit"
+    (matcho/match (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} 9000)
                   {:year 1995, :month 5, :day 12})
-    (matcho/match (sut/substract-from-unit :day {:day 1, :month 1, :year 2020} -9000)
+    (matcho/match (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} -9000)
                   {:day 22, :month 8, :year 2044})
-    (matcho/match (sut/substract-from-unit :day {:day 1, :month 1, :year 2020} 0)
+    (matcho/match (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} 0)
                   {:day 1, :month 1, :year 2020}))
 
   (t/testing "plus"

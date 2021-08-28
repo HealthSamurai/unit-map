@@ -436,7 +436,7 @@
   (ensure-less-significant-units (add-to-unit' unit value x) unit))
 
 
-(defn substract-from-unit [unit value x]
+(defn subtract-from-unit [unit value x]
   (add-to-unit unit value (- x)))
 
 
@@ -640,7 +640,7 @@
   ([x y & more] (reduce plus (plus x y) more)))
 
 
-(defn substract-delta [x delta]
+(defn subtract-delta [x delta]
   (plus x (invert delta)))
 
 
@@ -650,7 +650,7 @@
   (->> (cond-> (process-binary-op-args-deltas x y)
          (lt? x y) reverse)
        (map value->delta)
-       (apply substract-delta)))
+       (apply subtract-delta)))
 
 
 (defn minus
@@ -661,7 +661,7 @@
   ([x y]
    {:pre [(or (value? x) (delta? y))]}
    (if (delta? y)
-     (substract-delta x y)
+     (subtract-delta x y)
      (cond-> (difference x y)
        (gt? y x) invert)))
   ([x y & more] (reduce minus (minus x y) more)))
