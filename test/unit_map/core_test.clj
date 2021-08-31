@@ -4,90 +4,150 @@
             [matcho.core :as matcho]))
 
 
-(def si-prefixes
-  {:Y  24
-   :Z  21
-   :E  18
-   :P  15
-   :T  12
-   :G  9
-   :M  6
-   :k  3
-   :h  2
-   :da 1
-   :_  0
-   :d  -1
-   :c  -2
-   :m  -3
-   :μ  -6
-   :n  -9
-   :p  -12
-   :f  -15
-   :a  -18
-   :z  -21
-   :y  -24})
+(defmacro good-sys? [defsys-expr]
+  (list 't/is
+        (list '= :good
+              (list 'try `(do ~defsys-expr
+                              :good)
+                    (list 'catch AssertionError 'e
+                          :bad)))))
+
+(defmacro bad-sys? [defsys-expr]
+  (list 't/is
+        (list '= :bad
+              (list 'try `(do ~defsys-expr
+                              :good)
+                    (list 'catch AssertionError 'e
+                          :bad)))))
 
 
-(defn leap-year? [{:keys [year]}]
-  (and (zero? (rem year 4))
-       (or (pos? (rem year 100))
-           (zero? (rem year 400)))))
+(t/deftest defseq-defsys
+  (def systems-before-test @sut/systems)
+  (reset! sut/systems {})
+
+  (sut/defseq :a #unit-map/seq[0 1 -> :b])
+  (sut/defseq :b #unit-map/seq[0 1 -> :c])
+  (sut/defseq :c #unit-map/seq[0 1 -> :d])
+  (sut/defseq :d #unit-map/seq[0 1])
+
+  (sut/defseq :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
+  (sut/defseq :c2 #unit-map/seq[-2 -1 0 -> :d])
+
+  (sut/defseq :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
+  (sut/defseq :c3 #unit-map/seq[2 1 .. ##Inf])
+
+  (sut/defseq :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
+  (sut/defseq :c4 #unit-map/seq[2 1 .. ##Inf])
+
+  (sut/defseq :b5 #unit-map/seq[2 1 0 -> :c5])
+  (sut/defseq :c5 #unit-map/seq[2 1 .. ##Inf])
+
+  (sut/defseq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
+  (sut/defseq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
+
+  (t/testing "valid systems"
+    (good-sys? (sut/defsys abcd   [:a :b :c :d]))
+    (good-sys? (sut/defsys ab2c2d [:a :b2 :c2 :d]))
+    (good-sys? (sut/defsys ab2c2  [:a :b2 :c2]))
+    (good-sys? (sut/defsys ab3c3  [:a :b3 :c3]))
+    (good-sys? (sut/defsys ab4c4  [:a :b4 :c4]))
+    (good-sys? (sut/defsys b5c5   [:b5 :c5]))
+    (good-sys? (sut/defsys ab6c6d [:a :b6 :c6 :d]))
+    (good-sys? (sut/defsys ab6c6  [:a :b6 :c6]))
+    (good-sys? (sut/defsys abc6d  [:a :b :c6 :d])))
+
+  (t/testing "invalid systems"
+    (bad-sys? (sut/defsys dcba   [:d :c :b :a]))
+    (bad-sys? (sut/defsys ab2c   [:a :b2 :c]))
+    (bad-sys? (sut/defsys ab3c3d [:a :b3 :c3 :d]))
+    (bad-sys? (sut/defsys ab4c4  [:a :b4 :c4])))
+
+  (reset! sut/systems systems-before-test))
 
 
-(defn days-in-month [{:as date, :keys [month]}]
-  (condp contains? month
-    #{:jan :mar :may :jul :aug :oct :dec} 31
-    #{:apr :jun :sep :nov}                30
-    #{:feb}                               (if (leap-year? date) 29 28)
-    ##Inf))
+(do ;;NOTE: seqs
+  (def si-prefixes
+    {:Y  24
+     :Z  21
+     :E  18
+     :P  15
+     :T  12
+     :G  9
+     :M  6
+     :k  3
+     :h  2
+     :da 1
+     :_  0
+     :d  -1
+     :c  -2
+     :m  -3
+     :μ  -6
+     :n  -9
+     :p  -12
+     :f  -15
+     :a  -18
+     :z  -21
+     :y  -24})
 
 
-(defn weekday [{:keys [weekday]}]
-  (condp contains? weekday
-    #{:mon :tue :wed :thu :fri} :workday
-    #{:sat :sun}                :weekend))
+  (defn leap-year? [{:keys [year]}]
+    (and (zero? (rem year 4))
+         (or (pos? (rem year 100))
+             (zero? (rem year 400)))))
 
 
-(defn season [{:keys [month]}]
-  (condp contains? month
-    #{:dec :jan :feb} :winter
-    #{:mar :apr :may} :spring
-    #{:jun :jul :aug} :summer
-    #{:sep :oct :nov} :autumn))
+  (defn days-in-month [{:as date, :keys [month]}]
+    (condp contains? month
+      #{:jan :mar :may :jul :aug :oct :dec} 31
+      #{:apr :jun :sep :nov}                30
+      #{:feb}                               (if (leap-year? date) 29 28)
+      ##Inf))
 
 
-(sut/defseq :ns   #unit-map/seq[0 1 .. 999999999 -> :sec])
-
-(sut/defseq :ns   #unit-map/seq[0 1 .. 999999 -> :ms])
-(sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
-(sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
-(sut/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
-(sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
-
-(sut/defseq :am-pm/hour   #unit-map/seq[:hour <-> 12 1 2 .. 11 -> :am-pm/period])
-(sut/defseq :am-pm/period #unit-map/seq[:am :pm -> :day])
-
-(sut/defseq :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-(sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
-(sut/defseq :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
-
-(sut/defseq :weekday  #unit-map/seq[:day <-> :mon :tue :wed :thu :fri :sat :sun -> :week])
-(sut/defseq :week     #unit-map/seq[1 2 .. 52])
-(sut/defseq :weekpart #unit-map/seq[:weekday <-> weekday])
-(sut/defseq :season   #unit-map/seq[:month <-> season])
-
-(sut/defseq :mil  [0 1 .. 999  -> :inch])
-(sut/defseq :inch [0 1 .. 11   -> :foot])
-(sut/defseq :foot [0 1 .. 5279 -> :mile])
-(sut/defseq :mile [0 1 .. ##Inf])
-
-(sut/defseq :mm [0 1 .. 9   -> :cm])
-(sut/defseq :cm [0 1 .. 99  -> :m])
-(sut/defseq :m  [0 1 .. 999 -> :km])
-(sut/defseq :km [0 1 .. ##Inf])
+  (defn weekday [{:keys [weekday]}]
+    (condp contains? weekday
+      #{:mon :tue :wed :thu :fri} :workday
+      #{:sat :sun}                :weekend))
 
 
-(t/deftest sys-detection
+  (defn season [{:keys [month]}]
+    (condp contains? month
+      #{:dec :jan :feb} :winter
+      #{:mar :apr :may} :spring
+      #{:jun :jul :aug} :summer
+      #{:sep :oct :nov} :autumn))
+
+  (sut/defseq :ns   #unit-map/seq[0 1 .. 999999999 -> :sec])
+
+  (sut/defseq :ns   #unit-map/seq[0 1 .. 999999 -> :ms])
+  (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
+  (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
+  (sut/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
+  (sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
+
+  (sut/defseq :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
+  (sut/defseq :am-pm/period #unit-map/seq[:am :pm -> :day])
+
+  (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month -> :month])
+  (sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (sut/defseq :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+
+  (sut/defseq :weekday  #unit-map/seq[:day <=> :mon :tue :wed :thu :fri :sat :sun -> :week])
+  (sut/defseq :week     #unit-map/seq[1 2 .. 52])
+  (sut/defseq :weekpart #unit-map/seq[:weekday <=> weekday])
+  (sut/defseq :season   #unit-map/seq[:month <=> season])
+
+  (sut/defseq :mil  [0 1 .. 999  -> :inch])
+  (sut/defseq :inch [0 1 .. 11   -> :foot])
+  (sut/defseq :foot [0 1 .. 5279 -> :mile])
+  (sut/defseq :mile [0 1 .. ##Inf])
+
+  (sut/defseq :mm [0 1 .. 9   -> :cm])
+  (sut/defseq :cm [0 1 .. 99  -> :m])
+  (sut/defseq :m  [0 1 .. 999 -> :km])
+  (sut/defseq :km [0 1 .. ##Inf]))
+
+(do ;;NOTE: systems
   (sut/defsys imperial [:mil :inch :foot :mile])
 
   (sut/defsys metric   [:mm :cm :m :km])
@@ -119,8 +179,10 @@
 
   (sut/defsys ms-year-am-pm    [:ms :sec :min :am-pm/hour :am-pm/hour :day :month :year])
   (sut/defsys ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/hour :day :month :year])
-  (sut/defsys ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/hour :day :month :year])
+  (sut/defsys ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/hour :day :month :year]))
 
+
+(t/deftest sys-detection
   (matcho/match
     (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})
     [ns-ms-day])
@@ -194,3 +256,11 @@
   (matcho/match
     (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ms 1}})
     [ms-day]))
+
+
+#_(t/deftest parameter-sets
+  (def v {:ns 1, :sec 1, :min 1, :am-pm/hour 1, :am-pm/period 1, :day 1})
+  (def d {:delta {:hour 5}})
+
+  (sut/guess-sys v)
+  (sut/guess-sys d))
