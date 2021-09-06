@@ -79,11 +79,10 @@
 
 
 (defn equal-units [unit] ;; TODO: laziness
-  (mapcat (fn [u]
-            (->> (vals (get @seqs u))
-                 (mapcat (comp equal-units :eq-unit))
-                 (cons u)))
-          (some-> unit vector)))
+  (when unit
+    (->> (vals (get @seqs unit))
+         (mapcat (comp equal-units :eq-unit))
+         (cons unit))))
 
 
 (defn sys-continuous? [units]
