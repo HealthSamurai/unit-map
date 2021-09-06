@@ -4,27 +4,24 @@
             [matcho.core :as matcho]))
 
 
-(defmacro good-sys? [defsys-expr]
-  (list 't/is
-        (list '= :good
-              (list 'try `(do ~defsys-expr
-                              :good)
-                    (list 'catch AssertionError 'e
-                          :bad)))))
+(defn good-sys? [defsys-fn]
+  (t/is
+    (= :good
+       (try (defsys-fn)
+            :good
+            (catch AssertionError e
+              :bad)))))
 
-(defmacro bad-sys? [defsys-expr]
-  (list 't/is
-        (list '= :bad
-              (list 'try `(do ~defsys-expr
-                              :good)
-                    (list 'catch AssertionError 'e
-                          :bad)))))
+(defn bad-sys? [defsys-fn]
+  (t/is
+    (= :bad
+       (try (defsys-fn)
+            :good
+            (catch AssertionError e
+              :bad)))))
 
 
 (t/deftest defseq-defsys
-  (def systems-before-test @sut/systems)
-  (reset! sut/systems {})
-
   (sut/defseq :a #unit-map/seq[0 1 -> :b])
   (sut/defseq :b #unit-map/seq[0 1 -> :c])
   (sut/defseq :c #unit-map/seq[0 1 -> :d])
@@ -46,23 +43,20 @@
   (sut/defseq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
 
   (t/testing "valid systems"
-    (good-sys? (sut/defsys abcd   [:a :b :c :d]))
-    (good-sys? (sut/defsys ab2c2d [:a :b2 :c2 :d]))
-    (good-sys? (sut/defsys ab2c2  [:a :b2 :c2]))
-    (good-sys? (sut/defsys ab3c3  [:a :b3 :c3]))
-    (good-sys? (sut/defsys ab4c4  [:a :b4 :c4]))
-    (good-sys? (sut/defsys b5c5   [:b5 :c5]))
-    (good-sys? (sut/defsys ab6c6d [:a :b6 :c6 :d]))
-    (good-sys? (sut/defsys ab6c6  [:a :b6 :c6]))
-    (good-sys? (sut/defsys abc6d  [:a :b :c6 :d])))
+    (t/is (sut/sys-continuous? [:a :b :c :d]))
+    (t/is (sut/sys-continuous? [:a :b2 :c2 :d]))
+    (t/is (sut/sys-continuous? [:a :b2 :c2]))
+    (t/is (sut/sys-continuous? [:a :b3 :c3]))
+    (t/is (sut/sys-continuous? [:a :b4 :c4]))
+    (t/is (sut/sys-continuous? [:b5 :c5]))
+    (t/is (sut/sys-continuous? [:a :b6 :c6 :d]))
+    (t/is (sut/sys-continuous? [:a :b6 :c6]))
+    (t/is (sut/sys-continuous? [:a :b :c6 :d])))
 
   (t/testing "invalid systems"
-    (bad-sys? (sut/defsys dcba   [:d :c :b :a]))
-    (bad-sys? (sut/defsys ab2c   [:a :b2 :c]))
-    (bad-sys? (sut/defsys ab3c3d [:a :b3 :c3 :d]))
-    (bad-sys? (sut/defsys ab4c4  [:a :b4 :c4])))
-
-  (reset! sut/systems systems-before-test))
+    (t/is (not (sut/sys-continuous? [:d :c :b :a])))
+    (t/is (not (sut/sys-continuous? [:a :b2 :c])))
+    (t/is (not (sut/sys-continuous? [:a :b3 :c3 :d])))))
 
 
 (do ;;NOTE: seqs
@@ -137,15 +131,15 @@
   (sut/defseq :weekpart #unit-map/seq[:weekday <=> weekday])
   (sut/defseq :season   #unit-map/seq[:month <=> season])
 
-  (sut/defseq :mil  [0 1 .. 999  -> :inch])
-  (sut/defseq :inch [0 1 .. 11   -> :foot])
-  (sut/defseq :foot [0 1 .. 5279 -> :mile])
-  (sut/defseq :mile [0 1 .. ##Inf])
+  (sut/defseq :mil  #unit-map/seq[0 1 .. 999  -> :inch])
+  (sut/defseq :inch #unit-map/seq[0 1 .. 11   -> :foot])
+  (sut/defseq :foot #unit-map/seq[0 1 .. 5279 -> :mile])
+  (sut/defseq :mile #unit-map/seq[0 1 .. ##Inf])
 
-  (sut/defseq :mm [0 1 .. 9   -> :cm])
-  (sut/defseq :cm [0 1 .. 99  -> :m])
-  (sut/defseq :m  [0 1 .. 999 -> :km])
-  (sut/defseq :km [0 1 .. ##Inf]))
+  (sut/defseq :mm #unit-map/seq[0 1 .. 9   -> :cm])
+  (sut/defseq :cm #unit-map/seq[0 1 .. 99  -> :m])
+  (sut/defseq :m  #unit-map/seq[0 1 .. 999 -> :km])
+  (sut/defseq :km #unit-map/seq[0 1 .. ##Inf]))
 
 (do ;;NOTE: systems
   (sut/defsys imperial [:mil :inch :foot :mile])
@@ -177,9 +171,9 @@
   (sut/defsys ns-year    [:ns :sec :min :hour :day :month :year])
   (sut/defsys ns-ms-year [:ns :ms :sec :min :hour :day :month :year])
 
-  (sut/defsys ms-year-am-pm    [:ms :sec :min :am-pm/hour :am-pm/hour :day :month :year])
-  (sut/defsys ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/hour :day :month :year])
-  (sut/defsys ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/hour :day :month :year]))
+  (sut/defsys ms-year-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (sut/defsys ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (sut/defsys ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
 
 
 (t/deftest sys-detection
