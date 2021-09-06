@@ -78,11 +78,12 @@
 #_(reset! systems {})
 
 
-(defn equal-units [unit] ;; TODO: laziness
+(defn equal-units [unit]
   (when unit
-    (->> (vals (get @seqs unit))
-         (mapcat (comp equal-units :eq-unit))
-         (cons unit))))
+    (cons unit
+          (for [u (vals (get @seqs unit))
+                eq-units (equal-units (:eq-unit u))]
+            eq-units))))
 
 
 (defn sys-continuous? [units]
