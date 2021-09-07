@@ -257,7 +257,15 @@
 
   (matcho/match
     (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ms 1}})
-    [ms-day]))
+    [ms-day])
+
+  (matcho/match
+    (sut/guess-sys {})
+    empty?)
+
+  (matcho/match
+    (sut/guess-sys nil)
+    empty?))
 
 
 #_(t/deftest parameter-sets

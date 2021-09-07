@@ -114,7 +114,8 @@
 
 
 (defn guess-sys [unit-map]
-  (->> (vals @systems)
-       (filter (comp (partial clojure.set/subset? (get-units unit-map))
-                     set))
-       sort))
+  (when-let [units (not-empty (get-units unit-map))]
+    (->> (vals @systems)
+         (filter (comp (partial clojure.set/subset? units)
+                       set))
+         sort)))
