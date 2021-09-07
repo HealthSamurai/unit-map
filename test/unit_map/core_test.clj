@@ -178,6 +178,14 @@
 
 (t/deftest sys-detection
   (matcho/match
+    (sut/guess-sys {:min 30, :hour 15})
+    [ms-hour])
+
+  (matcho/match
+    (sut/guess-sys {:min 30, :am-pm/hour 3, :am-pm/period :pm})
+    [ms-day-am-pm])
+
+  (matcho/match
     (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})
     [ns-ms-day])
 
