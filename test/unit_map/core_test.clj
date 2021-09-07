@@ -265,41 +265,52 @@
 
   (matcho/match
     (sut/guess-sys nil)
-    empty?))
+    empty?)
+
+  {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:hour 2}}) ;; TODO
 
 
 (t/deftest sys-conversion
-  (matcho/match
-    (sut/sys-intersection
-      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-      {:delta {:hour 3}})
-    [ms-year ns-year ns-ms-year nil])
+  (t/testing "interseciton"
+    (matcho/match
+      (sut/sys-intersection
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+        {:delta {:hour 3}})
+      [ms-year ns-year ns-ms-year nil])
 
-  (matcho/match
-    (sut/sys-intersection
-      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-      {:year 2021, :month :sep, :day 7, :hour 22, :min 30, :tz {:hour 3}})
-    [ms-year ns-year ns-ms-year nil])
+    (matcho/match
+      (sut/sys-intersection
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+        {:year 2021, :month :sep, :day 7, :hour 22, :min 30, :tz {:hour 3}})
+      [ms-year ns-year ns-ms-year nil])
 
-  (matcho/match
-    (sut/sys-intersection
-      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-      {:year 2021})
-    [ms-year ns-year ns-ms-year nil])
+    (matcho/match
+      (sut/sys-intersection
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+        {:year 2021})
+      [ms-year ns-year ns-ms-year nil])
 
-  (matcho/match
-    (sut/sys-intersection
-      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-      {:cm 49})
-    empty?)
+    (matcho/match
+      (sut/sys-intersection
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+        {:cm 49})
+      empty?)
 
-  (matcho/match
-    (sut/sys-intersection
-      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-      {})
-    empty?)
+    (matcho/match
+      (sut/sys-intersection
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+        {})
+      empty?)
 
-  (matcho/match
-    (sut/sys-intersection
-      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}})
-    [ms-year ns-year ns-ms-year nil]))
+    (matcho/match
+      (sut/sys-intersection
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}})
+      [ms-year ns-year ns-ms-year nil]))
+
+  (t/testing "find conversion" ;; TODO
+    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+    #_{:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:am-pm/hour 2}} ;; ??
+    {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:hour 2}}
+    )
+
+  )
