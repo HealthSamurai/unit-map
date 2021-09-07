@@ -119,3 +119,10 @@
          (filter (comp (partial clojure.set/subset? units)
                        set))
          sort)))
+
+
+(defn sys-intersection [& unit-maps]
+  (->> unit-maps
+       (map (comp set guess-sys))
+       (apply clojure.set/intersection)
+       sort))

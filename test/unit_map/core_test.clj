@@ -268,9 +268,38 @@
     empty?))
 
 
-#_(t/deftest parameter-sets
-  (def v {:ns 1, :sec 1, :min 1, :am-pm/hour 1, :am-pm/period 1, :day 1})
-  (def d {:delta {:hour 5}})
+(t/deftest sys-conversion
+  (matcho/match
+    (sut/sys-intersection
+      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+      {:delta {:hour 3}})
+    [ms-year ns-year ns-ms-year nil])
 
-  (sut/guess-sys v)
-  (sut/guess-sys d))
+  (matcho/match
+    (sut/sys-intersection
+      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+      {:year 2021, :month :sep, :day 7, :hour 22, :min 30, :tz {:hour 3}})
+    [ms-year ns-year ns-ms-year nil])
+
+  (matcho/match
+    (sut/sys-intersection
+      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+      {:year 2021})
+    [ms-year ns-year ns-ms-year nil])
+
+  (matcho/match
+    (sut/sys-intersection
+      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+      {:cm 49})
+    empty?)
+
+  (matcho/match
+    (sut/sys-intersection
+      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+      {})
+    empty?)
+
+  (matcho/match
+    (sut/sys-intersection
+      {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}})
+    [ms-year ns-year ns-ms-year nil]))
