@@ -69,21 +69,45 @@
 #_(reset! seqs {})
 
 
+(defn push-to-seq-graph [seqs-map unit unit-seq]
+  (let [eq-seqs (when-let [eq-unit (:eq-unit unit-seq)]
+                  (->> (vals seqs-map)
+                       (filter #(get % eq-unit))
+                       (mapcat vals)))
+
+        to-this-unit-new (->> eq-seqs
+                              (map #(assoc % :next-unit unit))
+                              distinct)
+
+        to-this-unit (->> (vals seqs-map)
+                          (filter #(get % unit))
+                          (mapcat vals))
+
+        to-eq-new (when-let [eq-unit (:eq-unit unit-seq)]
+                    (->> to-this-unit
+                         (map #(assoc % :next-unit eq-unit))
+                         distinct))
+
+        this-seq (assoc unit-seq :unit unit)
+
+        to-save (concat [this-seq]
+                        to-this-unit-new
+                        to-eq-new)]
+    (reduce (fn [acc s]
+              (assoc-in acc
+                        [(:unit s) (:next-unit s)]
+                        (dissoc s :eq-unit)))
+            seqs-map
+            to-save)))
+
+
 (defmacro defseq [unit unit-seq]
-  (swap! seqs assoc-in [unit (:next-unit unit-seq)] (assoc unit-seq :unit unit))
+  (swap! seqs #(push-to-seq-graph % unit unit-seq))
   unit-seq)
 
 
 (defonce systems (atom {}))
 #_(reset! systems {})
-
-
-(defn equal-units [unit]
-  (when unit
-    (cons unit
-          (for [u (vals (get @seqs unit))
-                eq-units (equal-units (:eq-unit u))]
-            eq-units))))
 
 
 (defn sys-continuous? [units]
@@ -93,8 +117,7 @@
               (rest reverse-units))
          (every?
            (fn [[cur-unit prev-unit]]
-             (some #(get-in @seqs [prev-unit %])
-                   (equal-units cur-unit)))))))
+             (get-in @seqs [prev-unit cur-unit]))))))
 
 
 (defmacro defsys [sys-name units]

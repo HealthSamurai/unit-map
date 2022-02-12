@@ -42,6 +42,34 @@
   (sut/defseq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
   (sut/defseq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
 
+  (t/testing "seqs graph"
+    (matcho/match @sut/seqs
+                  {:a {:b  {}
+                       :b2 {}
+                       :b3 {}
+                       :b4 {}
+                       :b6 {}}
+                   :b {:c  {}
+                       :c6 {}}
+                   :c {:d {}}
+                   :d {nil {}}
+
+                   :b2 {:c2 {}}
+                   :c2 {:d {}}
+
+                   :b3 {:c3 {}}
+                   :c3 {nil {}}
+
+                   :b4 {:c4 {}}
+                   :c4 {nil {}}
+
+                   :b5 {:c5 {}}
+                   :c5 {nil {}}
+
+                   :b6 {:c6 {}
+                        :c  {}}
+                   :c6 {:d {}}}))
+
   (t/testing "valid systems"
     (t/is (sut/sys-continuous? [:a :b :c :d]))
     (t/is (sut/sys-continuous? [:a :b2 :c2 :d]))
