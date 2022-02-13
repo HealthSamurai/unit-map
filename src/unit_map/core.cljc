@@ -149,3 +149,39 @@
        (map (comp set guess-sys))
        (apply clojure.set/intersection)
        sort))
+
+
+(defn find-diff-branches [xs ys] #_"TODO: use seqs graph"
+  (let [[only-in-xs only-in-ys common] (mapv set (clojure.data/diff (set xs) (set ys)))]
+    (when (seq common)
+      (loop [cur-xs xs
+             cur-ys ys
+             result []]
+        (if (and (empty? cur-xs) (empty? cur-ys))
+          result
+          (let [equal-pairs-len     (->> (map vector cur-xs cur-ys)
+                                         (take-while (fn [[x y]] (= x y)))
+                                         count)
+                [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
+                [_ rest-ys]         (split-at equal-pairs-len cur-ys)
+                [x-branch rest-xs'] (split-with only-in-xs rest-xs)
+                [y-branch rest-ys'] (split-with only-in-ys rest-ys)]
+            (recur rest-xs'
+                   rest-ys'
+                   (cond-> (into result equal-xys)
+                     (or (seq x-branch) (seq y-branch))
+                     (conj [(vec x-branch) (vec y-branch)])))))))))
+
+
+(defn find-conversion [x y]
+  (or (when-first [sys (sys-intersection x y)]
+        (mapv (fn [k] {[k] [k]})
+              sys))
+      (let [branches-diff (find-diff-branches (first (guess-sys x))
+                                              (first (guess-sys y)))]
+        #_"TODO: find better sys match algo"
+        (mapv (fn [p]
+                (if (keyword? p)
+                  {[p] [p]}
+                  (apply hash-map p)))
+              branches-diff))))

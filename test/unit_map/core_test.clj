@@ -339,6 +339,65 @@
     {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
     #_{:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:am-pm/hour 2}} ;; ??
     {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:hour 2}}
-    )
 
-  )
+    (t/is (= [{[:ms]    [:ms]}
+              {[:sec]   [:sec]}
+              {[:min]   [:min]}
+              {[:hour]  [:hour]}
+              {[:day]   [:day]}
+              {[:month] [:month]}
+              {[:year]  [:year]}]
+             (sut/find-conversion
+               {:year 2021, :month :sep, :day 7, :hour 21, :min 30}
+               {:year 2021, :month :sep, :day 7, :hour 21, :min 30})))
+
+    (t/is (= [{[:ms]    [:ms]}
+              {[:sec]   [:sec]}
+              {[:min]   [:min]}
+              {[:hour]  [:am-pm/hour :am-pm/period]}
+              {[:day]   [:day]}
+              {[:month] [:month]}
+              {[:year]  [:year]}]
+             (sut/find-conversion
+               {:year 2021, :month :sep, :day 7, :hour 21, :min 30}
+               {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30})))
+
+    (t/testing "different start"
+      (t/is (= [{[]       [:ns]}
+                {[:ms]    [:ms]}
+                {[:sec]   [:sec]}
+                {[:min]   [:min]}
+                {[:hour]  [:am-pm/hour :am-pm/period]}
+                {[:day]   [:day]}
+                {[:month] [:month]}
+                {[:year]  [:year]}]
+               (sut/find-conversion
+                 {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :sec 10, :ms 10}
+                 {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :sec 10, :ms 10, :ns 10}))))
+
+    (t/testing "two parallel graph paths"
+      (t/is (= [{[:ns]    [:ns]}
+                {[]       [:ms]}
+                {[:sec]   [:sec]}
+                {[:min]   [:min]}
+                {[:hour]  [:am-pm/hour :am-pm/period]}
+                {[:day]   [:day]}
+                {[:month] [:month]}
+                {[:year]  [:year]}]
+               (sut/find-conversion
+                 {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :sec 10, :ns 10000010}
+                 {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :sec 10, :ms 10, :ns 10}))))
+
+    (t/testing "no conversion"
+      (t/is (empty?
+              (sut/find-conversion
+                {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :sec 10, :ns 10000010}
+                {:m 1, :cm 82}))))
+
+    #_(t/testing "no common units, no common finish"
+        (t/is (= [{[:weekday :week] [:day]}
+                  {[:day]           [:month]}
+                  {[:month]         [:year]}]
+                 (sut/find-conversion
+                   {:week 6} #_[:weekday :week]
+                   {:year 2022, :month :jan, :day 1} #_[:day :month :year]))))))
