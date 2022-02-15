@@ -27,48 +27,62 @@
   (sut/defseq :c #unit-map/seq[0 1 -> :d])
   (sut/defseq :d #unit-map/seq[0 1])
 
+  (sut/defseq :aa #unit-map/seq[0 2 -> :b])
+  (sut/defseq :a #unit-map/seq[0 1 2 3 -> :c])
+
   (sut/defseq :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
   (sut/defseq :c2 #unit-map/seq[-2 -1 0 -> :d])
 
   (sut/defseq :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
-  (sut/defseq :c3 #unit-map/seq[2 1 .. ##Inf])
+  (sut/defseq :c3 #unit-map/seq[2 1 .. ##-Inf])
 
   (sut/defseq :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
-  (sut/defseq :c4 #unit-map/seq[2 1 .. ##Inf])
+  (sut/defseq :c4 #unit-map/seq[2 1 .. ##-Inf])
 
   (sut/defseq :b5 #unit-map/seq[2 1 0 -> :c5])
-  (sut/defseq :c5 #unit-map/seq[2 1 .. ##Inf])
+  (sut/defseq :c5 #unit-map/seq[2 1 .. ##-Inf])
 
   (sut/defseq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
   (sut/defseq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
 
   (t/testing "seqs graph"
-    (matcho/match @sut/seqs
-                  {:a {:b  {}
-                       :b2 {}
-                       :b3 {}
-                       :b4 {}
-                       :b6 {}}
-                   :b {:c  {}
-                       :c6 {}}
-                   :c {:d {}}
-                   :d {nil {}}
+    (def graph-assert
+      {:a {:b  {:sequence [0 1], :unit :a, :next-unit :b}
+           :b2 {:sequence [0 1], :unit :a, :next-unit :b2}
+           :b3 {:sequence [0 1], :unit :a, :next-unit :b3}
+           :b4 {:sequence [0 1], :unit :a, :next-unit :b4}
+           :b6 {:sequence [0 1], :unit :a, :next-unit :b6}
+           :c  {:sequence [0 1 2 3], :unit :a, :next-unit :c}
+           :c6 {:sequence [0 1 2 3], :unit :a, :next-unit :c6}}
+       :b {:c  {:sequence [0 1], :unit :b, :next-unit :c}
+           :c6 {:sequence [0 1], :unit :b, :next-unit :c6}}
+       :c {:d  {:sequence [0 1], :unit :c, :next-unit :d}}
+       :d {nil {:sequence [0 1], :unit :d}}
 
-                   :b2 {:c2 {}}
-                   :c2 {:d {}}
+       :aa {:b  {:sequence [0 2], :unit :aa, :next-unit :b}
+            :b2 {:sequence [0 2], :unit :aa, :next-unit :b2}
+            :b3 {:sequence [0 2], :unit :aa, :next-unit :b3}
+            :b4 {:sequence [0 2], :unit :aa, :next-unit :b4}
+            :b6 {:sequence [0 2], :unit :aa, :next-unit :b6}}
 
-                   :b3 {:c3 {}}
-                   :c3 {nil {}}
+       :b2 {:c2 {:sequence [-2 -1 0], :unit :b2, :next-unit :c2}}
+       :c2 {:d {:sequence [-2 -1 0], :unit :c2, :next-unit :d}}
 
-                   :b4 {:c4 {}}
-                   :c4 {nil {}}
+       :b3 {:c3 {:sequence [2 1 0], :unit :b3, :next-unit :c3}}
+       :c3 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c3}}
 
-                   :b5 {:c5 {}}
-                   :c5 {nil {}}
+       :b4 {:c4 {:sequence [2 1 0], :unit :b4, :next-unit :c4}}
+       :c4 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c4}}
 
-                   :b6 {:c6 {}
-                        :c  {}}
-                   :c6 {:d {}}}))
+       :b5 {:c5 {:sequence [2 1 0], :unit :b5, :next-unit :c5}}
+       :c5 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c5}}
+
+       :b6 {:c6 {:sequence [2 1 0], :unit :b6, :next-unit :c6}
+            :c  {:sequence [2 1 0], :unit :b6, :next-unit :c}}
+       :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}}})
+
+    (t/is (= graph-assert
+             (select-keys @sut/seqs (cons nil (keys graph-assert))))))
 
   (t/testing "valid systems"
     (t/is (sut/sys-continuous? [:a :b :c :d]))

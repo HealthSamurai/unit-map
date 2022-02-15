@@ -73,16 +73,14 @@
 (defn push-to-seq-graph [seqs-map unit unit-seq]
   (let [eq-seqs (when-let [eq-unit (:eq-unit unit-seq)]
                   (->> (vals seqs-map)
-                       (filter #(get % eq-unit))
-                       (mapcat vals)))
+                       (keep #(get % eq-unit))))
 
         to-this-unit-new (->> eq-seqs
                               (map #(assoc % :next-unit unit))
                               distinct)
 
         to-this-unit (->> (vals seqs-map)
-                          (filter #(get % unit))
-                          (mapcat vals))
+                          (keep #(get % unit)))
 
         to-eq-new (when-let [eq-unit (:eq-unit unit-seq)]
                     (->> to-this-unit
