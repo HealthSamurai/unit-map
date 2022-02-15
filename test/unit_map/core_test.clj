@@ -314,6 +314,108 @@
   {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:hour 2}}) ;; TODO
 
 
+(t/deftest find-diff-branches-unit-test
+  (sut/find-diff-branches [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]
+                          [:ns :sec :min :hour :period :day :month :year])
+  ;; => [:ns
+  ;;     [[:ms] []]
+  ;;     :sec
+  ;;     :min
+  ;;     [[:am-pm/hour :am-pm/period] [:hour :period]]
+  ;;     :day
+  ;;     :month
+  ;;     :year]
+
+  (t/is (= [1 11 2 22 3 6 4 44 5 55]
+           (sut/find-diff-branches [1 11 2 22 3 6 4 44 5 55]
+                                   [1 11 2 22 3 6 4 44 5 55])))
+
+  (t/is (= [1 11 [[2 22] [88]] 3 6 [[4 44] [99 9]] 5 55]
+           (sut/find-diff-branches [1 11 2 22 3 6 4 44 5 55]
+                                   [1 11 88 3 6 99 9 5 55])))
+
+  (t/is (= [1 11 [[2] []] 3]
+           (sut/find-diff-branches [1 11 2 3]
+                                   [1 11 3])))
+
+  (t/is (= [1 11 [[] [3]]]
+           (sut/find-diff-branches [1 11]
+                                   [1 11 3])))
+
+  (t/is (= [1 11 [[4] [3]]]
+           (sut/find-diff-branches [1 11 4]
+                                   [1 11 3])))
+
+  (t/is (= [[[] [1 2]] 11 3]
+           (sut/find-diff-branches [11 3]
+                                   [1 2 11 3])))
+
+  (t/is (= [[[] [1]] 11 3]
+           (sut/find-diff-branches [11 3]
+                                   [1 11 3])))
+
+  (t/is (= [[[] [1]] 11 3 [[] [4]]]
+           (sut/find-diff-branches [11 3]
+                                   [1 11 3 4])))
+
+  (t/is (= [[[2] [1]] 11 3]
+           (sut/find-diff-branches [2 11 3]
+                                   [1 11 3])))
+
+  (t/is (= [1 2 [[3] []] 4 5]
+           (sut/find-diff-branches [1 2 3 4 5]
+                                   [1 2 4 5])))
+
+  (t/is (= nil
+           (sut/find-diff-branches []
+                                   [1 11 3])))
+
+
+  (t/is (= [1 11 [[88] [2 22]] 3 6 [[99 9] [4 44]] 5 55]
+           (sut/find-diff-branches [1 11 88 3 6 99 9 5 55]
+                                   [1 11 2 22 3 6 4 44 5 55])))
+
+  (t/is (= [1 11 [[] [2]] 3]
+           (sut/find-diff-branches [1 11 3]
+                                   [1 11 2 3])))
+
+  (t/is (= [1 11 [[3] []]]
+           (sut/find-diff-branches [1 11 3]
+                                   [1 11])))
+
+  (t/is (= [[[1 2] []] 11 3]
+           (sut/find-diff-branches [1 2 11 3]
+                                   [11 3])))
+
+  (t/is (= [[[1] []] 11 3]
+           (sut/find-diff-branches [1 11 3]
+                                   [11 3])))
+
+  (t/is (= [[[1] []] 11 3 [[4] []]]
+           (sut/find-diff-branches [1 11 3 4]
+                                   [11 3])))
+
+
+  (t/is (= [[[1 2] []] 3 4]
+           (sut/find-diff-branches [1 2 3 4]
+                                   [3 4])))
+
+  (t/is (= [1 [[2] []] 3 4]
+           (sut/find-diff-branches [1 2 3 4]
+                                   [1 3 4])))
+
+  (t/is (= nil
+           (sut/find-diff-branches []
+                                   [1 11 3])))
+
+  (t/is (= nil
+           (sut/find-diff-branches []
+                                   [])))
+
+  (t/is (= nil
+           (sut/find-diff-branches [1 2 3] [:a :b :c]))))
+
+
 (t/deftest sys-conversion
   (t/testing "interseciton"
     (matcho/match
