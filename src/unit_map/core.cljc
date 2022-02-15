@@ -9,15 +9,15 @@
 
 
 (defn range? [x]
-  (and (map? x) (:range (meta x))))
+  (and (map? x) (::range (meta x))))
 
 
 (defn process-range [pprev prev next-seq nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next-seq]))]}
-  ^:range{:start (or pprev prev)
-          :step  (if (nil? pprev) (- nnext next-seq) (- prev pprev))
-          :end   (or nnext next-seq)})
+  ^::range{:start (or pprev prev)
+           :step  (if (nil? pprev) (- nnext next-seq) (- prev pprev))
+           :end   (or nnext next-seq)})
 
 
 (defn process-equivalent [s]
