@@ -8,6 +8,11 @@
             [clojure.data]))
 
 
+(defonce ctx #_"TODO: can it be done without atom state?"
+  (atom nil))
+#_(reset! ctx nil)
+
+
 (defn range? [x]
   (and (map? x) (::range (meta x))))
 
@@ -66,10 +71,6 @@
   (process-sequence form))
 
 
-(defonce seqs (atom {}))
-#_(reset! seqs {})
-
-
 (defn push-to-seq-graph [seqs-map unit unit-seq]
   (let [eq-seqs (when-let [eq-unit (:eq-unit unit-seq)]
                   (->> (vals seqs-map)
@@ -101,12 +102,8 @@
 
 
 (defmacro defseq [unit unit-seq]
-  (swap! seqs #(push-to-seq-graph % unit unit-seq))
+  (swap! ctx update :seqs push-to-seq-graph unit unit-seq)
   unit-seq)
-
-
-(defonce systems (atom {}))
-#_(reset! systems {})
 
 
 (defn sys-continuous? [units]
@@ -116,13 +113,13 @@
               (rest reverse-units))
          (every?
            (fn [[cur-unit prev-unit]]
-             (get-in @seqs [prev-unit cur-unit]))))))
+             (get-in @ctx [:seqs prev-unit cur-unit]))))))
 
 
 (defmacro defsys [sys-name units]
   (assert (sys-continuous? units))
   (let [sys-def `(def ~sys-name ~units)]
-    (swap! systems assoc sys-name units)
+    (swap! ctx assoc-in [:systems sys-name] units)
     sys-def))
 
 
@@ -137,7 +134,7 @@
 
 (defn guess-sys [unit-map]
   (when-let [units (not-empty (get-units unit-map))]
-    (->> (vals @systems)
+    (->> (vals (:systems @ctx))
          (filter (comp (partial clojure.set/subset? units)
                        set))
          sort)))

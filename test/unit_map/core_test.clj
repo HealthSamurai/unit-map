@@ -82,7 +82,7 @@
        :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}}})
 
     (t/is (= graph-assert
-             (select-keys @sut/seqs (cons nil (keys graph-assert))))))
+             (select-keys (:seqs @sut/ctx) (cons nil (keys graph-assert))))))
 
   (t/testing "valid systems"
     (t/is (sut/sys-continuous? [:a :b :c :d]))
