@@ -201,11 +201,19 @@
   (or (when-first [sys (sys-intersection x y)]
         (mapv (fn [k] {[k] [k]})
               sys))
-      (let [branches-diff (find-diff-branches (first (guess-sys x))
-                                              (first (guess-sys y)))]
-        #_"TODO: find better sys match algo"
-        (mapv (fn [p]
-                (if (keyword? p)
-                  {[p] [p]}
-                  (apply hash-map p)))
-              branches-diff))))
+      (let [branches-diff (find-diff-branches (first (guess-sys x)) #_"TODO: find better sys match algo"
+                                              (first (guess-sys y)))
+            valid? (or (not (vector? (first branches-diff)))
+                       (let [[[x :as xs] [y :as ys]] (first branches-diff)]
+                         (or (empty? xs)
+                             (empty? ys)
+                             (contains? (->> (:eq-units @ctx)
+                                             (filter #(contains? % x))
+                                             first)
+                                        y))))]
+        (when valid?
+          (mapv (fn [p]
+                  (if (vector? p)
+                    (apply hash-map p)
+                    {[p] [p]}))
+                branches-diff)))))
