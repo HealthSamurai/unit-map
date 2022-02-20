@@ -8,7 +8,7 @@
             [clojure.data]))
 
 
-(defonce ctx #_"TODO: can it be done without atom state?"
+(defonce ctx #_"TODO: can it be done without global atom state?"
   (atom nil))
 #_(reset! ctx nil)
 
@@ -113,14 +113,18 @@
         (conj new-group))))
 
 
-(defmacro defseq [unit unit-seq]
+(defn defseq* [ctx unit unit-seq]
   (swap! ctx #(-> %
                   (update :seqs push-to-seq-graph unit unit-seq)
                   (update :eq-units push-to-eq-units unit unit-seq)))
   unit-seq)
 
 
-(defn sys-continuous? [units]
+(defmacro defseq [unit unit-seq]
+  (defseq* ctx unit unit-seq))
+
+
+(defn sys-continuous?* [ctx units]
   (let [reverse-units (reverse units)]
     (->> (map vector
               reverse-units
@@ -130,11 +134,19 @@
              (get-in @ctx [:seqs prev-unit cur-unit]))))))
 
 
-(defmacro defsys [sys-name units]
-  (assert (sys-continuous? units))
+(defn sys-continuous? [units]
+  (sys-continuous?* ctx units))
+
+
+(defn defsys* [ctx sys-name units]
+  (assert (sys-continuous?* ctx units))
   (let [sys-def `(def ~sys-name ~units)]
     (swap! ctx assoc-in [:systems sys-name] units)
     sys-def))
+
+
+(defmacro defsys [sys-name units]
+  (defsys* ctx sys-name units))
 
 
 (defn get-units [unit-map]

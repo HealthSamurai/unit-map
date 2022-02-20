@@ -22,28 +22,30 @@
 
 
 (t/deftest defseq-defsys
-  (sut/defseq :a #unit-map/seq[0 1 -> :b])
-  (sut/defseq :b #unit-map/seq[0 1 -> :c])
-  (sut/defseq :c #unit-map/seq[0 1 -> :d])
-  (sut/defseq :d #unit-map/seq[0 1])
+  (def tctx (atom nil))
 
-  (sut/defseq :aa #unit-map/seq[0 2 -> :b])
-  (sut/defseq :a #unit-map/seq[0 1 2 3 -> :c])
+  (sut/defseq* tctx :a #unit-map/seq[0 1 -> :b])
+  (sut/defseq* tctx :b #unit-map/seq[0 1 -> :c])
+  (sut/defseq* tctx :c #unit-map/seq[0 1 -> :d])
+  (sut/defseq* tctx :d #unit-map/seq[0 1])
 
-  (sut/defseq :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
-  (sut/defseq :c2 #unit-map/seq[-2 -1 0 -> :d])
+  (sut/defseq* tctx :aa #unit-map/seq[0 2 -> :b])
+  (sut/defseq* tctx :a #unit-map/seq[0 1 2 3 -> :c])
 
-  (sut/defseq :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
-  (sut/defseq :c3 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq* tctx :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
+  (sut/defseq* tctx :c2 #unit-map/seq[-2 -1 0 -> :d])
 
-  (sut/defseq :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
-  (sut/defseq :c4 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq* tctx :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
+  (sut/defseq* tctx :c3 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq :b5 #unit-map/seq[2 1 0 -> :c5])
-  (sut/defseq :c5 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq* tctx :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
+  (sut/defseq* tctx :c4 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
-  (sut/defseq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
+  (sut/defseq* tctx :b5 #unit-map/seq[2 1 0 -> :c5])
+  (sut/defseq* tctx :c5 #unit-map/seq[2 1 .. ##-Inf])
+
+  (sut/defseq* tctx :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
+  (sut/defseq* tctx :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
 
   (t/testing "seqs graph"
     (def graph-assert
@@ -81,24 +83,23 @@
             :c  {:sequence [2 1 0], :unit :b6, :next-unit :c}}
        :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}}})
 
-    (t/is (= graph-assert
-             (select-keys (:seqs @sut/ctx) (cons nil (keys graph-assert))))))
+    (t/is (= graph-assert (:seqs @tctx))))
 
   (t/testing "valid systems"
-    (t/is (sut/sys-continuous? [:a :b :c :d]))
-    (t/is (sut/sys-continuous? [:a :b2 :c2 :d]))
-    (t/is (sut/sys-continuous? [:a :b2 :c2]))
-    (t/is (sut/sys-continuous? [:a :b3 :c3]))
-    (t/is (sut/sys-continuous? [:a :b4 :c4]))
-    (t/is (sut/sys-continuous? [:b5 :c5]))
-    (t/is (sut/sys-continuous? [:a :b6 :c6 :d]))
-    (t/is (sut/sys-continuous? [:a :b6 :c6]))
-    (t/is (sut/sys-continuous? [:a :b :c6 :d])))
+    (t/is (sut/sys-continuous?* tctx [:a :b :c :d]))
+    (t/is (sut/sys-continuous?* tctx [:a :b2 :c2 :d]))
+    (t/is (sut/sys-continuous?* tctx [:a :b2 :c2]))
+    (t/is (sut/sys-continuous?* tctx [:a :b3 :c3]))
+    (t/is (sut/sys-continuous?* tctx [:a :b4 :c4]))
+    (t/is (sut/sys-continuous?* tctx [:b5 :c5]))
+    (t/is (sut/sys-continuous?* tctx [:a :b6 :c6 :d]))
+    (t/is (sut/sys-continuous?* tctx [:a :b6 :c6]))
+    (t/is (sut/sys-continuous?* tctx [:a :b :c6 :d])))
 
   (t/testing "invalid systems"
-    (t/is (not (sut/sys-continuous? [:d :c :b :a])))
-    (t/is (not (sut/sys-continuous? [:a :b2 :c])))
-    (t/is (not (sut/sys-continuous? [:a :b3 :c3 :d])))))
+    (t/is (not (sut/sys-continuous?* tctx [:d :c :b :a])))
+    (t/is (not (sut/sys-continuous?* tctx [:a :b2 :c])))
+    (t/is (not (sut/sys-continuous?* tctx [:a :b3 :c3 :d])))))
 
 
 (do ;;NOTE: seqs
