@@ -166,11 +166,17 @@
          sort)))
 
 
-(defn sys-intersection [& unit-maps]
-  (->> unit-maps
-       (map (comp set guess-sys))
+(defn sys-intersection* [& syss]
+  (->> syss
+       (map set)
        (apply clojure.set/intersection)
        sort))
+
+
+(defn sys-intersection [& unit-maps]
+  (->> unit-maps
+       (map guess-sys)
+       (apply sys-intersection*)))
 
 
 (defn find-diff-branches [xs ys]
@@ -183,7 +189,7 @@
                                      (take-while (fn [[x y]] (= x y)))
                                      count)
             [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
-            [_ rest-ys]         (split-at equal-pairs-len cur-ys)
+            rest-ys             (drop equal-pairs-len cur-ys)
 
             [x-branch rest-xs'] (split-with (complement (set rest-ys)) rest-xs)
             branch-end          (first rest-xs')
@@ -194,26 +200,27 @@
                rest-ys'
                (cond-> (into result equal-xys)
                  (or (seq x-branch) (seq y-branch))
-                 (conj [(vec x-branch) (vec y-branch)])))))))
+                 (conj ^::branches[(vec x-branch) (vec y-branch)])))))))
 
 
 (defn find-conversion [x y]
-  (or (when-first [sys (sys-intersection x y)]
-        (mapv (fn [k] {[k] [k]})
-              sys))
-      (let [branches-diff (find-diff-branches (first (guess-sys x)) #_"TODO: find better sys match algo"
-                                              (first (guess-sys y)))
-            valid? (or (not (vector? (first branches-diff)))
-                       (let [[[x :as xs] [y :as ys]] (first branches-diff)]
-                         (or (empty? xs)
-                             (empty? ys)
-                             (contains? (->> (:eq-units @ctx)
-                                             (filter #(contains? % x))
-                                             first)
-                                        y))))]
-        (when valid?
-          (mapv (fn [p]
-                  (if (vector? p)
-                    (apply hash-map p)
-                    {[p] [p]}))
-                branches-diff)))))
+  (let [x-syss (guess-sys x)
+        y-syss (guess-sys y)
+        branches-diff (or (first (sys-intersection* x-syss y-syss))
+                          (find-diff-branches (first x-syss) #_"TODO: find better sys match algo"
+                                              (first y-syss)))
+        conv-start (first branches-diff)
+        valid? (or (not (::branches (meta conv-start)))
+                   (let [[[x :as xs] [y :as ys]] conv-start]
+                     (or (empty? xs)
+                         (empty? ys)
+                         (contains? (->> (:eq-units @ctx)
+                                         (filter #(contains? % x))
+                                         first)
+                                    y))))]
+    (when valid?
+      (mapv (fn [p]
+              (if (::branches (meta p))
+                {(first p) (second p)}
+                {[p] [p]}))
+            branches-diff))))
