@@ -173,26 +173,28 @@
        sort))
 
 
-(defn find-diff-branches [xs ys] #_"TODO: use seqs graph"
-  (let [[only-in-xs only-in-ys common] (mapv set (clojure.data/diff (set xs) (set ys)))]
-    (when (seq common)
-      (loop [cur-xs xs
-             cur-ys ys
-             result []]
-        (if (and (empty? cur-xs) (empty? cur-ys))
-          result
-          (let [equal-pairs-len     (->> (map vector cur-xs cur-ys)
-                                         (take-while (fn [[x y]] (= x y)))
-                                         count)
-                [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
-                [_ rest-ys]         (split-at equal-pairs-len cur-ys)
-                [x-branch rest-xs'] (split-with only-in-xs rest-xs)
-                [y-branch rest-ys'] (split-with only-in-ys rest-ys)]
-            (recur rest-xs'
-                   rest-ys'
-                   (cond-> (into result equal-xys)
-                     (or (seq x-branch) (seq y-branch))
-                     (conj [(vec x-branch) (vec y-branch)])))))))))
+(defn find-diff-branches [xs ys]
+  (loop [cur-xs xs
+         cur-ys ys
+         result []]
+    (if (and (empty? cur-xs) (empty? cur-ys))
+      (not-empty result)
+      (let [equal-pairs-len     (->> (map vector cur-xs cur-ys)
+                                     (take-while (fn [[x y]] (= x y)))
+                                     count)
+            [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
+            [_ rest-ys]         (split-at equal-pairs-len cur-ys)
+
+            [x-branch rest-xs'] (split-with (complement (set rest-ys)) rest-xs)
+            branch-end          (first rest-xs')
+            [y-branch rest-ys'] (if (some? branch-end)
+                                  (split-with #(not= branch-end %) rest-ys)
+                                  [rest-ys])]
+        (recur rest-xs'
+               rest-ys'
+               (cond-> (into result equal-xys)
+                 (or (seq x-branch) (seq y-branch))
+                 (conj [(vec x-branch) (vec y-branch)])))))))
 
 
 (defn find-conversion [x y]

@@ -373,7 +373,7 @@
            (sut/find-diff-branches [1 2 3 4 5]
                                    [1 2 4 5])))
 
-  (t/is (= nil
+  (t/is (= [[[] [1 11 3]]]
            (sut/find-diff-branches []
                                    [1 11 3])))
 
@@ -411,15 +411,15 @@
            (sut/find-diff-branches [1 2 3 4]
                                    [1 3 4])))
 
-  (t/is (= nil
-           (sut/find-diff-branches []
-                                   [1 11 3])))
+  (t/is (= [[[1 11 3] []]]
+           (sut/find-diff-branches [1 11 3]
+                                   [])))
 
   (t/is (= nil
            (sut/find-diff-branches []
                                    [])))
 
-  (t/is (= nil
+  (t/is (= [[[1 2 3] [:a :b :c]]]
            (sut/find-diff-branches [1 2 3] [:a :b :c]))))
 
 
@@ -519,10 +519,8 @@
                 {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :sec 10, :ns 10000010}
                 {:m 1, :cm 82}))))
 
-    #_(t/testing "no common units, no common finish"
-        (t/is (= [{[:weekday :week] [:day]}
-                  {[:day]           [:month]}
-                  {[:month]         [:year]}]
-                 (sut/find-conversion
-                   {:week 6} #_[:weekday :week]
-                   {:year 2022, :month :jan, :day 1} #_[:day :month :year]))))))
+    (t/testing "no common units, no common finish"
+      (t/is (= [{[:weekday :week] [:day :month :year]}]
+               (sut/find-conversion
+                 {:week 6}
+                 {:year 2022, :month :jan, :day 1}))))))
