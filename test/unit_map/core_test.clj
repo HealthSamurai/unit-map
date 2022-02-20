@@ -299,9 +299,7 @@
 
   (matcho/match
     (sut/guess-sys nil)
-    empty?)
-
-  {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:hour 2}}) ;; TODO
+    empty?))
 
 
 (t/deftest find-diff-branches-unit-test
@@ -443,10 +441,8 @@
         {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}})
       [ms-year ns-year ns-ms-year nil]))
 
-  (t/testing "find conversion" ;; TODO
-    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-    #_{:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:am-pm/hour 2}} ;; ??
-    {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :tz {:hour 2}}
+  (t/testing "find conversion"
+    #_"TODO: timezones"
 
     (t/is (= [{[:ms]    [:ms]}
               {[:sec]   [:sec]}
