@@ -101,8 +101,22 @@
             to-save)))
 
 
+(defn push-to-eq-units [eq-units-sets unit {:keys [eq-unit]}]
+  (let [group (->> eq-units-sets
+                   (filter #(or (get % unit) (get % eq-unit)))
+                   first)
+        new-group (-> (or group #{})
+                      (conj unit)
+                      (cond-> (some? eq-unit) (conj eq-unit)))]
+    (-> (or eq-units-sets #{})
+        (disj group)
+        (conj new-group))))
+
+
 (defmacro defseq [unit unit-seq]
-  (swap! ctx update :seqs push-to-seq-graph unit unit-seq)
+  (swap! ctx #(-> %
+                  (update :seqs push-to-seq-graph unit unit-seq)
+                  (update :eq-units push-to-eq-units unit unit-seq)))
   unit-seq)
 
 
