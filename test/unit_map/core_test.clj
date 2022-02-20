@@ -83,7 +83,13 @@
             :c  {:sequence [2 1 0], :unit :b6, :next-unit :c}}
        :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}}})
 
-    (t/is (= graph-assert (:seqs @tctx))))
+    (t/is (= graph-assert (:seqs @tctx)))
+
+    (t/is (= #{#{:a} #{:aa}
+               #{:b :b2 :b3 :b4 :b6} #{:b5}
+               #{:c :c6} #{:c2} #{:c3} #{:c4} #{:c5}
+               #{:d}}
+             (:eq-units @tctx))))
 
   (t/testing "valid systems"
     (t/is (sut/sys-continuous?* tctx [:a :b :c :d]))
