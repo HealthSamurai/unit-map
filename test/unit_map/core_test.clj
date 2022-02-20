@@ -4,23 +4,6 @@
             [matcho.core :as matcho]))
 
 
-(defn good-sys? [defsys-fn]
-  (t/is
-    (= :good
-       (try (defsys-fn)
-            :good
-            (catch AssertionError e
-              :bad)))))
-
-(defn bad-sys? [defsys-fn]
-  (t/is
-    (= :bad
-       (try (defsys-fn)
-            :good
-            (catch AssertionError e
-              :bad)))))
-
-
 (t/deftest defseq-defsys
   (def tctx (atom nil))
 
