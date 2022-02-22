@@ -18,7 +18,13 @@
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next-seq]))]}
   ^::range{:start (or pprev prev)
-           :step  (if (nil? pprev) (- nnext next-seq) (- prev pprev))
+           :step  (if (nil? pprev)
+                    (if (integer? next-seq)
+                      (- nnext next-seq)
+                      next-seq)
+                    (if (integer? prev)
+                      (- prev pprev)
+                      prev))
            :end   (or nnext next-seq)})
 
 
