@@ -544,4 +544,23 @@
              (sut/concretize-range (-> #unit-map/seq[1 2 .. (fn [{:keys [month]}] (if (= 2 month) 28 30))]
                                        :sequence
                                        first)
-                                   {:day 1, :month 2, :year 2022})))))
+                                   {:day 1, :month 2, :year 2022}))))
+
+  (t/testing "seq length"
+    (t/is (= 10 (sut/sequence-length #unit-map/seq[0 1 .. 9]
+                                     nil)))
+
+    (t/is (= ##Inf (sut/sequence-length #unit-map/seq[0 1 .. ##Inf]
+                                        nil)))
+
+    (t/is (= 10 (sut/sequence-length #unit-map/seq[-9 -8 .. 0]
+                                     nil)))
+
+    (t/is (= 10 (sut/sequence-length #unit-map/seq[-9 .. -1 0]
+                                     nil)))
+
+    (t/is (= ##Inf (sut/sequence-length #unit-map/seq[##-Inf .. -1 0]
+                                        nil)))
+
+    (t/is (= ##Inf (sut/sequence-length #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
+                                        nil)))))

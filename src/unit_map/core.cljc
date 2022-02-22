@@ -251,3 +251,16 @@
 (defn concretize-range [rng value]
   (u/map-v #(u/try-call % value)
            rng))
+
+
+(defn range-length [rng value]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (if (some u/infinite? [start end])
+      ##Inf
+      (-> (- end start) (quot step) inc))))
+
+
+(defn sequence-length [ps value]
+  (->> (:sequence ps)
+       (map #(if (range? %) (range-length % value) 1))
+       (reduce + 0)))
