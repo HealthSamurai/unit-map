@@ -503,3 +503,15 @@
                (sut/find-conversion
                  {:week 6}
                  {:year 2022, :month :jan, :day 1}))))))
+
+
+(t/deftest seq-range-utils-test
+  (t/testing "static? dynamic?"
+    (t/is (true? (sut/static-sequence? #unit-map/seq[0 1 .. 9])))
+
+    (t/is (false? (sut/static-sequence? #unit-map/seq[0 1 .. (fn [_] 9)])))
+
+    (t/is (true? (sut/dynamic-sequence? #unit-map/seq[0 1 .. (fn [_] 9)])))
+
+    (t/is (false? (sut/dynamic-sequence? #unit-map/seq[0 1 .. 9]))))
+  )

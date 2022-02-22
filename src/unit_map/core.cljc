@@ -231,3 +231,16 @@
                 {(first p) (second p)}
                 {[p] [p]}))
             branches-diff))))
+
+
+;;;;;;;;;; seq & range utils
+
+
+(defn dynamic-sequence? [sq]
+  (boolean (some #(and (range? %)
+                       (some fn? (vals %)))
+                 (:sequence sq))))
+
+
+(defn static-sequence? [ps]
+  (not (dynamic-sequence? ps)))
