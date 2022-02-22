@@ -12,6 +12,7 @@
   (atom nil))
 #_(reset! ctx nil)
 
+;;;;;;;;;; read seq
 
 (defn range? [x]
   (and (map? x) (::range (meta x))))
@@ -69,6 +70,9 @@
 
 (defn read-sequence [form]
   (process-sequence form))
+
+
+;;;;;;;;;; defseq & defsys
 
 
 (defn push-to-seq-graph [seqs-map unit unit-seq]
@@ -147,6 +151,9 @@
 
 (defmacro defsys [sys-name units]
   (defsys* ctx sys-name units))
+
+
+;;;;;;;;;; sys info
 
 
 (defn get-units [unit-map]
