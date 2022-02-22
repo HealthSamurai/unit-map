@@ -617,4 +617,25 @@
     (t/is (nil? (sut/sequence-contains-some
                   #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
                   nil
-                  0)))))
+                  0))))
+
+  (t/testing "index-of"
+    (t/is (= 13 (sut/sequence-index-of #unit-map/seq[##-Inf .. -5 -4 -3 -2 -1 1 2 3 4 5 .. ##Inf]
+                                       nil
+                                       10)))
+
+    (t/is (= -6 (sut/sequence-index-of #unit-map/seq[##-Inf .. -5 -4 -3 -2 -1 1 2 3 4 5 .. ##Inf]
+                                       nil
+                                       -10)))
+
+    (t/is (= 4 (sut/sequence-index-of #unit-map/seq[##-Inf .. -5 -4 -3 -2 -1 1 2 3 4 5 .. ##Inf]
+                                      nil
+                                      1)))
+
+    (t/is (= ##Inf (sut/sequence-index-of #unit-map/seq[##-Inf .. -5 -4 -3 -2 -1 1 2 3 4 5 .. ##Inf]
+                                          nil
+                                          ##Inf)))
+
+    (t/is (= ##-Inf (sut/sequence-index-of #unit-map/seq[##-Inf .. -5 -4 -3 -2 -1 1 2 3 4 5 .. ##Inf]
+                                           nil
+                                           ##-Inf)))))

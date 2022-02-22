@@ -309,3 +309,28 @@
     (some (some-fn (set xs)
                    #(when (range? %) (apply range-contains-some % value xs)))
           (:sequence ps))))
+
+
+(defn range-index-of
+  "Returns negative index if range start is infinite, 0 index will be end of range."
+  [rng value x]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (cond
+      (not (range-contains-some rng value x))   nil
+      (and (u/infinite? x) (u/infinite? start)) ##-Inf
+      (u/infinite? x)                           ##Inf
+      (u/infinite? start)                       (- (quot (- end x) step))
+      :else                                     (quot (- x start) step))))
+
+
+(defn sequence-index-of [ps value x]
+  (loop [i 0, [el & rest-s] (:sequence ps)]
+    (when (some? el)
+      (or (some-> (cond
+                    (= x el)    0
+                    (range? el) (range-index-of el value x))
+                  (+ i))
+          (recur (+ i (if (and (range? el) (u/finite? (:start el)))
+                        (range-length el value)
+                        1))
+                 rest-s)))))
