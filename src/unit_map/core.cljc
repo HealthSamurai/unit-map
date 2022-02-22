@@ -282,3 +282,30 @@
       (nil? e)               nil
       (u/infinite? (:end r)) ##Inf
       :else                  (dec (sequence-length ps value)))))
+
+
+(defn range-contains? [rng value x]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (and (or (<= start x end)
+             (>= start x end))
+         (or (= start x)
+             (= end x)
+             (and (not= ##-Inf start)
+                  (-> x (- start) (mod step) zero?))
+             (and (not= ##Inf end)
+                  (-> x (+ end) (mod step) zero?))))))
+
+
+(defn range-contains-some [rng value & xs]
+  (->> (sort xs)
+       (filter (partial range-contains? (concretize-range rng value) value))
+       first))
+
+
+(defn sequence-contains-some
+  "Returns first (i.e. min) x found in the s"
+  [ps value x & xs]
+  (let [xs (cons x xs)]
+    (some (some-fn (set xs)
+                   #(when (range? %) (apply range-contains-some % value xs)))
+          (:sequence ps))))

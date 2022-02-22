@@ -591,4 +591,30 @@
                nil)))
 
     (t/is (= ##Inf (sut/sequence-last-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
-                                            nil)))))
+                                            nil))))
+
+  (t/testing "contains"
+    (t/is (some? (sut/sequence-contains-some
+                   #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
+                   nil
+                   10)))
+
+    (t/is (some? (sut/sequence-contains-some
+                   #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
+                   nil
+                   -10)))
+
+    (t/is (some? (sut/sequence-contains-some
+                   #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
+                   nil
+                   ##Inf)))
+
+    (t/is (some? (sut/sequence-contains-some
+                   #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
+                   nil
+                   ##-Inf)))
+
+    (t/is (nil? (sut/sequence-contains-some
+                  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
+                  nil
+                  0)))))
