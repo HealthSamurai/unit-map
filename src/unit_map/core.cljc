@@ -334,3 +334,29 @@
                         (range-length el value)
                         1))
                  rest-s)))))
+
+
+(defn range-nth [rng value index]
+  (let [{:keys [start step end]} (concretize-range rng value)]
+    (if (u/infinite? start)
+      (+ end (* step index))
+      (+ start (* step index)))))
+
+
+(defn sequence-nth [ps value index]
+  (loop [i 0, [el & rest-s] (:sequence ps)]
+    (when (some? el)
+      (let [increment (if (and (range? el) (u/finite? (:start el)))
+                        (range-length el value)
+                        1)
+
+            result (cond
+                     (not (or (<= i index (+ i increment -1))
+                              (neg? index)))
+                     nil
+
+                     (range? el) (range-nth el value (- index i))
+                     :else       el)]
+        (if (some? result)
+          result
+          (recur (+ i increment) rest-s))))))

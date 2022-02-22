@@ -649,4 +649,26 @@
 
     (t/is (= ##-Inf (sut/sequence-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                            nil
-                                           ##-Inf)))))
+                                           ##-Inf))))
+
+  (t/testing "nth"
+    (t/testing "index-of"
+      (t/is (= 10 (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+                                    nil
+                                    11)))
+
+      (t/is (= -10 (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+                                     nil
+                                     -8)))
+
+      (t/is (= 1 (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+                                   nil
+                                   2)))
+
+      (t/is (= ##Inf (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+                                       nil
+                                       ##Inf)))
+
+      (t/is (= ##-Inf (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+                                        nil
+                                        ##-Inf))))))
