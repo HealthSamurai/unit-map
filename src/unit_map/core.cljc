@@ -264,3 +264,21 @@
   (->> (:sequence ps)
        (map #(if (range? %) (range-length % value) 1))
        (reduce + 0)))
+
+
+(defn sequence-first-index [ps value]
+  (let [e (first (:sequence ps))
+        r (when (range? e) (concretize-range e value))]
+    (cond
+      (nil? e)                 nil
+      (u/infinite? (:start r)) ##-Inf
+      :else                    0)))
+
+
+(defn sequence-last-index [ps value]
+  (let [e (last (:sequence ps))
+        r (when (range? e) (concretize-range e value))]
+    (cond
+      (nil? e)               nil
+      (u/infinite? (:end r)) ##Inf
+      :else                  (dec (sequence-length ps value)))))

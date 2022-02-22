@@ -563,4 +563,32 @@
                                         nil)))
 
     (t/is (= ##Inf (sut/sequence-length #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
-                                        nil)))))
+                                        nil))))
+
+  (t/testing "first index"
+    (t/is (= 0 (sut/sequence-first-index #unit-map/seq[0 1 .. 9]
+                                         nil)))
+
+    (t/is (= 0 (sut/sequence-first-index #unit-map/seq[0 1 .. ##Inf]
+                                         nil)))
+
+    (t/is (= ##-Inf (sut/sequence-first-index #unit-map/seq[##-Inf .. -1 0]
+                                              nil)))
+
+    (t/is (= ##-Inf (sut/sequence-first-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
+                                              nil))))
+
+  (t/testing "last index"
+    (t/is (= 9 (sut/sequence-last-index #unit-map/seq[0 1 .. 9]
+                                        nil)))
+
+    (t/is (= ##Inf (sut/sequence-last-index #unit-map/seq[0 1 .. ##Inf]
+                                            nil)))
+
+    (t/is (= ##Inf #_"TODO: probably should be 0"
+             (sut/sequence-last-index
+               #unit-map/seq[##-Inf .. -1 0]
+               nil)))
+
+    (t/is (= ##Inf (sut/sequence-last-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
+                                            nil)))))
