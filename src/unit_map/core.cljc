@@ -1,9 +1,5 @@
 (ns unit-map.core
-  (:require [unit-map.ops :as op]
-            [unit-map.type.chrono.datetime :as dt]
-            [unit-map.type.chrono.date :as d]
-            [unit-map.type.chrono.time :as t]
-            [unit-map.type.chrono.util.misc :as um]
+  (:require [unit-map.util :as u]
             [clojure.set]
             [clojure.data]))
 
@@ -244,3 +240,8 @@
 
 (defn static-sequence? [ps]
   (not (dynamic-sequence? ps)))
+
+
+(defn concretize-range [rng value]
+  (u/map-v #(u/try-call % value)
+           rng))

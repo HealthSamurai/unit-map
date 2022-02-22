@@ -514,4 +514,34 @@
     (t/is (true? (sut/dynamic-sequence? #unit-map/seq[0 1 .. (fn [_] 9)])))
 
     (t/is (false? (sut/dynamic-sequence? #unit-map/seq[0 1 .. 9]))))
-  )
+
+  (t/testing "concretize range"
+    (t/is (= {:start 0, :step 1, :end 9}
+             (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) (fn [_] 1) .. (fn [_] 9)]
+                                       :sequence
+                                       first)
+                                   nil)))
+
+    (t/is (= {:start 0, :step 1, :end 9}
+             (sut/concretize-range (-> #unit-map/seq[0 1 .. 9]
+                                       :sequence
+                                       first)
+                                   nil)))
+
+    (t/is (= {:start 0, :step 1, :end 9}
+             (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) .. (fn [_] 1) (fn [_] 9)]
+                                       :sequence
+                                       first)
+                                   nil)))
+
+    (t/is (= {:start 0, :step 1, :end 9}
+             (sut/concretize-range (-> #unit-map/seq[0 .. 8 9]
+                                       :sequence
+                                       first)
+                                   nil)))
+
+    (t/is (= {:start 1, :step 1, :end 28}
+             (sut/concretize-range (-> #unit-map/seq[1 2 .. (fn [{:keys [month]}] (if (= 2 month) 28 30))]
+                                       :sequence
+                                       first)
+                                   {:day 1, :month 2, :year 2022})))))
