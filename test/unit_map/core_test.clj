@@ -672,3 +672,39 @@
       (t/is (= ##-Inf (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                         nil
                                         ##-Inf))))))
+
+
+(t/deftest ^:kaocha/pending demo-test
+  (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
+  (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
+  (sut/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
+  (sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
+
+  (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month -> :month])
+  (sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (sut/defseq :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+
+  (sut/defsys ms-year    [:ms :sec :min :hour :day :month :year])
+
+  #_(sut/deffmt :iso/month [:month (fn [v fmt-el] '???)])
+  #_(sut/deffmt :iso/day [:day 2 "0"])
+
+  #_"NOTE: arithmetics for now can be stubbed with simple update/inc etc"
+  #_"NOTE: need some configs to map months enum to numbers"
+  #_"NOTE: for sequences consisting of only static ranges calculate leading 0 padding automatically"
+
+  (defn job-status-at [job {:keys [current-time in-fmt out-fmt]}]
+    #_"TODO")
+
+  (t/is (= (job-status-at
+             {:resourceType "Job"
+              :name         "denormalize"
+              :start-at     {:hour 5}
+              :last-run     "2022-04-01T05:00:00.000"}
+             {:current-time "2022-04-01T14:30:00.000"
+              :in-fmt  [:year \- :iso/month \- :iso/day \T :hour \: :min \: :sec \. :ms]
+              :out-fmt [:year \- :iso/month \- :iso/day \T :hour \: :min \: :sec \. :ms]})
+           {:latst-run           "2022-04-01T05:00:00.000"
+            :next-run            "2022-04-02T05:00:00.000"
+            :should-start-now?   false
+            :time-until-next-run {:hour 14, :min 30}})))
