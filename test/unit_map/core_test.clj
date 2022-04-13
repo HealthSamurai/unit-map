@@ -1,6 +1,7 @@
 (ns unit-map.core-test
   (:require [unit-map.core :as sut]
             [clojure.test :as t]
+            [unit-map.io :as io]
             [matcho.core :as matcho]))
 
 
@@ -682,6 +683,7 @@
 
   (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month -> :month])
   (sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+
   (sut/defseq :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (sut/defsys ms-year    [:ms :sec :min :hour :day :month :year])
@@ -693,18 +695,88 @@
   #_"NOTE: need some configs to map months enum to numbers"
   #_"NOTE: for sequences consisting of only static ranges calculate leading 0 padding automatically"
 
-  (defn job-status-at [job {:keys [current-time in-fmt out-fmt]}]
-    #_"TODO")
+  (defn invert [x]
+    )
 
-  (t/is (= (job-status-at
+  (get-in @sut/ctx [:seqs :min :hour :sequence 0 :end])
+  (get-in @sut/ctx [:seqs :hour :day :sequence 0 :end])
+  (get-in @sut/ctx [:seqs :hour :day :sequence 0 :start])
+  (get-in @sut/ctx [:seqs :hour :day :sequence 0 :step])
+
+  (get-in @sut/ctx [:seqs :hour :day])
+
+  (get-in @sut/ctx [:seqs :year nil])
+
+  (get-in @sut/ctx [:seqs :day :month :sequence 0 :end])
+
+  (get-in @sut/ctx [:systems 'ms-year])
+
+  (defn plus [x delta]
+    (loop [result x
+           [reg & [next-reg :as rest-regs]] (get-in @sut/ctx [:systems 'ms-year])
+           carry 0]
+      (if (= :month reg) #_"NOTE: to simplify example we don't deal with enum months"
+        result
+        (if (nil? (next-reg result))
+          (recur (update result reg (constantly (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])))
+                 rest-regs
+                 0)
+          (let [end (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :end])
+                start (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])
+                _ (println "end" end "reg" reg)
+                _ (println "fn? end" (fn? end) "end" (if (fn? end) (end result) end))
+                end (if (fn? end) (end result) end)
+                x-value (get result reg 0)
+                y-value (get delta reg 0)
+                sum (+ x-value y-value carry)
+                _ (println "carry" carry)
+                value (if (<= sum end) sum (- (- end start x-value y-value carry)))
+                _ (println value)
+                updated-result (update result reg (constantly value))]
+            (recur updated-result rest-regs (if (> sum end) 1 0)))))))
+    
+
+    #_(update x :day #(+ % (:day delta)))
+
+  (comment
+    (+ 22 5) = 3 = (24 - 22 - 5)
+
+    (plus {:ms 1} {:ms 1})
+    (plus {:sec 1 :ms 2} {:sec 1 :ms 998})
+    (plus {:hour 1 :min 59 :sec 1 :ms 2} {:min 1 :sec 1 :ms 998})
+
+    (plus {:day 1} {:day 1})
+    (keys {:a 1})
+    (update {:a 1} :a (constantly 3))
+
+    )
+
+  (defn minus [x y]
+    (plus x (invert y)))
+
+  (defn job-status-at [{:keys [resourceType name frequency start-at last-run]} {:keys [current-time in-fmt out-fmt]}]
+    (let [last-run-um (io/parse last-run in-fmt)
+          _ (def foo last-run-um)
+          current-time-um (io/parse current-time in-fmt)
+          _ (def bar current-time-um)
+          #_"TODO: Substract from max hour and max min current hour and current min and add start-at hour start-at min"
+          difference-um ()
+          ]
+      {:last-run (io/format last-run-um out-fmt)
+       :next-run (io/format (plus last-run-um frequency) out-fmt)
+       :time-until-next-run nil}))
+
+  (t/is (= {:last-run           "2022-04-01 05:30:00.000"
+            :next-run            "2022-04-02 05:30:00.000"
+            :should-start-now?   false
+            :time-until-next-run {:hour 14, :min 30}}
+           (job-status-at
              {:resourceType "Job"
               :name         "denormalize"
-              :start-at     {:hour 5}
-              :last-run     "2022-04-01T05:00:00.000"}
-             {:current-time "2022-04-01T14:30:00.000"
-              :in-fmt  [:year \- :iso/month \- :iso/day \T :hour \: :min \: :sec \. :ms]
-              :out-fmt [:year \- :iso/month \- :iso/day \T :hour \: :min \: :sec \. :ms]})
-           {:latst-run           "2022-04-01T05:00:00.000"
-            :next-run            "2022-04-02T05:00:00.000"
-            :should-start-now?   false
-            :time-until-next-run {:hour 14, :min 30}})))
+              :frequency    {:day 1}
+              :start-at     {:hour 5 :min 30}
+              :last-run     "2022-04-01T05:30:00.000"}
+             {:current-time "2022-04-01T15:00:00.000"
+              :in-fmt  [:year \- :month \- :day \T :hour \: :min \: :sec \. :ms]
+              :out-fmt [:year \- :month \- :day \space  :hour \: :min \: :sec \. :ms]})
+           )))
