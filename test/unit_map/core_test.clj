@@ -746,7 +746,10 @@
     #_(update x :day #(+ % (:day delta)))
 
   (comment
-    ;; TODO: Чтобы забутстрапиться нужно месяцы сделать числовыми а не enum
+    ;; TODO: Чтобы забутстрапиться нужно месяцы сделать числовыми а не enum.
+    ;; Ещё посетила мысль, что для простоты реализации такие вещи как названия месяцев может быть больее производительно выносить в локализацию.
+    ;; Но эта мысль не верна, потому что теряется прелесть использования библиотеки. Во всех местах вместо названий месяцев прийдётся использовать номера и только на границе прогонять через локализацию. Надо поробовать что будет хуже вычисления вести внутри с enum-овскими месяцами, или перед вычислениями всегда переводить из слов в цифры.
+
 
     (def some-func days-in-month-stubbed)
 
@@ -795,13 +798,14 @@
           ]
       {:last-run (io/format last-run-um out-fmt)
        :next-run (io/format next-run-um out-fmt)
+       :should-start-now? (every? zero? (vals time-until-next-run-hour-min))
        :time-until-next-run time-until-next-run-hour-min
        }))
 
 
     (t/is (= {:last-run           "2022-04-01 05:30:00.000"
               :next-run            "2022-04-02 05:30:00.000"
-              ;; :should-start-now?   false
+              :should-start-now?   false
               :time-until-next-run {:hour 14, :min 30}
               }
              (job-status-at
@@ -813,4 +817,22 @@
               {:current-time "2022-04-01T15:00:00.000"
                :in-fmt  [:year \- :month \- :day \T :hour \: :min \: :sec \. :ms]
                :out-fmt [:year \- :month \- :day \space  :hour \: :min \: :sec \. :ms]})
-             )))
+             ))
+
+     (t/is (= {:last-run           "2022-04-01 05:30:00.000"
+               :next-run            "2022-04-02 05:30:00.000"
+               :should-start-now?   true
+               :time-until-next-run {:hour 0, :min 0}
+               }
+              (job-status-at
+               {:resourceType "Job"
+                :name         "denormalize"
+                :frequency    {:day 1}
+                :start-at     {:hour 5 :min 30}
+                :last-run     "2022-04-01T05:30:00.000"}
+               {:current-time "2022-04-02T05:30:00.000"
+                :in-fmt  [:year \- :month \- :day \T :hour \: :min \: :sec \. :ms]
+                :out-fmt [:year \- :month \- :day \space  :hour \: :min \: :sec \. :ms]})
+              ))
+  )
+
