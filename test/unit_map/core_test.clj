@@ -718,45 +718,27 @@
     (loop [result x
            [reg & [next-reg :as rest-regs]] (get-in @sut/ctx [:systems 'ms-year])
            carry 0]
-      (println "reg" reg "next-reg" next-reg "rest-regs" rest-regs)
       (if (= :month reg) #_"NOTE: to simplify example we don't deal with enum months"
           result
           (let [end (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :end])
                 start (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])
-                ;; _ (println "end" end "reg" reg)
-                ;; _ (println "result" result)
-                ;; _ (println "symbol? end" (symbol? end))
                 end (if (symbol? end)
                       (end result)
                       end)
-                ;; _ (println "end" end)
                 x-value (get result reg start)
-                ;; _ (println "x-value" x-value)
-                y-value (get delta reg 0) ;; For the delta we take 0 as a default for a register
-                ;; _ (println "y-value" y-value)
+                y-value (get delta reg 0) ;; For the delta we take 0 as a default for any register
 
                 sum (+ x-value y-value carry)
-                _ (println "reg" reg "x-value" x-value "y-value" y-value "sum" sum "carry" carry)
                 _ (println "reg" reg "x-value" x-value "y-value" y-value "sum" sum "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start))
 
                 value (cond
-                        (> sum end) (- sum end 1) ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение, потому что они могут идти с шагом и начинаться не в начале.
-                        (< sum start) (- end sum carry -1)
+                        (> sum end) (- sum end 1) ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение, потому что они могут идти с шагом и начинаться не в начале. Вообще на этот шаг ещё нужно будет делить и умножать в соответствующих местах.
+
+                        (< sum start) (+ end 1 sum)
+
                         :else sum)
 
-                ;; value (if (or (<= sum end) (>= sum start))
-                ;;         sum
-                ;;         (- end start x-value y-value carry))
-                _ (println "sum" sum "reg" reg "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start) "value" value)
-
-                ;; value (if (>= sum start)
-                ;;         value
-                ;;         (- value))
-                ;; value (if (>= sum start)
-                ;;         sum
-                ;;         (- (- end start x-value y-value carry)))
-
-                _ (println "value" value)
+                _ (println "reg" reg "value" value "sum" sum  "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start) )
                 updated-result (update result reg (constantly value))]
             (recur updated-result rest-regs (cond (> sum end) 1
                                                   (< sum start) -1
@@ -766,6 +748,12 @@
 
   (comment
     ;; TODO: Чтобы забутстрапиться нужно месяцы сделать числовыми а не enum
+
+    ;; TODO: Возникла бредовая мысль, что в такой системе может не получиться арифметику выразить просто, и прийдётся с шагом единицы ходить вправо и влево по оси времени. Хотя на размер шага можно просто делить и умножать в соотвествующих местах.
+
+    ;; reg :ms x-value 1 y-value -6 sum -5 end 999 start 0 carry 0 (<= sum end) true (>= sum start) false
+    ;; reg :ms value 1005 sum -5 end 999 start 0 carry 0 (<= sum end) true (>= sum start) false
+    999 + 1 + (-5)
 
     (+ 6 (- 8)) = -2
     (- 1000 (+ 6 (-8))) = 988
@@ -821,14 +809,14 @@
           ]
       {:last-run (io/format last-run-um out-fmt)
        :next-run (io/format next-run-um out-fmt)
-       ;; :time-until-next-run nil
+       ;; :time-until-next-run (minus current-time-um next-run-um)
        }))
 
 
     (t/is (= {:last-run           "2022-04-01 05:30:00.000"
               :next-run            "2022-04-02 05:30:00.000"
               ;; :should-start-now?   false
-              :time-until-next-run {:hour 14, :min 30}
+              ;;:time-until-next-run {:hour 14, :min 30}
               }
              (job-status-at
               {:resourceType "Job"
