@@ -736,10 +736,22 @@
                 ;; _ (println "y-value" y-value)
 
                 sum (+ x-value y-value carry)
-                _ (println "sum" sum "reg" reg "carry" carry)
-                value (if (or (<= sum end) (>= sum start))
-                        sum
-                        (- (- end start x-value y-value carry)))
+                _ (println "reg" reg "x-value" x-value "y-value" y-value "sum" sum "carry" carry)
+                _ (println "reg" reg "x-value" x-value "y-value" y-value "sum" sum "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start))
+
+                value (cond
+                        (> sum end) (- sum end 1) ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение, потому что они могут идти с шагом и начинаться не в начале.
+                        (< sum start) (- end sum carry -1)
+                        :else sum)
+
+                ;; value (if (or (<= sum end) (>= sum start))
+                ;;         sum
+                ;;         (- end start x-value y-value carry))
+                _ (println "sum" sum "reg" reg "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start) "value" value)
+
+                ;; value (if (>= sum start)
+                ;;         value
+                ;;         (- value))
                 ;; value (if (>= sum start)
                 ;;         sum
                 ;;         (- (- end start x-value y-value carry)))
@@ -755,6 +767,12 @@
   (comment
     ;; TODO: Чтобы забутстрапиться нужно месяцы сделать числовыми а не enum
 
+    (+ 6 (- 8)) = -2
+    (- 1000 (+ 6 (-8))) = 988
+    (+ 988 8) = 6
+    (- (- 8 988)) = 6
+
+
     (+ 22 5) = 3 = (24 - 22 - 5)
 
     (def some-func days-in-month)
@@ -763,6 +781,8 @@
     (days-in-month {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1})
 
     (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
+
     (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
     (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 10} {:ms 6})
 
