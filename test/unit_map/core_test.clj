@@ -803,19 +803,20 @@
                        {:keys [current-time in-fmt out-fmt]}]
     (let [last-run-um (io/parse last-run in-fmt)
           current-time-um (io/parse current-time in-fmt)
-          #_"TODO: Substract from max hour and max min current hour and current min and add start-at hour start-at min"
           next-run-um (plus last-run-um frequency)
+          time-until-next-run (minus next-run-um current-time-um)
+          time-until-next-run-hour-min (select-keys time-until-next-run [:hour :min])
           ]
       {:last-run (io/format last-run-um out-fmt)
        :next-run (io/format next-run-um out-fmt)
-       ;; :time-until-next-run (minus current-time-um next-run-um)
+       :time-until-next-run time-until-next-run-hour-min
        }))
 
 
     (t/is (= {:last-run           "2022-04-01 05:30:00.000"
               :next-run            "2022-04-02 05:30:00.000"
               ;; :should-start-now?   false
-              ;;:time-until-next-run {:hour 14, :min 30}
+              :time-until-next-run {:hour 14, :min 30}
               }
              (job-status-at
               {:resourceType "Job"
