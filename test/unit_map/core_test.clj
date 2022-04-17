@@ -707,41 +707,48 @@
   #_"NOTE: need some configs to map months enum to numbers"
   #_"NOTE: for sequences consisting of only static ranges calculate leading 0 padding automatically"
 
-  (defn invert [x]
-    )
+  (defn invert-delta [x]
+    (into {} (for [[k v] x] [k (- v)])))
+
+(comment
+  (invert-delta {:hour 30, :min 40})
+  )
 
   (defn plus [x delta]
     (loop [result x
            [reg & [next-reg :as rest-regs]] (get-in @sut/ctx [:systems 'ms-year])
            carry 0]
+      (println "reg" reg "next-reg" next-reg "rest-regs" rest-regs)
       (if (= :month reg) #_"NOTE: to simplify example we don't deal with enum months"
-        result
-        (if (nil? (reg result))
-          (recur (update result reg (constantly (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])))
-                 rest-regs
-                 0)
+          result
           (let [end (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :end])
                 start (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])
-                _ (println "end" end "reg" reg)
-                _ (println "result" result)
-                _ (println "symbol? end" (symbol? end))
+                ;; _ (println "end" end "reg" reg)
+                ;; _ (println "result" result)
+                ;; _ (println "symbol? end" (symbol? end))
                 end (if (symbol? end)
                       (end result)
                       end)
-                _ (println "end" end)
+                ;; _ (println "end" end)
                 x-value (get result reg start)
-                _ (println "x-value" x-value)
-                y-value (get delta reg start)
-                _ (println "y-value" y-value)
+                ;; _ (println "x-value" x-value)
+                y-value (get delta reg 0) ;; For the delta we take 0 as a default for a register
+                ;; _ (println "y-value" y-value)
 
                 sum (+ x-value y-value carry)
-                _ (println "sum" sum)
-                _ (println "carry" carry)
-                value (if (<= sum end) sum (- (- end start x-value y-value carry)))
+                _ (println "sum" sum "reg" reg "carry" carry)
+                value (if (or (<= sum end) (>= sum start))
+                        sum
+                        (- (- end start x-value y-value carry)))
+                ;; value (if (>= sum start)
+                ;;         sum
+                ;;         (- (- end start x-value y-value carry)))
+
                 _ (println "value" value)
                 updated-result (update result reg (constantly value))]
-            (recur updated-result rest-regs (if (> sum end) 1 0)))))))
-    
+            (recur updated-result rest-regs (cond (> sum end) 1
+                                                  (< sum start) -1
+                                                  :else 0))))))
 
     #_(update x :day #(+ % (:day delta)))
 
@@ -756,6 +763,9 @@
     (days-in-month {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1})
 
     (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 10} {:ms 6})
+
     (plus {:sec 1 :ms 2} {:sec 1 :ms 998})
     (plus {:hour 1 :min 59 :sec 1 :ms 2} {:min 1 :sec 1 :ms 998})
 
@@ -776,16 +786,16 @@
 
     (get-in @sut/ctx [:systems 'ms-year])
 
+
     )
 
-  (defn minus [x y]
-    (plus x (invert y)))
+  (defn minus [x delta]
+    (plus x (invert-delta delta)))
 
-  (defn job-status-at [{:keys [resourceType name frequency start-at last-run]} {:keys [current-time in-fmt out-fmt]}]
+  (defn job-status-at [{:keys [resourceType name frequency start-at last-run]}
+                       {:keys [current-time in-fmt out-fmt]}]
     (let [last-run-um (io/parse last-run in-fmt)
-          _ (def foo last-run-um)
           current-time-um (io/parse current-time in-fmt)
-          _ (def bar current-time-um)
           #_"TODO: Substract from max hour and max min current hour and current min and add start-at hour start-at min"
           next-run-um (plus last-run-um frequency)
           ]
@@ -797,8 +807,9 @@
 
     (t/is (= {:last-run           "2022-04-01 05:30:00.000"
               :next-run            "2022-04-02 05:30:00.000"
-              :should-start-now?   false
-              :time-until-next-run {:hour 14, :min 30}}
+              ;; :should-start-now?   false
+              :time-until-next-run {:hour 14, :min 30}
+              }
              (job-status-at
               {:resourceType "Job"
                :name         "denormalize"
