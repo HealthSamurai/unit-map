@@ -678,20 +678,19 @@
 (t/deftest ^:kaocha/pending demo-test
 
   (defn days-in-month-stubbed [{:as date, :keys [month]}]
-    #_(condp contains? month
-      #{1 3 4 7 8 10 12} 31
+    (condp contains? month
+      #{1 3 5 7 8 10 12} 31
       #{4 6 9 11}        30
       #{2}               (if (leap-year? date) 29 28)
-      ##Inf)
-    31)
+      ##Inf))
 
   (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
   (sut/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
   (sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
 
-  #_(sut/defseq :day   #unit-map/seq[1 2 .. days-in-month-stubbed -> :month])
-  (sut/defseq :day   #unit-map/seq[1 2 .. 31 -> :month])
+  (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month-stubbed -> :month])
+  #_(sut/defseq :day   #unit-map/seq[1 2 .. 31 -> :month])
 
   #_(sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
   (sut/defseq :month #unit-map/seq[1 2 .. 12 -> :year])
@@ -723,7 +722,7 @@
           (let [end (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :end])
                 start (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])
                 end (if (symbol? end)
-                      (end result)
+                      ((resolve end) result)
                       end)
                 x-value (get result reg start)
                 y-value (get delta reg 0) ;; For the delta we take 0 as a default for any register
@@ -763,7 +762,7 @@
 
     (+ 22 5) = 3 = (24 - 22 - 5)
 
-    (def some-func days-in-month)
+    (def some-func days-in-month-stubbed)
 
     (some-func {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1})
     (days-in-month {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1})
