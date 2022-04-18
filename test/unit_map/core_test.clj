@@ -1,6 +1,7 @@
 (ns unit-map.core-test
   (:require [unit-map.core :as sut]
             [clojure.test :as t]
+            [unit-map.io :as io]
             [matcho.core :as matcho]))
 
 
@@ -675,13 +676,24 @@
 
 
 (t/deftest ^:kaocha/pending demo-test
+
+  (defn days-in-month-stubbed [{:as date, :keys [month]}]
+    (condp contains? month
+      #{1 3 5 7 8 10 12} 31
+      #{4 6 9 11}        30
+      #{2}               (if (leap-year? date) 29 28)
+      ##Inf))
+
   (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
   (sut/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
   (sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
 
-  (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month-stubbed -> :month])
+
+  #_(sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (sut/defseq :month #unit-map/seq[1 2 .. 12 -> :year])
+
   (sut/defseq :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (sut/defsys ms-year    [:ms :sec :min :hour :day :month :year])
@@ -693,18 +705,121 @@
   #_"NOTE: need some configs to map months enum to numbers"
   #_"NOTE: for sequences consisting of only static ranges calculate leading 0 padding automatically"
 
-  (defn job-status-at [job {:keys [current-time in-fmt out-fmt]}]
-    #_"TODO")
+  (defn invert-delta [x]
+    (into {} (for [[k v] x] [k (- v)])))
 
-  (t/is (= (job-status-at
-             {:resourceType "Job"
-              :name         "denormalize"
-              :start-at     {:hour 5}
-              :last-run     "2022-04-01T05:00:00.000"}
-             {:current-time "2022-04-01T14:30:00.000"
-              :in-fmt  [:year \- :iso/month \- :iso/day \T :hour \: :min \: :sec \. :ms]
-              :out-fmt [:year \- :iso/month \- :iso/day \T :hour \: :min \: :sec \. :ms]})
-           {:latst-run           "2022-04-01T05:00:00.000"
-            :next-run            "2022-04-02T05:00:00.000"
-            :should-start-now?   false
-            :time-until-next-run {:hour 14, :min 30}})))
+  (defn plus [x delta]
+    (loop [result x
+           [reg & [next-reg :as rest-regs]] (get-in @sut/ctx [:systems 'ms-year])
+           carry 0]
+      (if (nil? reg)
+          result
+          (let [{:keys [start end]} (get-in @sut/ctx [:seqs reg next-reg :sequence 0])
+                end (if (symbol? end)
+                      ((resolve end) result)
+                      end)
+                x-value (get result reg start) ;; FIXME: For the biggest reg (year) we would rather get current date year value as a default
+                y-value (get delta reg 0) ;; For the delta we take 0 as a default for any register
+                sum (+ x-value y-value carry)
+                start (if (= ##-Inf start)
+                        0
+                        start)
+                value (cond
+                        ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение плюс 1,
+                        ;; потому что они могут идти с шагом и начинаться не в начале.
+                        ;; Вообще, на этот шаг ещё нужно будет делить и умножать в соответствующих местах.
+                        (> sum end) (- sum end 1 (- start))
+                        (< sum start) (+ end 1 sum)
+                        :else sum)
+                updated-result (update result reg (constantly value))]
+            (recur #_result updated-result #_regs rest-regs #_carry (cond
+                                                                      (> sum end) 1
+                                                                      (< sum start) -1
+                                                                      :else 0))))))
+
+  (comment
+    ;; TODO: Чтобы забутстрапиться нужно месяцы сделать числовыми а не enum.
+    ;; Ещё посетила мысль, что для простоты реализации такие вещи как названия месяцев может быть больее производительно выносить в локализацию.
+    ;; Но эта мысль не верна, потому что теряется прелесть использования библиотеки. Во всех местах вместо названий месяцев прийдётся использовать номера и только на границе прогонять через локализацию. Надо поробовать что будет хуже вычисления вести внутри с enum-овскими месяцами, или перед вычислениями всегда переводить из слов в цифры.
+
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:month 10 :ms 6})
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:day 16 :ms 6})
+
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
+    (plus {:month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
+
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:month 5 :ms 6})
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:day 14})
+
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 10} {:ms 6})
+
+    (plus {:sec 1 :ms 2} {:sec 1 :ms 998})
+    (plus {:hour 1 :min 59 :sec 1 :ms 2} {:min 1 :sec 1 :ms 998})
+
+    (plus {:day 1} {:day 1})
+
+    (get-in @sut/ctx [:seqs :min :hour :sequence 0 :end])
+    (get-in @sut/ctx [:seqs :hour :day :sequence 0 :end])
+    (get-in @sut/ctx [:seqs :hour :day :sequence 0 :start])
+    (get-in @sut/ctx [:seqs :hour :day :sequence 0 :step])
+
+    (get-in @sut/ctx [:seqs :hour :day])
+
+    (get-in @sut/ctx [:seqs :year nil])
+
+    (get-in @sut/ctx [:seqs :day :month :sequence 0 :end])
+
+    (get-in @sut/ctx [:systems 'ms-year])
+
+    )
+  (defn minus [x delta]
+    (plus x (invert-delta delta)))
+
+  (defn job-status-at [{:keys [resourceType name frequency start-at last-run]}
+                       {:keys [current-time in-fmt out-fmt]}]
+    (let [last-run-um (io/parse last-run in-fmt)
+          current-time-um (io/parse current-time in-fmt)
+          next-run-um (plus last-run-um frequency)
+          time-until-next-run (minus next-run-um current-time-um)
+          time-until-next-run-hour-min (select-keys time-until-next-run [:hour :min])
+          ]
+      {:last-run (io/format last-run-um out-fmt)
+       :next-run (io/format next-run-um out-fmt)
+       :should-start-now? (every? zero? (vals time-until-next-run-hour-min))
+       :time-until-next-run time-until-next-run-hour-min
+       }))
+
+
+    (t/is (= {:last-run           "2022-04-01 05:30:00.000"
+              :next-run            "2022-04-02 05:30:00.000"
+              :should-start-now?   false
+              :time-until-next-run {:hour 14, :min 30}
+              }
+             (job-status-at
+              {:resourceType "Job"
+               :name         "denormalize"
+               :frequency    {:day 1}
+               :start-at     {:hour 5 :min 30}
+               :last-run     "2022-04-01T05:30:00.000"}
+              {:current-time "2022-04-01T15:00:00.000"
+               :in-fmt  [:year \- :month \- :day \T :hour \: :min \: :sec \. :ms]
+               :out-fmt [:year \- :month \- :day \space  :hour \: :min \: :sec \. :ms]})
+             ))
+
+     (t/is (= {:last-run           "2022-04-01 05:30:00.000"
+               :next-run            "2022-04-02 05:30:00.000"
+               :should-start-now?   true
+               :time-until-next-run {:hour 0, :min 0}
+               }
+              (job-status-at
+               {:resourceType "Job"
+                :name         "denormalize"
+                :frequency    {:day 1}
+                :start-at     {:hour 5 :min 30}
+                :last-run     "2022-04-01T05:30:00.000"}
+               {:current-time "2022-04-02T05:30:00.000"
+                :in-fmt  [:year \- :month \- :day \T :hour \: :min \: :sec \. :ms]
+                :out-fmt [:year \- :month \- :day \space  :hour \: :min \: :sec \. :ms]})
+              ))
+  )
+

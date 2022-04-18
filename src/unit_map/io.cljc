@@ -90,7 +90,7 @@
         width              (u/ffilter integer? rest-fmt)]
     {:value     value
      :lang      lang
-     :type      (ops/get-type fmt-vec)
+     ;; :type      (ops/get-type fmt-vec)
      :name-fmt  (or (u/ffilter keyword? rest-fmt)
                     (when lang :full))
      :function  (u/ffilter fn? rest-fmt)
@@ -128,6 +128,14 @@
     :result []}
    (concat [#"^"] fmt-vec [#"$"])))
 
+(comment
+  (parse "2022-04-13" [:year \- :month \- :day \T :hour \: :min \: :sec \. :ms])
+  (defmethod ops/definition :default-type [_] datetime/gregorian-military)
+
+  (remove-all-methods ops/definition)
+  )
+
+
 
 (defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
   (loop [s               s
@@ -155,7 +163,7 @@
         unit-value (or (when function (function value fmt-el))
                        (when lang (get-in (locale lang) [fmt v name-fmt]))
                        v
-                       (ops/sequence-nth (ops/unit-definition value fmt) value 0)
+                       #_(ops/sequence-nth (ops/unit-definition value fmt) value 0)
                        fmt)
         pad-width  (or pad-width (max (format-patterns fmt 0) (count (str unit-value))))
         pad-str    (or pad-str
@@ -164,7 +172,6 @@
     (cond->> (str unit-value)
       (not (zero? pad-width))
       (u/pad-str pad-str pad-width))))
-
 
 (defn format [t fmt-vec]
   (str/join (map (partial format-el t fmt-vec) fmt-vec)))
