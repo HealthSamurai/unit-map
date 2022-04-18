@@ -712,20 +712,23 @@
     (loop [result x
            [reg & [next-reg :as rest-regs]] (get-in @sut/ctx [:systems 'ms-year])
            carry 0]
-      (if (= :month reg) #_"NOTE: to simplify example we don't deal with enum months"
+      (if (nil? reg)
           result
           (let [{:keys [start end]} (get-in @sut/ctx [:seqs reg next-reg :sequence 0])
                 end (if (symbol? end)
                       ((resolve end) result)
                       end)
-                x-value (get result reg start)
+                x-value (get result reg start) ;; FIXME: For the biggest reg (year) we would rather get current date year value as a default
                 y-value (get delta reg 0) ;; For the delta we take 0 as a default for any register
                 sum (+ x-value y-value carry)
+                start (if (= ##-Inf start)
+                        0
+                        start)
                 value (cond
                         ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение плюс 1,
                         ;; потому что они могут идти с шагом и начинаться не в начале.
                         ;; Вообще, на этот шаг ещё нужно будет делить и умножать в соответствующих местах.
-                        (> sum end) (- sum end 1)
+                        (> sum end) (- sum end 1 (- start))
                         (< sum start) (+ end 1 sum)
                         :else sum)
                 updated-result (update result reg (constantly value))]
@@ -739,10 +742,15 @@
     ;; Ещё посетила мысль, что для простоты реализации такие вещи как названия месяцев может быть больее производительно выносить в локализацию.
     ;; Но эта мысль не верна, потому что теряется прелесть использования библиотеки. Во всех местах вместо названий месяцев прийдётся использовать номера и только на границе прогонять через локализацию. Надо поробовать что будет хуже вычисления вести внутри с enum-овскими месяцами, или перед вычислениями всегда переводить из слов в цифры.
 
-    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
-    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:month 10 :ms 6})
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:day 16 :ms 6})
 
-    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
+    (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
+    (plus {:month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
+
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:month 5 :ms 6})
+    (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:day 14})
+
     (minus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 10} {:ms 6})
 
     (plus {:sec 1 :ms 2} {:sec 1 :ms 998})
