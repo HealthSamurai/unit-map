@@ -690,7 +690,6 @@
   (sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
 
   (sut/defseq :day   #unit-map/seq[1 2 .. days-in-month-stubbed -> :month])
-  #_(sut/defseq :day   #unit-map/seq[1 2 .. 31 -> :month])
 
   #_(sut/defseq :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
   (sut/defseq :month #unit-map/seq[1 2 .. 12 -> :year])
@@ -709,52 +708,36 @@
   (defn invert-delta [x]
     (into {} (for [[k v] x] [k (- v)])))
 
-(comment
-  (invert-delta {:hour 30, :min 40})
-  )
-
   (defn plus [x delta]
     (loop [result x
            [reg & [next-reg :as rest-regs]] (get-in @sut/ctx [:systems 'ms-year])
            carry 0]
       (if (= :month reg) #_"NOTE: to simplify example we don't deal with enum months"
           result
-          (let [end (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :end])
-                start (get-in @sut/ctx [:seqs reg next-reg :sequence 0 :start])
+          (let [{:keys [start end]} (get-in @sut/ctx [:seqs reg next-reg :sequence 0])
                 end (if (symbol? end)
                       ((resolve end) result)
                       end)
                 x-value (get result reg start)
                 y-value (get delta reg 0) ;; For the delta we take 0 as a default for any register
-
                 sum (+ x-value y-value carry)
-                _ (println "reg" reg "x-value" x-value "y-value" y-value "sum" sum "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start))
-
                 value (cond
-                        (> sum end) (- sum end 1) ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение, потому что они могут идти с шагом и начинаться не в начале. Вообще на этот шаг ещё нужно будет делить и умножать в соответствующих местах.
-
+                        ;; FIXME: Нужно получать общее количество единиц, а не максимальное значение плюс 1,
+                        ;; потому что они могут идти с шагом и начинаться не в начале.
+                        ;; Вообще, на этот шаг ещё нужно будет делить и умножать в соответствующих местах.
+                        (> sum end) (- sum end 1)
                         (< sum start) (+ end 1 sum)
-
                         :else sum)
-
-                _ (println "reg" reg "value" value "sum" sum  "end" end "start" start "carry" carry "(<= sum end)" (<= sum end) "(>= sum start)" (>= sum start) )
                 updated-result (update result reg (constantly value))]
-            (recur updated-result rest-regs (cond (> sum end) 1
-                                                  (< sum start) -1
-                                                  :else 0))))))
-
-    #_(update x :day #(+ % (:day delta)))
+            (recur #_result updated-result #_regs rest-regs #_carry (cond
+                                                                      (> sum end) 1
+                                                                      (< sum start) -1
+                                                                      :else 0))))))
 
   (comment
     ;; TODO: Чтобы забутстрапиться нужно месяцы сделать числовыми а не enum.
     ;; Ещё посетила мысль, что для простоты реализации такие вещи как названия месяцев может быть больее производительно выносить в локализацию.
     ;; Но эта мысль не верна, потому что теряется прелесть использования библиотеки. Во всех местах вместо названий месяцев прийдётся использовать номера и только на границе прогонять через локализацию. Надо поробовать что будет хуже вычисления вести внутри с enum-овскими месяцами, или перед вычислениями всегда переводить из слов в цифры.
-
-
-    (def some-func days-in-month-stubbed)
-
-    (some-func {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1})
-    (days-in-month {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1})
 
     (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 1} {:ms 6})
     (plus {:year 2022 :month 4 :day 15 :hour 3 :min 5 :ms 8} {:ms 998})
@@ -766,8 +749,6 @@
     (plus {:hour 1 :min 59 :sec 1 :ms 2} {:min 1 :sec 1 :ms 998})
 
     (plus {:day 1} {:day 1})
-    (keys {:a 1})
-    (update {:a 1} :a (constantly 3))
 
     (get-in @sut/ctx [:seqs :min :hour :sequence 0 :end])
     (get-in @sut/ctx [:seqs :hour :day :sequence 0 :end])
@@ -782,9 +763,7 @@
 
     (get-in @sut/ctx [:systems 'ms-year])
 
-
     )
-
   (defn minus [x delta]
     (plus x (invert-delta delta)))
 
