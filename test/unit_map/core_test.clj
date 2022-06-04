@@ -674,6 +674,33 @@
                                         ##-Inf))))))
 
 
+(t/deftest sys-utils-test
+  (t/testing "next/prev unit"
+    (t/is (= :month
+             (sut/get-next-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                :day)))
+
+    (t/is (= :hour
+             (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                :day)))
+
+    (t/is (= nil
+             (sut/get-next-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                :year)))
+
+    (t/is (= :sec
+             (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                :min)))
+
+    (t/is (= :ms
+             (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                :sec)))
+
+    (t/is (= nil
+             (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                :ms)))))
+
+
 (t/deftest ^:kaocha/pending demo-test
   (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])

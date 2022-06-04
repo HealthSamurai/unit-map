@@ -360,3 +360,18 @@
         (if (some? result)
           result
           (recur (+ i increment) rest-s))))))
+
+
+;;;;;;;;;; type
+
+
+(defn get-next-unit
+  "next = more significant"
+  [value unit]
+  (u/get-next-element (first (guess-sys value)) unit))
+
+
+(defn get-prev-unit
+  "prev = less significant"
+  [value unit]
+  (u/get-prev-element (first (guess-sys value)) unit))
