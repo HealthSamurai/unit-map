@@ -401,3 +401,22 @@
 
         :else
         (recur (cons next rest))))))
+
+
+(defn get-prev-unit-value [useq umap x]
+  (loop [[prev el & rest] (cons nil (:sequence useq))]
+    (let [{:keys [start step]} (if (range? el) (concretize-range el umap) {})]
+      (cond
+        (nil? el)
+        nil
+
+        (or (= x el) (= x start))
+        (cond-> prev (range? prev) (-> :end (u/try-call umap)))
+
+        (and (range? el)
+             (range-contains-some el umap x)
+             (range-contains-some el umap (- x step)))
+        (- x step)
+
+        :else
+        (recur (cons el rest))))))

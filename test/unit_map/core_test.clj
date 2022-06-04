@@ -739,7 +739,48 @@
 
     (t/is (= 11 (sut/get-next-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                          {:bar 8}
-                                         9)))))
+                                         9))))
+
+  (t/testing "get-prev-unit-value"
+    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+                                   (get-in @sut/ctx [:seqs :sec :min])
+                                   nil
+                                   %)
+                                59)
+                       (take-while some?))
+                  (reverse (range 60)))
+
+    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+                                   (get-in @sut/ctx [:seqs :month :year])
+                                   nil
+                                   %)
+                                :dec)
+                       (take-while some?))
+                  (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]))
+
+    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+                                   (get-in @sut/ctx [:seqs :year nil])
+                                   nil
+                                   %)
+                                2020)
+                       (take 51))
+                  (reverse (range 1970 2021)))
+
+    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+                                   (get-in @sut/ctx [:seqs :am-pm/hour :am-pm/period])
+                                   nil
+                                   %)
+                                11)
+                       (take 51))
+                  (reverse [12 1 2 3 4 5 6 7 8 9 10 11]))
+
+    (t/is (= 9 (sut/get-prev-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                        {:bar 7}
+                                        13)))
+
+    (t/is (= 11 (sut/get-prev-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                         {:bar 8}
+                                         13)))))
 
 
 (t/deftest ^:kaocha/pending demo-test
