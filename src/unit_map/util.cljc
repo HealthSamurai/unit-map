@@ -1,28 +1,19 @@
 (ns unit-map.util
-  (:require [clojure.string :as str])
-  (:refer-clojure :exclude [infinite?]))
+  (:refer-clojure :exclude [infinite?])
+  (:require [clojure.string :as str]
+            [clojure.math :as math]))
 
 
-(defn NaN?
-  "Test if this number is nan
-   Nan is the only value for which equality is false"
-  [x]
-  (false? (== x x)))
-
-
-(def infinite? (partial contains? #{##-Inf ##Inf}))
+(defn infinite? [x]
+  (and (double? x)
+       (clojure.core/infinite? x)))
 
 
 (def finite? (complement infinite?))
 
 
-(defn parseInt [^String s]
-  #?(:clj  (Integer/parseInt s)
-     :cljs (js/parseInt s)))
-
-
-(defn try-parse-int [s]
-  (some->> s str (re-matches #"[-+]?\d+") parseInt))
+(defn try-parse-long [s]
+  (some->> s str (re-matches #"[-+]?\d+") parse-long))
 
 
 (defn sanitize [s]
@@ -71,14 +62,12 @@
   (reduce-kv (fn [acc k _] (update acc k f)) m m))
 
 
-(defn map-kv [f m]
-  (reduce-kv (fn [acc k _] (update acc k (partial f k))) m m))
-
-
-(defn floor [x] (int (Math/floor x)))
+(defn floor [x] (long (math/floor x)))
 
 
 (def ffilter (comp first filter))
+
+
 
 
 (def regex?

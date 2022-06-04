@@ -1,6 +1,6 @@
 {:paths ["src"]
- :deps {org.clojure/clojure       {:mvn/version "1.10.2"}
-        org.clojure/clojurescript {:mvn/version "1.10.764"}}
+ :deps {org.clojure/clojure       {:mvn/version "1.11.1"}
+        org.clojure/clojurescript {:mvn/version "1.11.54"}}
  :aliases {:test
            {:extra-paths ["test"]
             :jvm-opts    ^:replace ["-XX:-OmitStackTraceInFastThrow"]

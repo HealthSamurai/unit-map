@@ -41,7 +41,7 @@
 
 
 (defn concretize-range [rng value]
-  (u/map-v #(u/try-call % value) rng))
+  (update-vals rng #(u/try-call % value)))
 
 
 (defn dynamic-sequence? [ps]
