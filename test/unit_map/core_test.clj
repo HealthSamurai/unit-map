@@ -698,7 +698,48 @@
 
     (t/is (= nil
              (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
-                                :ms)))))
+                                :ms))))
+
+  (t/testing "get-next-unit-value"
+    (matcho/match (->> (iterate #(sut/get-next-unit-value
+                                   (get-in @sut/ctx [:seqs :sec :min])
+                                   nil
+                                   %)
+                                0)
+                       (take-while some?))
+                  (range 60))
+
+    (matcho/match (->> (iterate #(sut/get-next-unit-value
+                                   (get-in @sut/ctx [:seqs :month :year])
+                                   nil
+                                   %)
+                                :jan)
+                       (take-while some?))
+                  [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
+
+    (matcho/match (->> (iterate #(sut/get-next-unit-value
+                                   (get-in @sut/ctx [:seqs :year nil])
+                                   nil
+                                   %)
+                                1970)
+                       (take 51))
+                  (range 1970 2021))
+
+    (matcho/match (->> (iterate #(sut/get-next-unit-value
+                                   (get-in @sut/ctx [:seqs :am-pm/hour :am-pm/period])
+                                   nil
+                                   %)
+                                12)
+                       (take 51))
+                  [12 1 2 3 4 5 6 7 8 9 10 11])
+
+    (t/is (= 13 (sut/get-next-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                         {:bar 7}
+                                         9)))
+
+    (t/is (= 11 (sut/get-next-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                         {:bar 8}
+                                         9)))))
 
 
 (t/deftest ^:kaocha/pending demo-test

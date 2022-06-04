@@ -375,3 +375,27 @@
   "prev = less significant"
   [value unit]
   (u/get-prev-element (first (guess-sys value)) unit))
+
+
+;;;;;;;;;; inc & dec
+
+
+(defn get-next-unit-value [ps value x]
+  (loop [[el next & rest] (:sequence ps)]
+    (let [{:keys [step end]} (if (range? el)
+                               (concretize-range el value)
+                               {})]
+      (cond
+        (nil? el)
+        nil
+
+        (or (= x el) (= x end))
+        (cond-> next (range? next) (-> :start (u/try-call value)))
+
+        (and (range? el)
+             (range-contains-some el value x)
+             (range-contains-some el value (+ x step)))
+        (+ x step)
+
+        :else
+        (recur (cons next rest))))))
