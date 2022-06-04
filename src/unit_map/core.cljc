@@ -8,7 +8,9 @@
   (atom nil))
 #_(reset! ctx nil)
 
+
 ;;;;;;;;;; read seq
+
 
 (defn range? [x]
   (and (map? x) (::range (meta x))))
@@ -244,48 +246,48 @@
                  (:sequence sq))))
 
 
-(defn static-sequence? [ps]
-  (not (dynamic-sequence? ps)))
+(defn static-sequence? [useq]
+  (not (dynamic-sequence? useq)))
 
 
-(defn concretize-range [rng value]
-  (u/map-v #(u/try-call % value)
+(defn concretize-range [rng umap]
+  (u/map-v #(u/try-call % umap)
            rng))
 
 
-(defn range-length [rng value]
-  (let [{:keys [start step end]} (concretize-range rng value)]
+(defn range-length [rng umap]
+  (let [{:keys [start step end]} (concretize-range rng umap)]
     (if (some u/infinite? [start end])
       ##Inf
       (-> (- end start) (quot step) inc))))
 
 
-(defn sequence-length [ps value]
-  (->> (:sequence ps)
-       (map #(if (range? %) (range-length % value) 1))
+(defn sequence-length [useq umap]
+  (->> (:sequence useq)
+       (map #(if (range? %) (range-length % umap) 1))
        (reduce + 0)))
 
 
-(defn sequence-first-index [ps value]
-  (let [e (first (:sequence ps))
-        r (when (range? e) (concretize-range e value))]
+(defn sequence-first-index [useq umap]
+  (let [e (first (:sequence useq))
+        r (when (range? e) (concretize-range e umap))]
     (cond
       (nil? e)                 nil
       (u/infinite? (:start r)) ##-Inf
       :else                    0)))
 
 
-(defn sequence-last-index [ps value]
-  (let [e (last (:sequence ps))
-        r (when (range? e) (concretize-range e value))]
+(defn sequence-last-index [useq umap]
+  (let [e (last (:sequence useq))
+        r (when (range? e) (concretize-range e umap))]
     (cond
       (nil? e)               nil
       (u/infinite? (:end r)) ##Inf
-      :else                  (dec (sequence-length ps value)))))
+      :else                  (dec (sequence-length useq umap)))))
 
 
-(defn range-contains? [rng value x]
-  (let [{:keys [start step end]} (concretize-range rng value)]
+(defn range-contains? [rng umap x]
+  (let [{:keys [start step end]} (concretize-range rng umap)]
     (and (or (<= start x end)
              (>= start x end))
          (or (= start x)
@@ -296,58 +298,58 @@
                   (-> x (+ end) (mod step) zero?))))))
 
 
-(defn range-contains-some [rng value & xs]
+(defn range-contains-some [rng umap & xs]
   (->> (sort xs)
-       (filter (partial range-contains? rng value))
+       (filter (partial range-contains? rng umap))
        first))
 
 
 (defn sequence-contains-some
   "Returns first (i.e. min) x found in the s"
-  [ps value x & xs]
+  [useq umap x & xs]
   (let [xs (cons x xs)]
     (some (some-fn (set xs)
-                   #(when (range? %) (apply range-contains-some % value xs)))
-          (:sequence ps))))
+                   #(when (range? %) (apply range-contains-some % umap xs)))
+          (:sequence useq))))
 
 
 (defn range-index-of
   "Returns negative index if range start is infinite, 0 index will be end of range."
-  [rng value x]
-  (let [{:as crng, :keys [start step end]} (concretize-range rng value)]
+  [rng umap x]
+  (let [{:as crng, :keys [start step end]} (concretize-range rng umap)]
     (cond
-      (not (range-contains-some crng value x))   nil
+      (not (range-contains-some crng umap x))   nil
       (and (u/infinite? x) (u/infinite? start)) ##-Inf
       (u/infinite? x)                           ##Inf
       (u/infinite? start)                       (- (quot (- end x) step))
       :else                                     (quot (- x start) step))))
 
 
-(defn sequence-index-of [ps value x]
-  (loop [i 0, [el & rest-s] (:sequence ps)]
+(defn sequence-index-of [useq umap x]
+  (loop [i 0, [el & rest-s] (:sequence useq)]
     (when (some? el)
       (or (some-> (cond
                     (= x el)    0
-                    (range? el) (range-index-of el value x))
+                    (range? el) (range-index-of el umap x))
                   (+ i))
           (recur (+ i (if (and (range? el) (u/finite? (:start el)))
-                        (range-length el value)
+                        (range-length el umap)
                         1))
                  rest-s)))))
 
 
-(defn range-nth [rng value index]
-  (let [{:keys [start step end]} (concretize-range rng value)]
+(defn range-nth [rng umap index]
+  (let [{:keys [start step end]} (concretize-range rng umap)]
     (if (u/infinite? start)
       (+ end (* step index))
       (+ start (* step index)))))
 
 
-(defn sequence-nth [ps value index]
-  (loop [i 0, [el & rest-s] (:sequence ps)]
+(defn sequence-nth [useq umap index]
+  (loop [i 0, [el & rest-s] (:sequence useq)]
     (when (some? el)
       (let [increment (if (and (range? el) (u/finite? (:start el)))
-                        (range-length el value)
+                        (range-length el umap)
                         1)
 
             result (cond
@@ -355,7 +357,7 @@
                               (neg? index)))
                      nil
 
-                     (range? el) (range-nth el value (- index i))
+                     (range? el) (range-nth el umap (- index i))
                      :else       el)]
         (if (some? result)
           result
@@ -367,34 +369,34 @@
 
 (defn get-next-unit
   "next = more significant"
-  [value unit]
-  (u/get-next-element (first (guess-sys value)) unit))
+  [umap unit]
+  (u/get-next-element (first (guess-sys umap)) unit))
 
 
 (defn get-prev-unit
   "prev = less significant"
-  [value unit]
-  (u/get-prev-element (first (guess-sys value)) unit))
+  [umap unit]
+  (u/get-prev-element (first (guess-sys umap)) unit))
 
 
 ;;;;;;;;;; inc & dec
 
 
-(defn get-next-unit-value [ps value x]
-  (loop [[el next & rest] (:sequence ps)]
+(defn get-next-unit-value [useq umap x]
+  (loop [[el next & rest] (:sequence useq)]
     (let [{:keys [step end]} (if (range? el)
-                               (concretize-range el value)
+                               (concretize-range el umap)
                                {})]
       (cond
         (nil? el)
         nil
 
         (or (= x el) (= x end))
-        (cond-> next (range? next) (-> :start (u/try-call value)))
+        (cond-> next (range? next) (-> :start (u/try-call umap)))
 
         (and (range? el)
-             (range-contains-some el value x)
-             (range-contains-some el value (+ x step)))
+             (range-contains-some el umap x)
+             (range-contains-some el umap (+ x step)))
         (+ x step)
 
         :else
