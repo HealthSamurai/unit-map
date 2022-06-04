@@ -68,8 +68,8 @@
 (def ffilter (comp first filter))
 
 
+(def regex-type (type #""))
 
 
-(def regex?
-  (let [Regex (type #"")]
-    #(instance? Regex %)))
+(defn regex? [x]
+  (instance? regex-type x))
