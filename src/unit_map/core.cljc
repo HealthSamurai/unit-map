@@ -298,7 +298,7 @@
 
 (defn range-contains-some [rng value & xs]
   (->> (sort xs)
-       (filter (partial range-contains? (concretize-range rng value) value))
+       (filter (partial range-contains? rng value))
        first))
 
 
@@ -314,9 +314,9 @@
 (defn range-index-of
   "Returns negative index if range start is infinite, 0 index will be end of range."
   [rng value x]
-  (let [{:keys [start step end]} (concretize-range rng value)]
+  (let [{:as crng, :keys [start step end]} (concretize-range rng value)]
     (cond
-      (not (range-contains-some rng value x))   nil
+      (not (range-contains-some crng value x))   nil
       (and (u/infinite? x) (u/infinite? start)) ##-Inf
       (u/infinite? x)                           ##Inf
       (u/infinite? start)                       (- (quot (- end x) step))
