@@ -23,24 +23,24 @@
   (try (sut/definition {:hour 1})
        (catch clojure.lang.ExceptionInfo e
          (def exception (bean e)))
-       (finally (matcho/match exception
-                              (-> (sut/no-default-type-exception {:hour 1})
+       (finally (t/is (= (-> (sut/no-default-type-exception {:hour 1})
                                   bean
-                                  (select-keys [:class :data])))))
+                                  (select-keys [:class :data]))
+                              exception))))
   (try (sut/definition ^:delta{:hour 1})
        (catch clojure.lang.ExceptionInfo e
          (def exception (bean e)))
-       (finally (matcho/match exception
-                              (-> (sut/no-default-type-exception ^:delta{:hour 1})
+       (finally (t/is (= (-> (sut/no-default-type-exception ^:delta{:hour 1})
                                   bean
-                                  (select-keys [:class :data])))))
+                                  (select-keys [:class :data]))
+                              exception))))
   (try (sut/get-type ^:date{})
        (catch clojure.lang.ExceptionInfo e
          (def exception (bean e)))
-       (finally (matcho/match exception
-                              (-> (sut/no-default-type-exception ^:date{})
+       (finally (t/is (= (-> (sut/no-default-type-exception ^:date{})
                                   bean
-                                  (select-keys [:class :data])))))
+                                  (select-keys [:class :data]))
+                              exception))))
 
   (t/is (= [::datetime/military]
            (sut/get-type ^::datetime/military{}))))
@@ -65,55 +65,55 @@
     (t/is (= [::time/military :delta] (sut/get-type (sut/value->delta ^::time/military{:hour 1}))))
     (t/is (= [:default-type :delta]   (sut/get-type (sut/value->delta {:hour 1}))))
 
-    (matcho/match (sut/definition ^::time/military{:hour 20})
-                  #unit-map/definition[:ms   [0 1 .. 999]
+    (t/is (= #unit-map/definition[:ms   [0 1 .. 999]
                                      :sec  [0 1 .. 59]
                                      :min  [0 1 .. 59]
-                                     :hour [0 1 .. 23]])
+                                     :hour [0 1 .. 23]]
+                  (sut/definition ^::time/military{:hour 20})))
 
-    (matcho/match (sut/definition ^{::time/military :tz}{:hour 20})
-                  #unit-map/definition[:ms   [0 1 .. 999]
+    (t/is (= #unit-map/definition[:ms   [0 1 .. 999]
                                      :sec  [0 1 .. 59]
                                      :min  [0 1 .. 59]
-                                     :hour [0 1 .. 23]])
+                                     :hour [0 1 .. 23]]
+                  (sut/definition ^{::time/military :tz}{:hour 20})))
 
-    (matcho/match (sut/definition ^::datetime/military{:hour 20, :year 2020, :day 26, :month 8})
-                  #unit-map/definition[:ms    [0 1 .. 999]
+    (t/is (= #unit-map/definition[:ms    [0 1 .. 999]
                                      :sec   [0 1 .. 59]
                                      :min   [0 1 .. 59]
                                      :hour  [0 1 .. 23]
                                      :day   [1 2 .. fn?]
                                      :month [1 2 .. 12]
-                                     :year  [##-Inf .. -2 -1 1 2 .. ##Inf]])
+                                     :year  [##-Inf .. -2 -1 1 2 .. ##Inf]]
+                  (sut/definition ^::datetime/military{:hour 20, :year 2020, :day 26, :month 8})))
 
-    (matcho/match (sut/definition ^{::datetime/military :tz}{:hour 2, :month 12, :year 2020})
-                  #unit-map/definition[:ms    [0 1 .. 999]
+    (t/is (= #unit-map/definition[:ms    [0 1 .. 999]
                                      :sec   [0 1 .. 59]
                                      :min   [0 1 .. 59]
                                      :hour  [0 1 .. 23]
                                      :day   [0 1 .. 30]
                                      :month [0 1 .. 11]
-                                     :year  [##-Inf .. -2 -1 0 1 .. ##Inf]]))
+                                     :year  [##-Inf .. -2 -1 0 1 .. ##Inf]]
+                  (sut/definition ^{::datetime/military :tz}{:hour 2, :month 12, :year 2020}))))
 
   (t/testing "process-sequence"
-    (matcho/match (sut/process-sequence base60)
-                  [{:start 0, :step 1, :end 59}])
+    (t/is (= [{:start 0, :step 1, :end 59}]
+                  (sut/process-sequence base60)))
 
-    (matcho/match (sut/process-sequence months)
-                  [{:start 1, :step 1, :end 12}])
+    (t/is (= [{:start 1, :step 1, :end 12}]
+                  (sut/process-sequence months)))
 
-    (matcho/match (sut/process-sequence years)
-                  [{:start ##-Inf, :step 1, :end -1}
-                   {:start 1, :step 1, :end ##Inf}])
+    (t/is (= [{:start ##-Inf, :step 1, :end -1}
+                   {:start 1, :step 1, :end ##Inf}]
+                  (sut/process-sequence years)))
 
-    (matcho/match (sut/process-sequence am-hours)
-                  [12 {:start 1, :step 1, :end 11}])
+    (t/is (= [12 {:start 1, :step 1, :end 11}]
+                  (sut/process-sequence am-hours)))
 
-    (matcho/match (sut/process-sequence days)
-                  [{:start 1, :step 1, :end fn?}])
+    (t/is (= [{:start 1, :step 1, :end fn?}]
+                  (sut/process-sequence days)))
 
-    (matcho/match #unit-map/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
-                  [{:start 1, :step 2, :end fn?} 13 15]))
+    (t/is (= [{:start 1, :step 2, :end fn?} 13 15]
+                  #unit-map/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15])))
 
   (t/testing "sequence-length"
     (t/is (= 12    (sut/sequence-length #unit-map/sequence[1 2 .. 12] {})))
@@ -139,31 +139,31 @@
     (t/is (nil? (sut/index-in-sequence years {} 0))))
 
   (t/testing "sequence-contains-some"
-    (matcho/match (map (comp boolean (partial sut/sequence-contains-some base60 nil))
-                       [##-Inf -1 0 59 60 ##Inf])
-                  [false false true true false false])
-    (matcho/match (map (comp boolean (partial sut/sequence-contains-some years nil))
-                       [##-Inf -31337 -1 0 1 31337 ##Inf])
-                  [true true true false true true true])
-    (matcho/match (map (comp boolean (partial sut/sequence-contains-some days {:month 2, :year 2020}))
-                       [0 1 28 29 30])
-                  [false true true true false])
-    (matcho/match (map (comp boolean (partial sut/sequence-contains-some days {:month 2, :year 2019}))
-                       [0 1 28 29 30])
-                  [false true true false false]))
+    (t/is (= [false false true true false false]
+                  (map (comp boolean (partial sut/sequence-contains-some base60 nil))
+                       [##-Inf -1 0 59 60 ##Inf])))
+    (t/is (= [true true true false true true true]
+                  (map (comp boolean (partial sut/sequence-contains-some years nil))
+                       [##-Inf -31337 -1 0 1 31337 ##Inf])))
+    (t/is (= [false true true true false]
+                  (map (comp boolean (partial sut/sequence-contains-some days {:month 2, :year 2020}))
+                       [0 1 28 29 30])))
+    (t/is (= [false true true false false]
+                  (map (comp boolean (partial sut/sequence-contains-some days {:month 2, :year 2019}))
+                       [0 1 28 29 30]))))
 
   (t/testing "get-next-unit-value"
-    (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value base60 nil) 0))
-                  (range 60))
+    (t/is (= (range 60)
+                  (take-while some? (iterate (partial sut/get-next-unit-value base60 nil) 0))))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value months nil) 1))
-                  [1 2 3 4 5 6 7 8 9 10 11 12])
+    (t/is (= [1 2 3 4 5 6 7 8 9 10 11 12]
+                  (take-while some? (iterate (partial sut/get-next-unit-value months nil) 1))))
 
-    (matcho/match (take 51 (iterate (partial sut/get-next-unit-value years nil) 1970))
-                  (range 1970 2021))
+    (t/is (= (range 1970 2021)
+                  (take 51 (iterate (partial sut/get-next-unit-value years nil) 1970))))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-next-unit-value am-hours nil) 12))
-                  [12 1 2 3 4 5 6 7 8 9 10 11])
+    (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
+                  (take-while some? (iterate (partial sut/get-next-unit-value am-hours nil) 12))))
     (t/is (= 13 (sut/get-next-unit-value #unit-map/sequence[1 3 .. :TODO-REMOVE (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                          {:bar 7}
                                          9)))
@@ -176,17 +176,17 @@
              (vec (sut/sequence->vector #unit-map/sequence[11 10 .. 2] nil)))))
 
   (t/testing "get-prev-unit-value"
-    (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))
-                  (range 59 -1 -1))
+    (t/is (= (range 59 -1 -1)
+                  (take-while some? (iterate (partial sut/get-prev-unit-value base60 nil) 59))))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value months nil) 12))
-                  [12 11 10 9 8 7 6 5 4 3 2 1])
+    (t/is (= [12 11 10 9 8 7 6 5 4 3 2 1]
+                  (take-while some? (iterate (partial sut/get-prev-unit-value months nil) 12))))
 
-    (matcho/match (take 51 (iterate (partial sut/get-prev-unit-value years nil) 1970))
-                  (range 1970 1920))
+    (t/is (= (range 1970 1920)
+                  (take 51 (iterate (partial sut/get-prev-unit-value years nil) 1970))))
 
-    (matcho/match (take-while some? (iterate (partial sut/get-prev-unit-value am-hours nil) 11))
-                  [11 10 9 8 7 6 5 4 3 2 1 12]))
+    (t/is (= [11 10 9 8 7 6 5 4 3 2 1 12]
+                  (take-while some? (iterate (partial sut/get-prev-unit-value am-hours nil) 11)))))
 
   (t/testing "ensure value"
     (t/is (= 1 (sut/ensure-unit (sut/unit-definition {:year 2020, :month 1, :day 0} :day)
@@ -208,9 +208,9 @@
   (t/testing "inc-unit"
     (def value ^::time/am-pm{:hour 12, :period :am})
 
-    (matcho/match (take 24 (iterate (partial sut/inc-unit :hour) value))
-                  [{:hour 12, :period :am} {:hour 1, :period :am} {:hour 2, :period :am} {:hour 3, :period :am} {:hour 4, :period :am} {:hour 5, :period :am} {:hour 6, :period :am} {:hour 7, :period :am} {:hour 8, :period :am} {:hour 9, :period :am} {:hour 10, :period :am} {:hour 11, :period :am}
-                   {:hour 12, :period :pm} {:hour 1, :period :pm} {:hour 2, :period :pm} {:hour 3, :period :pm} {:hour 4, :period :pm} {:hour 5, :period :pm} {:hour 6, :period :pm} {:hour 7, :period :pm} {:hour 8, :period :pm} {:hour 9, :period :pm} {:hour 10, :period :pm} {:hour 11, :period :pm}])
+    (t/is (= [{:hour 12, :period :am} {:hour 1, :period :am} {:hour 2, :period :am} {:hour 3, :period :am} {:hour 4, :period :am} {:hour 5, :period :am} {:hour 6, :period :am} {:hour 7, :period :am} {:hour 8, :period :am} {:hour 9, :period :am} {:hour 10, :period :am} {:hour 11, :period :am}
+                   {:hour 12, :period :pm} {:hour 1, :period :pm} {:hour 2, :period :pm} {:hour 3, :period :pm} {:hour 4, :period :pm} {:hour 5, :period :pm} {:hour 6, :period :pm} {:hour 7, :period :pm} {:hour 8, :period :pm} {:hour 9, :period :pm} {:hour 10, :period :pm} {:hour 11, :period :pm}]
+                  (take 24 (iterate (partial sut/inc-unit :hour) value))))
 
     (def value ^::date/gregorian{:day 1, :month 1, :year 2020})
     (def calendar (->> value
@@ -223,9 +223,9 @@
   (t/testing "dec-unit"
     (def value ^::time/am-pm{:hour 11, :period :pm})
 
-    (matcho/match (take 24 (iterate (partial sut/dec-unit :hour) value))
-                  [{:hour 11, :period :pm} {:hour 10, :period :pm} {:hour 9, :period :pm} {:hour 8, :period :pm} {:hour 7, :period :pm} {:hour 6, :period :pm} {:hour 5, :period :pm} {:hour 4, :period :pm} {:hour 3, :period :pm} {:hour 2, :period :pm} {:hour 1, :period :pm} {:hour 12, :period :pm}
-                   {:hour 11, :period :am} {:hour 10, :period :am} {:hour 9, :period :am} {:hour 8, :period :am} {:hour 7, :period :am} {:hour 6, :period :am} {:hour 5, :period :am} {:hour 4, :period :am} {:hour 3, :period :am} {:hour 2, :period :am} {:hour 1, :period :am} {:hour 12, :period :am}])
+    (t/is (= [{:hour 11, :period :pm} {:hour 10, :period :pm} {:hour 9, :period :pm} {:hour 8, :period :pm} {:hour 7, :period :pm} {:hour 6, :period :pm} {:hour 5, :period :pm} {:hour 4, :period :pm} {:hour 3, :period :pm} {:hour 2, :period :pm} {:hour 1, :period :pm} {:hour 12, :period :pm}
+                   {:hour 11, :period :am} {:hour 10, :period :am} {:hour 9, :period :am} {:hour 8, :period :am} {:hour 7, :period :am} {:hour 6, :period :am} {:hour 5, :period :am} {:hour 4, :period :am} {:hour 3, :period :am} {:hour 2, :period :am} {:hour 1, :period :am} {:hour 12, :period :am}]
+                  (take 24 (iterate (partial sut/dec-unit :hour) value))))
 
     (def value ^::date/gregorian{:day 31, :month 12, :year 2019})
     (def calendar (->> value
@@ -237,75 +237,75 @@
     calendar)
 
   (t/testing "add-to-unit"
-    (matcho/match (sut/add-to-unit :day {:day 1, :month 1, :year 2020} 9000)
-                  {:day 22, :month 8, :year 2044})
-    (matcho/match (sut/add-to-unit :day {:day 1, :month 1, :year 2020} -9000)
-                  {:year 1995, :month 5, :day 12})
-    (matcho/match (sut/add-to-unit :day {:day 1, :month 1, :year 2020} 0)
-                  {:day 1, :month 1, :year 2020}))
+    (t/is (= {:day 22, :month 8, :year 2044}
+                  (sut/add-to-unit :day {:day 1, :month 1, :year 2020} 9000)))
+    (t/is (= {:year 1995, :month 5, :day 12}
+                  (sut/add-to-unit :day {:day 1, :month 1, :year 2020} -9000)))
+    (t/is (= {:day 1, :month 1, :year 2020}
+                  (sut/add-to-unit :day {:day 1, :month 1, :year 2020} 0))))
 
   (t/testing "subtract-from-unit"
-    (matcho/match (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} 9000)
-                  {:year 1995, :month 5, :day 12})
-    (matcho/match (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} -9000)
-                  {:day 22, :month 8, :year 2044})
-    (matcho/match (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} 0)
-                  {:day 1, :month 1, :year 2020}))
+    (t/is (= {:year 1995, :month 5, :day 12}
+                  (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} 9000)))
+    (t/is (= {:day 22, :month 8, :year 2044}
+                  (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} -9000)))
+    (t/is (= {:day 1, :month 1, :year 2020}
+                  (sut/subtract-from-unit :day {:day 1, :month 1, :year 2020} 0))))
 
   (t/testing "plus"
-    (matcho/match (sut/plus {:day 1, :month 3, :year 2019})
-                  {:day 1, :month 3, :year 2019})
-    (matcho/match (sut/plus {:day 1, :month 3, :year 2019}
-                            ^:delta{})
-                  {:day 1, :month 3, :year 2019})
-    (matcho/match (sut/plus {:day 1, :month 3, :year 2019}
-                            ^:delta{:year 1, :day 1})
-                  {:day 2, :year 2020})
-    (matcho/match (sut/plus {:year 2021, :month 9, :day 3}
-                            ^:delta{:month 2})
-                  {:year 2021, :month 11, :day 3})
-    (matcho/match (sut/plus {:year 2021, :month 9, :day 3}
-                            ^:delta{:month -2})
-                  {:year 2021, :month 7, :day 3})
-    (matcho/match (sut/plus {:day 1, :month 3, :year 2019}
-                            ^:delta{:day 99, :month -99, :year 0, :sec 30})
-                  {:sec 30, :day 10, :month 3 :year 2011})
-    (matcho/match (sut/plus {:day 1, :month 3, :year 2019}
+    (t/is (= {:day 1, :month 3, :year 2019}
+                  (sut/plus {:day 1, :month 3, :year 2019})))
+    (t/is (= {:day 1, :month 3, :year 2019}
+                  (sut/plus {:day 1, :month 3, :year 2019}
+                            ^:delta{})))
+    (t/is (= {:day 2, :year 2020}
+                  (sut/plus {:day 1, :month 3, :year 2019}
+                            ^:delta{:year 1, :day 1})))
+    (t/is (= {:year 2021, :month 11, :day 3}
+                  (sut/plus {:year 2021, :month 9, :day 3}
+                            ^:delta{:month 2})))
+    (t/is (= {:year 2021, :month 7, :day 3}
+                  (sut/plus {:year 2021, :month 9, :day 3}
+                            ^:delta{:month -2})))
+    (t/is (= {:sec 30, :day 10, :month 3 :year 2011}
+                  (sut/plus {:day 1, :month 3, :year 2019}
+                            ^:delta{:day 99, :month -99, :year 0, :sec 30})))
+    (t/is (= {:sec 30, :day 10, :month 3 :year 2011}
+                  (sut/plus {:day 1, :month 3, :year 2019}
                             ^:delta{:year 0}
                             ^:delta{:month -99}
                             ^:delta{:day 99}
-                            ^:delta{:sec 30})
-                  {:sec 30, :day 10, :month 3 :year 2011})
-    (matcho/match (sut/plus {:day 31, :month 8, :year 2020}
-                            ^:delta{:month 1})
-                  {:day 30, :month 9, :year 2020})
+                            ^:delta{:sec 30})))
+    (t/is (= {:day 30, :month 9, :year 2020}
+                  (sut/plus {:day 31, :month 8, :year 2020}
+                            ^:delta{:month 1})))
     (t/is (sut/eq? {:year 2010 :month 12 :day 31 :hour 23 :min 30}
                    (sut/plus {:year 2011 :month 1 :day 1 :hour 0}
                              ^:delta{:min -30}))))
 
   (t/testing "invert"
-    (matcho/match (sut/invert ^:delta{:day 1, :month 3})
-                  ^:delta{:day -1, :month -3})
-    (matcho/match (sut/invert ^:delta{:day 1, :month 3, :foo "bar"})
-                  ^:delta{:day -1, :month -3, :foo "bar"}))
+    (t/is (= ^:delta{:day -1, :month -3}
+                  (sut/invert ^:delta{:day 1, :month 3})))
+    (t/is (= ^:delta{:day -1, :month -3, :foo "bar"}
+                  (sut/invert ^:delta{:day 1, :month 3, :foo "bar"}))))
 
   (t/testing "difference"
-    (matcho/match (sut/difference {:day 20, :month 7, :year 2020}
-                                  {:day 26, :month 7, :year 2020})
-                  ^:delta{:day 6})
-    (matcho/match (sut/difference {:day 26, :month 7, :year 2020}
-                                  {:day 20, :month 7, :year 2020})
-                  ^:delta{:day 6})
-    (matcho/match (sut/difference {:day 27, :month 7, :year 2020}
-                                  {:day 5, :month 7, :year 1997})
-                  ^:delta{:day 22, :year 23})
-    (matcho/match (sut/difference {:day 5, :month 7, :year 1997}
-                                  {:day 27, :month 7, :year 2020})
-                  ^:delta{:day 22, :year 23})
-    (matcho/match (sut/difference {:year 1} {:year -1})
-                  ^:delta{:year 1})
-    (matcho/match (sut/difference {:year -1} {:year 1})
-                  ^:delta{:year 1})
+    (t/is (= ^:delta{:day 6}
+                  (sut/difference {:day 20, :month 7, :year 2020}
+                                  {:day 26, :month 7, :year 2020})))
+    (t/is (= ^:delta{:day 6}
+                  (sut/difference {:day 26, :month 7, :year 2020}
+                                  {:day 20, :month 7, :year 2020})))
+    (t/is (= ^:delta{:day 22, :year 23}
+                  (sut/difference {:day 27, :month 7, :year 2020}
+                                  {:day 5, :month 7, :year 1997})))
+    (t/is (= ^:delta{:day 22, :year 23}
+                  (sut/difference {:day 5, :month 7, :year 1997}
+                                  {:day 27, :month 7, :year 2020})))
+    (t/is (= ^:delta{:year 1}
+                  (sut/difference {:year 1} {:year -1})))
+    (t/is (= ^:delta{:year 1}
+                  (sut/difference {:year -1} {:year 1})))
     (t/is (sut/eq? ^:delta{:year 0}
                    (sut/difference {:day 27, :month 7, :year 2020}
                                    {:day 27, :month 7, :year 2020})))
@@ -317,42 +317,42 @@
                                    ^::time/military{:hour 14, :min 30, :tz {:hour 0}}))))
 
   (t/testing "minus"
-    (matcho/match (sut/minus ^:delta{:day 1, :month 3})
-                  ^:delta{:day -1, :month -3})
-    (matcho/match (sut/minus {:day 1, :month 3, :year 2019}
-                             ^:delta{:day -99, :month 99, :year 0, :sec -30})
-                  {:sec 30, :day 10, :month 3 :year 2011})
-    (matcho/match (sut/minus {:day 1, :month 3, :year 2019}
+    (t/is (= ^:delta{:day -1, :month -3}
+                  (sut/minus ^:delta{:day 1, :month 3})))
+    (t/is (= {:sec 30, :day 10, :month 3 :year 2011}
+                  (sut/minus {:day 1, :month 3, :year 2019}
+                             ^:delta{:day -99, :month 99, :year 0, :sec -30})))
+    (t/is (= {:sec 30, :day 10, :month 3 :year 2011}
+                  (sut/minus {:day 1, :month 3, :year 2019}
                              ^:delta{:year 0}
                              ^:delta{:month 99}
                              ^:delta{:day -99}
-                             ^:delta{:sec -30})
-                  {:sec 30, :day 10, :month 3 :year 2011})
+                             ^:delta{:sec -30})))
 
-    (matcho/match (sut/minus {:day 20, :month 7, :year 2020}
-                             {:day 26, :month 7, :year 2020})
-                  ^:delta{:day -6})
-    (matcho/match (sut/minus {:day 26, :month 7, :year 2020}
-                             {:day 20, :month 7, :year 2020})
-                  ^:delta{:day 6})
-    (matcho/match (sut/minus {:day 27, :month 7, :year 2020}
-                             {:day 5, :month 7, :year 1997})
-                  ^:delta{:day 22, :year 23})
-    (matcho/match (sut/minus {:day 5, :month 7, :year 1997}
-                             {:day 27, :month 7, :year 2020})
-                  ^:delta{:day -22, :year -23})
-    (matcho/match (sut/minus {:year -1}
-                             {:year 1})
-                  ^:delta{:year -1})
-    (matcho/match (sut/minus {:year 1}
-                             {:year -1})
-                  ^:delta{:year 1})
+    (t/is (= ^:delta{:day -6}
+                  (sut/minus {:day 20, :month 7, :year 2020}
+                             {:day 26, :month 7, :year 2020})))
+    (t/is (= ^:delta{:day 6}
+                  (sut/minus {:day 26, :month 7, :year 2020}
+                             {:day 20, :month 7, :year 2020})))
+    (t/is (= ^:delta{:day 22, :year 23}
+                  (sut/minus {:day 27, :month 7, :year 2020}
+                             {:day 5, :month 7, :year 1997})))
+    (t/is (= ^:delta{:day -22, :year -23}
+                  (sut/minus {:day 5, :month 7, :year 1997}
+                             {:day 27, :month 7, :year 2020})))
+    (t/is (= ^:delta{:year -1}
+                  (sut/minus {:year -1}
+                             {:year 1})))
+    (t/is (= ^:delta{:year 1}
+                  (sut/minus {:year 1}
+                             {:year -1})))
     (t/is (= (sut/minus {:day 27, :month 7, :year 2020}
                         {:day 26, :month 7, :year 2020})
              ^:delta{:day 1}))
-    (matcho/match (sut/minus {:day 31, :month 7, :year 2020}
-                            ^:delta{:month 1})
-                  {:day 30, :month 6, :year 2020})
+    (t/is (= {:day 30, :month 6, :year 2020}
+                  (sut/minus {:day 31, :month 7, :year 2020}
+                            ^:delta{:month 1})))
     (t/is (sut/eq? {:year 2020 :month 1 :day 31}
                    (sut/minus {:year 2020 :month 2} ^:delta{:day 1})))
     (t/is (sut/eq? ^:delta{:hour 2}
@@ -360,24 +360,24 @@
                               {:hour 1 :tz {:hour 2}}))))
 
   (t/testing "delta"
-    (matcho/match (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
-                                   ^:tz{:hour 2})
-                  {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733, :tz {:hour 2}})
-    (matcho/match (sut/apply-deltas {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
-                                    [^:tz{:hour 2}])
-                  {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733, :tz {:hour 2}})
-    (matcho/match (sut/get-applied-deltas
+    (t/is (= {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733, :tz {:hour 2}}
+                  (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                                   ^:tz{:hour 2})))
+    (t/is (= {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733, :tz {:hour 2}}
+                  (sut/apply-deltas {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                                    [^:tz{:hour 2}])))
+    (t/is (= [{:hour 2}]
+                  (sut/get-applied-deltas
                    (sut/apply-delta {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
-                                    ^:tz{:hour 2}))
-                  [{:hour 2}])
-    (matcho/match (-> {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                                    ^:tz{:hour 2}))))
+    (t/is (= {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                  (-> {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
                       (sut/apply-delta ^:tz{:hour 2})
-                      sut/remove-deltas)
-                  {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733})
-    (matcho/match (-> {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
+                      sut/remove-deltas)))
+    (t/is (= {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733}
+                  (-> {:year 2020, :month 7, :day 29, :hour 17, :min 20, :sec 50, :ms 733}
                       (sut/apply-deltas [^:tz{:hour 2}])
-                      sut/drop-deltas)
-                  {:year 2020, :month 7, :day 29, :hour 19, :min 20, :sec 50, :ms 733})
+                      sut/drop-deltas)))
     (t/is (sut/eq? (sut/apply-deltas {:hour 20, :min 30} [nil {:hour 1} ^:tz{:hour 1}])
                    {:hour 22, :min 30, :delta ^:delta{:hour 1}, :tz ^:tz{:hour 1}})))
 
@@ -552,26 +552,26 @@
        :sec   30
        :ms    500})
 
-    (matcho/match (sut/plus t ^:delta{:ms 200})
-                  {:ms 700})
+    (t/is (= {:ms 700}
+                  (sut/plus t ^:delta{:ms 200})))
 
-    (matcho/match (sut/plus t ^:delta{:ms 600})
-                  {:ms 100, :sec 31})
+    (t/is (= {:ms 100, :sec 31}
+                  (sut/plus t ^:delta{:ms 600})))
 
     (t/is (= {:ms 500, :sec 1}
              (sut/plus ^:delta{:ms 600} ^:delta{:ms 600} ^:delta{:ms 300})))
 
-    (matcho/match (sut/plus t ^:delta{:sec 20})
-                  {:sec 50})
+    (t/is (= {:sec 50}
+                  (sut/plus t ^:delta{:sec 20})))
 
-    (matcho/match (sut/plus t ^:delta{:sec 20})
-                  {:sec 50})
+    (t/is (= {:sec 50}
+                  (sut/plus t ^:delta{:sec 20})))
 
-    (matcho/match (sut/plus t ^:delta{:min 20})
-                  {:hour 12, :min 50})
+    (t/is (= {:hour 12, :min 50}
+                  (sut/plus t ^:delta{:min 20})))
 
-    (matcho/match (sut/plus t ^:delta{:min 30})
-                  {:hour 13})
+    (t/is (= {:hour 13}
+                  (sut/plus t ^:delta{:min 30})))
 
     (t/is (= {:year 2019 :month 1 :day 1}
              (sut/plus {:year 2018 :month 12 :day 31} ^:delta{:day 1})))
@@ -784,24 +784,24 @@
     (t/is (sut/gt {:year 2018 :month 11}
                 {:year 2018 :month 5 :day 2 :hour 14 :tz :ny})))
 
-  (matcho/match (sut/day-saving :ny 2017)
-                {:in  {:month 3 :day 12 :hour 2 :min 0}
-                 :out {:month 11 :day 5 :hour 2}})
+  (t/is (= {:in  {:month 3 :day 12 :hour 2 :min 0}
+                 :out {:month 11 :day 5 :hour 2}}
+                (sut/day-saving :ny 2017)))
 
-  (matcho/match (sut/day-saving-with-utc :ny 2017)
-                {:in     {:month 3 :day 12 :hour 2 :min 0}
+  (t/is (= {:in     {:month 3 :day 12 :hour 2 :min 0}
                  :in-utc {:month 3 :day 12 :hour 7}
 
                  :out     {:month 11 :day 5 :hour 2}
-                 :out-utc {:month 11 :day 5 :hour 6}})
+                 :out-utc {:month 11 :day 5 :hour 6}}
+                (sut/day-saving-with-utc :ny 2017)))
 
-  (matcho/match (sut/day-saving-with-utc :ny 2018)
-                {:in  {:month 3 :day 11}
-                 :out {:month 11 :day 4}})
+  (t/is (= {:in  {:month 3 :day 11}
+                 :out {:month 11 :day 4}}
+                (sut/day-saving-with-utc :ny 2018)))
 
-  (matcho/match (sut/day-saving-with-utc :ny 2019)
-                {:in  {:month 3 :day 10}
-                 :out {:month 11 :day 3}})
+  (t/is (= {:in  {:month 3 :day 10}
+                 :out {:month 11 :day 3}}
+                (sut/day-saving-with-utc :ny 2019)))
 
   (t/is (= (sut/to-delta {:year 2018 :month 5 :day 2 :hour 14 :tz :ny} ^:tz{:hour 0})
          {:year 2018 :month 5 :day 2 :hour 18 :tz {:hour 0}}))

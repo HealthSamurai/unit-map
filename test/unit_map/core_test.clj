@@ -211,95 +211,95 @@
 
 
 (t/deftest sys-detection
-  (matcho/match
-    (sut/guess-sys {:min 30, :hour 15})
-    [ms-hour])
+  (t/is (=
+    [ms-hour]
+    (sut/guess-sys {:min 30, :hour 15})))
 
-  (matcho/match
-    (sut/guess-sys {:min 30, :am-pm/hour 3, :am-pm/period :pm})
-    [ms-day-am-pm])
+  (t/is (=
+    [ms-day-am-pm]
+    (sut/guess-sys {:min 30, :am-pm/hour 3, :am-pm/period :pm})))
 
-  (matcho/match
-    (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})
-    [ns-ms-day])
+  (t/is (=
+    [ns-ms-day]
+    (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})))
 
-  (matcho/match
-    (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1, :hour 25})
-    [ns-ms-hour])
+  (t/is (=
+    [ns-ms-hour]
+    (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1, :hour 25})))
 
-  (matcho/match
-    (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1501})
-    [ns-ms-hour])
+  (t/is (=
+    [ns-ms-hour]
+    (sut/guess-sys {:ns 1, :ms 1, :sec 1, :min 1501})))
 
-  (matcho/match
-    (sut/guess-sys {:ns 1, :ms 1, :sec 90061})
-    [seconds])
+  (t/is (=
+    [seconds]
+    (sut/guess-sys {:ns 1, :ms 1, :sec 90061})))
 
-  (matcho/match
-    (sut/guess-sys {:ns 1, :ms 90061001})
-    [seconds])
+  (t/is (=
+    [seconds]
+    (sut/guess-sys {:ns 1, :ms 90061001})))
 
-  (matcho/match
-    (sut/guess-sys {:ns 90061001000001})
-    [ns-timestamp])
-
-
-  (matcho/match
-    (sut/guess-sys {:ns 1000001, :sec 1, :min 1, :hour 1, :day 1})
-    [ns-day])
-
-  (matcho/match
-    (sut/guess-sys {:ns 1000001, :sec 1, :min 1, :hour 25})
-    [ns-hour])
-
-  (matcho/match
-    (sut/guess-sys {:ns 1000001, :sec 1, :min 1501})
-    [ns-hour])
-
-  (matcho/match
-    (sut/guess-sys {:ns 1000001, :sec 90061})
-    [ns-seconds])
-
-  (matcho/match
-    (sut/guess-sys {:ns 90061001000001})
-    [ns-timestamp])
-
-  (matcho/match
-    (sut/guess-sys {:ns 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ns 1}})
-    [ns-day])
+  (t/is (=
+    [ns-timestamp]
+    (sut/guess-sys {:ns 90061001000001})))
 
 
-  (matcho/match
-    (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 1, :day 1})
-    [ms-day])
+  (t/is (=
+    [ns-day]
+    (sut/guess-sys {:ns 1000001, :sec 1, :min 1, :hour 1, :day 1})))
 
-  (matcho/match
-    (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 25})
-    [ms-hour])
+  (t/is (=
+    [ns-hour]
+    (sut/guess-sys {:ns 1000001, :sec 1, :min 1, :hour 25})))
 
-  (matcho/match
-    (sut/guess-sys {:ms 1, :sec 1, :min 1501})
-    [ms-hour])
+  (t/is (=
+    [ns-hour]
+    (sut/guess-sys {:ns 1000001, :sec 1, :min 1501})))
 
-  (matcho/match
-    (sut/guess-sys {:ms 1, :sec 90061})
-    [seconds])
+  (t/is (=
+    [ns-seconds]
+    (sut/guess-sys {:ns 1000001, :sec 90061})))
 
-  (matcho/match
-    (sut/guess-sys {:ms 90061001})
-    [timestamp])
+  (t/is (=
+    [ns-timestamp]
+    (sut/guess-sys {:ns 90061001000001})))
 
-  (matcho/match
-    (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ms 1}})
-    [ms-day])
+  (t/is (=
+    [ns-day]
+    (sut/guess-sys {:ns 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ns 1}})))
 
-  (matcho/match
-    (sut/guess-sys {})
-    empty?)
 
-  (matcho/match
-    (sut/guess-sys nil)
-    empty?))
+  (t/is (=
+    [ms-day]
+    (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 1, :day 1})))
+
+  (t/is (=
+    [ms-hour]
+    (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 25})))
+
+  (t/is (=
+    [ms-hour]
+    (sut/guess-sys {:ms 1, :sec 1, :min 1501})))
+
+  (t/is (=
+    [seconds]
+    (sut/guess-sys {:ms 1, :sec 90061})))
+
+  (t/is (=
+    [timestamp]
+    (sut/guess-sys {:ms 90061001})))
+
+  (t/is (=
+    [ms-day]
+    (sut/guess-sys {:ms 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ms 1}})))
+
+  (t/is (=
+    empty?
+    (sut/guess-sys {})))
+
+  (t/is (=
+    empty?
+    (sut/guess-sys nil))))
 
 
 (t/deftest find-diff-branches-unit-test
@@ -406,40 +406,40 @@
 
 (t/deftest sys-conversion
   (t/testing "interseciton"
-    (matcho/match
+    (t/is (=
+      [ms-year ns-year ns-ms-year nil]
       (sut/sys-intersection
         {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-        {:delta {:hour 3}})
-      [ms-year ns-year ns-ms-year nil])
+        {:delta {:hour 3}})))
 
-    (matcho/match
+    (t/is (=
+      [ms-year ns-year ns-ms-year nil]
       (sut/sys-intersection
         {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-        {:year 2021, :month :sep, :day 7, :hour 22, :min 30, :tz {:hour 3}})
-      [ms-year ns-year ns-ms-year nil])
+        {:year 2021, :month :sep, :day 7, :hour 22, :min 30, :tz {:hour 3}})))
 
-    (matcho/match
+    (t/is (=
+      [ms-year ns-year ns-ms-year nil]
       (sut/sys-intersection
         {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-        {:year 2021})
-      [ms-year ns-year ns-ms-year nil])
+        {:year 2021})))
 
-    (matcho/match
+    (t/is (=
+      empty?
       (sut/sys-intersection
         {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-        {:cm 49})
-      empty?)
+        {:cm 49})))
 
-    (matcho/match
+    (t/is (=
+      empty?
       (sut/sys-intersection
         {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-        {})
-      empty?)
+        {})))
 
-    (matcho/match
+    (t/is (=
+      [ms-year ns-year ns-ms-year nil]
       (sut/sys-intersection
-        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}})
-      [ms-year ns-year ns-ms-year nil]))
+        {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}))))
 
   (t/testing "find conversion"
     #_"TODO: timezones"
@@ -701,37 +701,37 @@
                                 :ms))))
 
   (t/testing "get-next-unit-value"
-    (matcho/match (->> (iterate #(sut/get-next-unit-value
+    (t/is (= (range 60)
+                  (->> (iterate #(sut/get-next-unit-value
                                    (get-in @sut/ctx [:seqs :sec :min])
                                    nil
                                    %)
                                 0)
-                       (take-while some?))
-                  (range 60))
+                       (take-while some?))))
 
-    (matcho/match (->> (iterate #(sut/get-next-unit-value
+    (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
+                  (->> (iterate #(sut/get-next-unit-value
                                    (get-in @sut/ctx [:seqs :month :year])
                                    nil
                                    %)
                                 :jan)
-                       (take-while some?))
-                  [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
+                       (take-while some?))))
 
-    (matcho/match (->> (iterate #(sut/get-next-unit-value
+    (t/is (= (range 1970 2021)
+                  (->> (iterate #(sut/get-next-unit-value
                                    (get-in @sut/ctx [:seqs :year nil])
                                    nil
                                    %)
                                 1970)
-                       (take 51))
-                  (range 1970 2021))
+                       (take 51))))
 
-    (matcho/match (->> (iterate #(sut/get-next-unit-value
+    (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
+                  (->> (iterate #(sut/get-next-unit-value
                                    (get-in @sut/ctx [:seqs :am-pm/hour :am-pm/period])
                                    nil
                                    %)
                                 12)
-                       (take 51))
-                  [12 1 2 3 4 5 6 7 8 9 10 11])
+                       (take 51))))
 
     (t/is (= 13 (sut/get-next-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                          {:bar 7}
@@ -742,37 +742,37 @@
                                          9))))
 
   (t/testing "get-prev-unit-value"
-    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+    (t/is (= (reverse (range 60))
+                  (->> (iterate #(sut/get-prev-unit-value
                                    (get-in @sut/ctx [:seqs :sec :min])
                                    nil
                                    %)
                                 59)
-                       (take-while some?))
-                  (reverse (range 60)))
+                       (take-while some?))))
 
-    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+    (t/is (= (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
+                  (->> (iterate #(sut/get-prev-unit-value
                                    (get-in @sut/ctx [:seqs :month :year])
                                    nil
                                    %)
                                 :dec)
-                       (take-while some?))
-                  (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]))
+                       (take-while some?))))
 
-    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+    (t/is (= (reverse (range 1970 2021))
+                  (->> (iterate #(sut/get-prev-unit-value
                                    (get-in @sut/ctx [:seqs :year nil])
                                    nil
                                    %)
                                 2020)
-                       (take 51))
-                  (reverse (range 1970 2021)))
+                       (take 51))))
 
-    (matcho/match (->> (iterate #(sut/get-prev-unit-value
+    (t/is (= (reverse [12 1 2 3 4 5 6 7 8 9 10 11])
+                  (->> (iterate #(sut/get-prev-unit-value
                                    (get-in @sut/ctx [:seqs :am-pm/hour :am-pm/period])
                                    nil
                                    %)
                                 11)
-                       (take 51))
-                  (reverse [12 1 2 3 4 5 6 7 8 9 10 11]))
+                       (take 51))))
 
     (t/is (= 9 (sut/get-prev-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                         {:bar 7}
