@@ -667,6 +667,15 @@
              (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
                                 :ms))))
 
+  (t/testing "get-unit-seq"
+    (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
+             (:sequence (sut/get-unit-seq {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                          :month))))
+
+    (t/is (= (:sequence #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+             (:sequence (sut/get-unit-seq {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                          :year)))))
+
   (t/testing "get-next-unit-value"
     (t/is (= (range 60)
              (->> (iterate #(sut/get-next-unit-value

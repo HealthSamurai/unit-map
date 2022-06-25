@@ -379,6 +379,12 @@
   (u/get-prev-element (first (guess-sys umap)) unit))
 
 
+(defn get-unit-seq [umap unit]
+  (let [sys       (guess-sys umap)
+        next-unit (u/get-next-element (first sys) unit)]
+    (get-in @ctx [:seqs unit next-unit])))
+
+
 ;;;;;;;;;; inc & dec
 
 
