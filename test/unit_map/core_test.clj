@@ -844,7 +844,15 @@
                          (partition-by :month)))
 
       (t/is (= 12 (count calendar)))
-      (t/is (= 365 (count (flatten calendar)))))))
+      (t/is (= 365 (count (flatten calendar))))))
+
+  (t/testing "add-to-unit"
+    (t/is (= {:day 22, :month :aug, :year 2044}
+             (sut/add-to-unit {:day 1, :month :jan, :year 2020} :day 9000)))
+    (t/is (= {:year 1995, :month :may, :day 12}
+             (sut/add-to-unit {:day 1, :month :jan, :year 2020} :day -9000)))
+    (t/is (= {:day 1, :month :jan, :year 2020}
+             (sut/add-to-unit {:day 1, :month :jan, :year 2020} :day 0)))))
 
 
 (t/deftest ^:kaocha/pending demo-test
