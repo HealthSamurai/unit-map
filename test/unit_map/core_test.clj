@@ -1022,7 +1022,28 @@
              (sut/add-delta {:hour 4 :tz {:hour 2}} {:hour 10})))
 
     (t/is (= {:hour 2 :tz {:hour -2}}
-             (sut/add-delta {:hour 1 :tz {:hour -2}} {:hour 1})))))
+             (sut/add-delta {:hour 1 :tz {:hour -2}} {:hour 1}))))
+
+  (t/testing "-"
+    (t/is (= {:year 2016, :month :jan, :day 1, :hour 23, :min 30}
+             (sut/subtract-delta {:year 2016, :month :dec, :day 31, :hour 23, :min 30} {:day 365})))
+
+    (t/is (= {:year 2015, :month :dec, :day 31, :hour 23, :min 30}
+             (sut/subtract-delta {:year 2016 :month :dec :day 31 :hour 23 :min 30} {:day 366})))
+
+    (t/is (= {:year 2020 :month :jan :day 31}
+             (sut/subtract-delta {:year 2020 :month :feb}
+                                 {:day 1})))
+    (t/is (= {:year 2020 :month :feb}
+             (sut/subtract-delta {:year 2020 :month :feb}
+                                 {:day 0})))
+
+    (t/is (sut/eq? {:hour 0, :tz {:hour -2}}
+                   (sut/subtract-delta {:hour 2 :tz {:hour -2}} {:hour 2})))
+    (t/is (sut/eq? {:hour 0}
+                   (sut/subtract-delta {:hour 2 :tz {:hour -2}} {:hour 2})))
+    (t/is (sut/eq? {:hour 2}
+                   (sut/subtract-delta {:hour 3 :tz {:hour 2}} {:hour 1 :tz {:hour 2}})))))
 
 
 (t/deftest ^:kaocha/pending demo-test
