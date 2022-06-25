@@ -494,19 +494,19 @@
   (cond
     (and (< 1 (abs x))
          (static-sequence? (get-unit-seq umap unit)))
-    (let [s            (get-unit-seq umap unit)
-          idx          (if-let [v (get umap unit)]
-                         (sequence-index-of s umap v)
-                         (sequence-first-index s umap))
-          sum          (+ idx x)
-          modulo       (sequence-length s umap)
-          result-idx   (cond-> sum (u/finite? modulo) (mod modulo))
-          carry-delta  (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
-          result       (sequence-nth s umap result-idx)
-          result-value (assoc umap unit result)]
+    (let [useq        (get-unit-seq umap unit)
+          idx         (if-let [v (get umap unit)]
+                         (sequence-index-of useq umap v)
+                         (sequence-first-index useq umap))
+          sum         (+ idx x)
+          modulo      (sequence-length useq umap)
+          result-idx  (cond-> sum (u/finite? modulo) (mod modulo))
+          carry-delta (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
+          result      (sequence-nth useq umap result-idx)
+          result-umap (assoc umap unit result)]
       (if (zero? carry-delta)
-        result-value
-        (recur result-value
+        result-umap
+        (recur result-umap
                (get-next-unit umap unit)
                carry-delta)))
 
