@@ -420,3 +420,17 @@
 
         :else
         (recur (cons el rest))))))
+
+
+(defn get-first-el [useq umap]
+  (let [start (first (:sequence useq))]
+    (if (range? start)
+      (u/try-call (:start start) umap)
+      start)))
+
+
+(defn get-last-el [useq umap]
+  (let [end (last (:sequence useq))]
+    (if (range? end)
+      (u/try-call (:end end) umap)
+      end)))

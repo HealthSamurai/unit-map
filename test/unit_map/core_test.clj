@@ -747,7 +747,20 @@
 
     (t/is (= 11 (sut/get-prev-unit-value #unit-map/seq[1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
                                          {:bar 8}
-                                         13)))))
+                                         13))))
+
+  (t/testing "get first/last el"
+    (t/is (= 0 (sut/get-first-el #unit-map/seq[0 1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                 {})))
+
+    (t/is (= 15 (sut/get-last-el #unit-map/seq[0 1 3 .. :TODO/remove (fn [{:keys [bar]}] (if (odd? bar) 9 11)) 13 15]
+                                 {})))
+
+    (t/is (= 1 (sut/get-first-el #unit-map/seq[(constantly 1) (constantly 1) .. :TODO/remove (constantly 10)]
+                                 {})))
+
+    (t/is (= 10 (sut/get-last-el #unit-map/seq[(constantly 1) (constantly 1) .. :TODO/remove (constantly 10)]
+                                 {})))))
 
 
 (t/deftest ^:kaocha/pending demo-test
