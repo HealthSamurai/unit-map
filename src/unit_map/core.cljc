@@ -506,8 +506,8 @@
           result-value (assoc umap unit result)]
       (if (zero? carry-delta)
         result-value
-        (recur (get-next-unit umap unit)
-               result-value
+        (recur result-value
+               (get-next-unit umap unit)
                carry-delta)))
 
     (neg? x)
