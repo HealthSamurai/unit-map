@@ -863,6 +863,39 @@
              (sut/subtract-from-unit {:day 1, :month :jan, :year 2020} :day 0)))))
 
 
+(t/deftest cmp
+  (t/testing "eq?"
+    (t/is (sut/eq? {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/eq? {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/eq? {} {}))
+    (t/is (sut/not-eq? {} {:year 2020})))
+
+  (t/testing "not-eq?"
+    (t/is (not (sut/not-eq? {:day 26, :month :jul, :year 2020})))
+    (t/is (sut/not-eq? {:day 25, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/not-eq? {} {:day 26, :month :jul, :year 2020})))
+
+  (t/testing "lt?"
+    (t/is (sut/lt? {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/lt? {:day 26, :month :jul, :year 2020} {:day 27, :month :jul, :year 2020} {:day 28, :month :jul, :year 2020}))
+    (t/is (sut/lt? {} {:day 26, :month :jul, :year 2020})))
+
+  (t/testing "gt?"
+    (t/is (sut/gt? {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/gt? {:day 27, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020} {:day 25, :month :jul, :year 2020}))
+    (t/is (sut/gt? {:day 26, :month :jul, :year 2020} {})))
+
+  (t/testing "lte?"
+    (t/is (sut/lte? {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/lte? {:day 26, :month :jul, :year 2020} {:day 27, :month :jul, :year 2020} {:day 27, :month :jul, :year 2020}))
+    (t/is (sut/lte? {} {:day 26, :month :jul, :year 2020})))
+
+  (t/testing "gte?"
+    (t/is (sut/gte? {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/gte? {:day 27, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020} {:day 26, :month :jul, :year 2020}))
+    (t/is (sut/gte? {:day 26, :month :jul, :year 2020} {}))))
+
+
 (t/deftest ^:kaocha/pending demo-test
   (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])

@@ -519,3 +519,77 @@
 
 (defn subtract-from-unit [umap unit x]
   (add-to-unit umap unit (- x)))
+
+
+;;;;;;;;;; cmp
+#_"TODO: add zero?"
+
+
+(defn sequence-cmp [useq umap x y]
+  (cond
+    (= x y) 0
+    (nil? x) -1
+    (nil? y) 1
+    (= x (sequence-contains-some useq umap x y)) -1
+    :else 1))
+
+
+(defn cmp-in-sys [sys x y]
+  (let [sys-w-seqs (map (fn [unit next-unit]
+                          [unit (get-unit-seq* unit next-unit)])
+                        sys
+                        (rest (conj sys nil)))]
+    (or (->> sys-w-seqs
+             reverse
+             (map (fn [[unit processed-sequence]]
+                    (sequence-cmp processed-sequence
+                                  x
+                                  (get x unit)
+                                  (get y unit))))
+             (drop-while zero?)
+             first)
+        0)))
+
+
+(defn cmp [x y]
+  (or (when-let [sys (->> (sys-intersection x y)
+                          first)]
+        (cmp-in-sys sys x y))
+      (when-let [sys (or (first (guess-sys x))
+                         (first (guess-sys y)))]
+        (cmp-in-sys sys x y))
+      (when (= x y)
+        0)))
+
+
+(defn eq?
+  ([_]          true)
+  ([x y]        (= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
+
+
+(def not-eq? (complement eq?))
+
+
+(defn lt?
+  ([_]          true)
+  ([x y]        (neg? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
+
+
+(defn gt?
+  ([_]          true)
+  ([x y]        (pos? (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
+
+
+(defn lte?
+  ([_]          true)
+  ([x y]        (>= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
+
+
+(defn gte?
+  ([_]          true)
+  ([x y]        (<= 0 (cmp x y)))
+  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
