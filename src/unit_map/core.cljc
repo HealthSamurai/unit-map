@@ -240,10 +240,10 @@
 ;;;;;;;;;; seq & range utils
 
 
-(defn dynamic-sequence? [sq]
+(defn dynamic-sequence? [useq]
   (boolean (some #(and (range? %)
                        (some fn? (vals %)))
-                 (:sequence sq))))
+                 (:sequence useq))))
 
 
 (defn static-sequence? [useq]
