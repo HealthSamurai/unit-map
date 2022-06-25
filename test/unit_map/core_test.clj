@@ -785,7 +785,12 @@
                                  {})))
 
     (t/is (= 10 (sut/get-last-el #unit-map/seq[(constantly 1) (constantly 1) .. :TODO/remove (constantly 10)]
-                                 {})))))
+                                 {}))))
+
+  (t/testing "get min/max value"
+    (t/is (= ##-Inf (sut/get-min-value {:year 2022} :year)))
+
+    (t/is (= ##Inf (sut/get-max-value {:year 2022} :year)))))
 
 
 (t/deftest ^:kaocha/pending demo-test

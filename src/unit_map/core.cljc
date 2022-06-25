@@ -443,3 +443,11 @@
     (if (range? end)
       (u/try-call (:end end) umap)
       end)))
+
+
+(defn get-min-value [umap unit]
+  (get-first-el (get-unit-seq umap unit) umap))
+
+
+(defn get-max-value [umap unit]
+  (get-last-el (get-unit-seq umap unit) umap))
