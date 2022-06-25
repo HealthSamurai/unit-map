@@ -793,6 +793,60 @@
     (t/is (= ##Inf (sut/get-max-value {:year 2022} :year)))))
 
 
+(t/deftest inc-dec-test
+  (t/testing "inc-unit"
+    (t/testing "am-pm clock"
+      (def value {:am-pm/hour 12, :am-pm/period :am})
+
+      (t/is (= [{:am-pm/hour 12, :am-pm/period :am} {:am-pm/hour 1, :am-pm/period :am} {:am-pm/hour 2, :am-pm/period :am}
+                {:am-pm/hour 3, :am-pm/period :am} {:am-pm/hour 4, :am-pm/period :am} {:am-pm/hour 5, :am-pm/period :am}
+                {:am-pm/hour 6, :am-pm/period :am} {:am-pm/hour 7, :am-pm/period :am} {:am-pm/hour 8, :am-pm/period :am}
+                {:am-pm/hour 9, :am-pm/period :am} {:am-pm/hour 10, :am-pm/period :am} {:am-pm/hour 11, :am-pm/period :am}
+
+                {:am-pm/hour 12, :am-pm/period :pm} {:am-pm/hour 1, :am-pm/period :pm} {:am-pm/hour 2, :am-pm/period :pm}
+                {:am-pm/hour 3, :am-pm/period :pm} {:am-pm/hour 4, :am-pm/period :pm} {:am-pm/hour 5, :am-pm/period :pm}
+                {:am-pm/hour 6, :am-pm/period :pm} {:am-pm/hour 7, :am-pm/period :pm} {:am-pm/hour 8, :am-pm/period :pm}
+                {:am-pm/hour 9, :am-pm/period :pm} {:am-pm/hour 10, :am-pm/period :pm} {:am-pm/hour 11, :am-pm/period :pm}]
+               (take 24 (iterate (partial sut/inc-unit :am-pm/hour) value)))))
+
+    (t/testing "calendar"
+      (def value {:day 1, :month :jan, :year 2020})
+
+      (def calendar (->> value
+                         (iterate (partial sut/inc-unit :day))
+                         (take-while (comp #{2020} :year))
+                         (partition-by :month)))
+
+      (t/is (= 12 (count calendar)))
+      (t/is (= 366 (count (flatten calendar))))))
+
+  (t/testing "dec-unit"
+    (t/testing "am-pm clock"
+      (def value {:am-pm/hour 11, :am-pm/period :pm})
+
+      (t/is (= [{:am-pm/hour 11, :am-pm/period :pm} {:am-pm/hour 10, :am-pm/period :pm} {:am-pm/hour 9, :am-pm/period :pm}
+                {:am-pm/hour 8, :am-pm/period :pm} {:am-pm/hour 7, :am-pm/period :pm} {:am-pm/hour 6, :am-pm/period :pm}
+                {:am-pm/hour 5, :am-pm/period :pm} {:am-pm/hour 4, :am-pm/period :pm} {:am-pm/hour 3, :am-pm/period :pm}
+                {:am-pm/hour 2, :am-pm/period :pm} {:am-pm/hour 1, :am-pm/period :pm} {:am-pm/hour 12, :am-pm/period :pm}
+
+                {:am-pm/hour 11, :am-pm/period :am} {:am-pm/hour 10, :am-pm/period :am} {:am-pm/hour 9, :am-pm/period :am}
+                {:am-pm/hour 8, :am-pm/period :am} {:am-pm/hour 7, :am-pm/period :am} {:am-pm/hour 6, :am-pm/period :am}
+                {:am-pm/hour 5, :am-pm/period :am} {:am-pm/hour 4, :am-pm/period :am} {:am-pm/hour 3, :am-pm/period :am}
+                {:am-pm/hour 2, :am-pm/period :am} {:am-pm/hour 1, :am-pm/period :am} {:am-pm/hour 12, :am-pm/period :am}]
+               (take 24 (iterate (partial sut/dec-unit :am-pm/hour) value)))))
+
+    (t/testing "calendar"
+      (def value {:day 31, :month :dec, :year 2019})
+
+      (def calendar (->> value
+                         (iterate (partial sut/dec-unit :day))
+                         (take-while (comp #{2019} :year))
+                         (partition-by :month)))
+
+      (t/is (= 12 (count calendar)))
+      (t/is (= 365 (count (flatten calendar)))))))
+
+
 (t/deftest ^:kaocha/pending demo-test
   (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])

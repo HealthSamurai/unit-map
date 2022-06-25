@@ -451,3 +451,21 @@
 
 (defn get-max-value [umap unit]
   (get-last-el (get-unit-seq umap unit) umap))
+
+
+(defn inc-unit [unit {:as umap, unit-value unit, :or {unit-value (get-min-value umap unit)}}]
+  (or (some->> unit-value
+               (get-next-unit-value (get-unit-seq umap unit) umap)
+               (assoc umap unit))
+      (inc-unit (get-next-unit umap unit)
+                (assoc umap unit (get-min-value umap unit)))))
+
+
+(defn dec-unit [unit {:as umap, unit-value unit, :or {unit-value (get-min-value umap unit)}}]
+  (or (some->> unit-value
+               (get-prev-unit-value (get-unit-seq umap unit) umap)
+               (assoc umap unit))
+      (as-> umap $
+        (dissoc $ unit)
+        (dec-unit (get-next-unit $ unit) $)
+        (assoc $ unit (get-max-value $ unit)))))
