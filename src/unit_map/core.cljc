@@ -129,7 +129,7 @@
 
 
 (defmacro defseq [unit unit-seq]
-  (defseq* ctx unit unit-seq))
+  `(defseq* ctx ~unit ~unit-seq))
 
 
 (defn sys-continuous?* [ctx units]
