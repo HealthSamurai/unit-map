@@ -908,6 +908,123 @@
              (sut/subtract-from-unit {:day 1, :month :jan, :year 2020} :hour 0)))))
 
 
+(t/deftest arithmetic
+  (t/testing "+"
+    (def t
+      {:year  2018
+       :month :jan
+       :day   1
+       :hour  12
+       :min   30
+       :sec   30
+       :ms    500})
+
+    (t/is (= (merge t {:ms 700})
+             (sut/add-delta t {:ms 200})))
+
+    (t/is (= (merge t {:ms 100, :sec 31})
+             (sut/add-delta t {:ms 600})))
+
+    (t/is (= {:ms 1500}
+             (sut/add-delta {:ms 600} {:ms 600} {:ms 300})))
+
+    (t/is (= {:ms 500, :sec 1}
+             (sut/add-delta {:sec 0, :ms 600} {:ms 600} {:ms 300})))
+
+    (t/is (= (merge t {:sec 50})
+             (sut/add-delta t {:sec 20})))
+
+    (t/is (= (merge t {:sec 50})
+             (sut/add-delta t {:sec 20})))
+
+    (t/is (= (merge t {:hour 12, :min 50})
+             (sut/add-delta t {:min 20})))
+
+    (t/is (= (merge t {:hour 13 :min 0})
+             (sut/add-delta t {:min 30})))
+
+    (t/is (= {:year 2019 :month :jan :day 1}
+             (sut/add-delta {:year 2018 :month :dec :day 31} {:day 1})))
+
+    (t/is (= {:year 2018 :month :feb :day 1}
+             (sut/add-delta {:year 2018 :month :jan :day 1} {:day 31})))
+
+    (t/is (= {:year 2020 :month :jan :day 1}
+             (sut/add-delta {:year 2018 :month :dec :day 31} {:day 366})))
+
+    (t/is (= {:year 2018 :month :mar :day 1}
+             (sut/add-delta {:year 2018 :month :feb :day 28} {:day 1})))
+
+    (t/is (= {:year 2018 :month :mar :day 31}
+             (sut/add-delta {:year 2018 :month :mar :day 30} {:day 1})))
+
+    (t/is (= {:year 2018 :month :apr :day 1}
+             (sut/add-delta {:year 2018 :month :mar :day 31} {:day 1})))
+
+    (t/is (= {:ms 400}
+             (sut/add-delta {:ms 100} {:ms 300})))
+
+    (t/is (= {:ms 200 :sec 1}
+             (sut/add-delta {:sec 0, :ms 900} {:ms 300})))
+
+    (t/is (= {:sec 30 :min 1}
+             (sut/add-delta {:min 0, :sec 40} {:sec 50})))
+
+    (t/is (= {:min 30 :hour 1}
+             (sut/add-delta {:min 40} {:min 50})))
+
+    (t/is (= {:hour 3 :day 1}
+             (sut/add-delta {:day 0, :hour 13} {:hour 14})))
+
+    (t/is (= {:year 2011 :month :jan :day 2 :hour 4}
+             (sut/add-delta {:year 2011 :month :jan :day 1 :hour 23} {:hour 5})))
+
+    (t/is (= {:year 2011 :month :feb :day 2}
+             (sut/add-delta {:year 2011 :month :jan :day 30} {:day 3})))
+
+    (t/is (= {:year 2012 :month :jan :day 1}
+             (sut/add-delta {:year 2011 :month :jan :day 1} {:day 365})))
+
+    (t/is (= {:year 2012 :month :jan :day 1 :hour 4}
+             (sut/add-delta {:year 2011 :month :dec :day 31 :hour 23} {:hour 5})))
+
+    (t/is (= {:year 2010 :month :dec :day 31 :hour 23}
+             (sut/add-delta {:year 2011 :month :jan :day 1 :hour 0} {:hour -1})))
+
+    (t/is (= {:year 2010 :month :dec :day 31 :hour 23 :min 59 :sec 59}
+             (sut/add-delta {:year 2011 :month :jan :day 1 :hour 0} {:sec -1})))
+
+    (t/is (= {:year 2010 :month :dec :day 31 :hour 23 :min 59 :sec 59 :ms 999}
+             (sut/add-delta {:year 2011 :month :jan :day 1 :hour 0} {:ms -1})))
+
+    (t/is (= {:year 2010 :month :dec :day 31 :hour 23 :min 30}
+             (sut/add-delta {:year 2011 :month :jan :day 1 :hour 23} {:hour -23 :min -30})))
+
+    (t/is (= {:year 2019 :month :dec :day 1}
+             (sut/add-delta {:year 2019 :month :nov :day 1} {:month 1})))
+
+    (t/is (= {:year 2020 :month :jan :day 1}
+             (sut/add-delta {:year 2019 :month :nov :day 1} {:month 2})))
+
+    (t/is (= {:year 2020 :month :jan :day 1}
+             (sut/add-delta {:year 2019 :month :dec :day 1} {:month 1})))
+
+    (t/is (= {:year 2019 :month :dec :day 31}
+             (sut/add-delta {:year 2019 :month :nov :day 31} {:month 1})))
+
+    (t/is (= {:year 2020 :month :feb}
+             (sut/add-delta {:year 2020 :month :feb} {:day 0})))
+
+    (t/is (= {:year 2019, :month :dec, :day 10, :hour 15, :min 17, :sec 50, :ms 911}
+             (sut/add-delta {:year 2019, :month :dec, :day 10, :hour 13, :min 17, :sec 50, :ms 911} {:hour 2})))
+
+    (t/is (= {:hour 14 :tz {:hour 2}}
+             (sut/add-delta {:hour 4 :tz {:hour 2}} {:hour 10})))
+
+    (t/is (= {:hour 2 :tz {:hour -2}}
+             (sut/add-delta {:hour 1 :tz {:hour -2}} {:hour 1})))))
+
+
 (t/deftest ^:kaocha/pending demo-test
   (sut/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])

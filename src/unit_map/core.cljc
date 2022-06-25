@@ -596,3 +596,25 @@
 
 (defn subtract-from-unit [umap unit x]
   (add-to-unit umap unit (- x)))
+
+
+;;;;;;;;;; arithmetic
+
+
+(defn add-delta
+  ([] {})
+
+  ([x] x)
+
+  ([x delta]
+   (reduce (fn [result unit]
+             (add-to-unit result
+                          unit
+                          (get delta unit 0)))
+           x
+           (reverse (first (sys-intersection x delta)))))
+
+  ([x delta & more-deltas]
+   (reduce add-delta
+           (add-delta x delta)
+           more-deltas)))
