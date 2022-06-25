@@ -264,8 +264,7 @@
 
 
 (defn concretize-range [rng umap]
-  (u/map-v #(u/try-call % umap)
-           rng))
+  (update-vals rng #(u/try-call % umap)))
 
 
 (defn range-length [rng umap]

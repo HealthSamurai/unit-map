@@ -58,10 +58,6 @@
     :else            (pred y (first more))))
 
 
-(defn map-v [f m]
-  (reduce-kv (fn [acc k _] (update acc k f)) m m))
-
-
 (defn floor [x] (long (math/floor x)))
 
 
