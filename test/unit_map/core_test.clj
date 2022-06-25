@@ -263,6 +263,10 @@
   (t/is (= ms-hour
            (first (sut/guess-sys {:ms 1, :sec 1, :min 1501}))))
 
+  (t/is (= ms-day
+           (first (sut/guess-sys {:ms 1, :sec 1, :min 1501}
+                                 :day))))
+
   (t/is (= seconds
            (first (sut/guess-sys {:ms 1, :sec 90061}))))
 
@@ -665,11 +669,23 @@
 
     (t/is (= nil
              (sut/get-prev-unit {:year 2022 :month 6 :day 4 :hour 12 :min 30}
-                                :ms))))
+                                :ms)))
+
+    (t/is (= :year
+             (sut/get-next-unit {:min 30}
+                                :month)))
+
+    (t/is (= :day
+             (sut/get-prev-unit {:min 30}
+                                :month))))
 
   (t/testing "get-unit-seq"
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (:sequence (sut/get-unit-seq {:year 2022 :month 6 :day 4 :hour 12 :min 30}
+                                          :month))))
+
+    (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
+             (:sequence (sut/get-unit-seq {:min 30}
                                           :month))))
 
     (t/is (= (:sequence #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])

@@ -169,12 +169,15 @@
        set))
 
 
-(defn guess-sys [unit-map]
-  (when-let [units (not-empty (get-units unit-map))]
-    (->> (vals (:systems @ctx))
-         (filter (comp (partial clojure.set/subset? units)
-                       set))
-         sort)))
+(defn guess-sys
+  ([unit-map unit]
+   (guess-sys (assoc unit-map unit nil)))
+  ([unit-map]
+   (when-let [units (not-empty (get-units unit-map))]
+     (->> (vals (:systems @ctx))
+          (filter (comp (partial clojure.set/subset? units)
+                        set))
+          sort))))
 
 
 (defn sys-intersection* [& syss]
@@ -370,17 +373,17 @@
 (defn get-next-unit
   "next = more significant"
   [umap unit]
-  (u/get-next-element (first (guess-sys umap)) unit))
+  (u/get-next-element (first (guess-sys umap unit)) unit))
 
 
 (defn get-prev-unit
   "prev = less significant"
   [umap unit]
-  (u/get-prev-element (first (guess-sys umap)) unit))
+  (u/get-prev-element (first (guess-sys umap unit)) unit))
 
 
 (defn get-unit-seq [umap unit]
-  (let [sys       (guess-sys umap)
+  (let [sys       (guess-sys umap unit)
         next-unit (u/get-next-element (first sys) unit)]
     (get-in @ctx [:seqs unit next-unit])))
 
