@@ -135,8 +135,8 @@
 (defn sys-continuous?* [ctx units]
   (let [reverse-units (reverse units)]
     (->> (map vector
-              reverse-units
-              (rest reverse-units))
+              (cons nil reverse-units)
+              reverse-units)
          (every?
            (fn [[cur-unit prev-unit]]
              (get-in @ctx [:seqs prev-unit cur-unit]))))))

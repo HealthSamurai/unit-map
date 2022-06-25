@@ -16,6 +16,7 @@
 
   (sut/defseq* tctx :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
   (sut/defseq* tctx :c2 #unit-map/seq[-2 -1 0 -> :d])
+  (sut/defseq* tctx :c2 #unit-map/seq[-2 -1 .. ##-Inf])
 
   (sut/defseq* tctx :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
   (sut/defseq* tctx :c3 #unit-map/seq[2 1 .. ##-Inf])
@@ -28,6 +29,7 @@
 
   (sut/defseq* tctx :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
   (sut/defseq* tctx :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
+  (sut/defseq* tctx :c6 #unit-map/seq[2 1 .. ##-Inf])
 
   (t/testing "seqs graph"
     (def graph-assert
@@ -50,7 +52,8 @@
             :b6 {:sequence [0 2], :unit :aa, :next-unit :b6}}
 
        :b2 {:c2 {:sequence [-2 -1 0], :unit :b2, :next-unit :c2}}
-       :c2 {:d {:sequence [-2 -1 0], :unit :c2, :next-unit :d}}
+       :c2 {:d {:sequence [-2 -1 0], :unit :c2, :next-unit :d}
+            nil {:sequence [{:start -2, :step 1, :end ##-Inf}], :unit :c2}}
 
        :b3 {:c3 {:sequence [2 1 0], :unit :b3, :next-unit :c3}}
        :c3 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c3}}
@@ -63,7 +66,8 @@
 
        :b6 {:c6 {:sequence [2 1 0], :unit :b6, :next-unit :c6}
             :c  {:sequence [2 1 0], :unit :b6, :next-unit :c}}
-       :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}}})
+       :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}
+            nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c6}}})
 
     (t/is (= graph-assert (:seqs @tctx)))
 
@@ -87,7 +91,9 @@
   (t/testing "invalid systems"
     (t/is (not (sut/sys-continuous?* tctx [:d :c :b :a])))
     (t/is (not (sut/sys-continuous?* tctx [:a :b2 :c])))
-    (t/is (not (sut/sys-continuous?* tctx [:a :b3 :c3 :d])))))
+    (t/is (not (sut/sys-continuous?* tctx [:a :b3 :c3 :d])))
+
+    (t/is (not (sut/sys-continuous?* tctx [:a])))))
 
 
 (do ;;NOTE: seqs
@@ -149,6 +155,12 @@
   (sut/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
   (sut/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
   (sut/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
+
+  (sut/defseq :ms   #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq :ns   #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq :sec  #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq :hour #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq :day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
   (sut/defseq :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
   (sut/defseq :am-pm/period #unit-map/seq[:am :pm -> :day])
