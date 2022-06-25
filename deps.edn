@@ -3,8 +3,7 @@
         org.clojure/clojurescript {:mvn/version "1.11.54"}}
  :aliases {:test
            {:extra-paths ["test"]
-            :jvm-opts    ^:replace ["-XX:-OmitStackTraceInFastThrow"]
-            :extra-deps  {healthsamurai/matcho {:mvn/version "0.3.7"}}}
+            :jvm-opts    ^:replace ["-XX:-OmitStackTraceInFastThrow"]}
 
            :kaocha
            {:extra-deps  {lambdaisland/kaocha {:mvn/version "1.0-612"}}
