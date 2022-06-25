@@ -492,6 +492,9 @@
 
 (defn add-to-unit [umap unit x] #_"TODO: handle unnormalized values"
   (cond
+    (zero? x)
+    umap
+
     (and (< 1 (abs x))
          (static-sequence? (get-unit-seq umap unit)))
     (let [useq        (get-unit-seq umap unit)
