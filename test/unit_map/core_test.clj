@@ -852,7 +852,15 @@
     (t/is (= {:year 1995, :month :may, :day 12}
              (sut/add-to-unit {:day 1, :month :jan, :year 2020} :day -9000)))
     (t/is (= {:day 1, :month :jan, :year 2020}
-             (sut/add-to-unit {:day 1, :month :jan, :year 2020} :day 0)))))
+             (sut/add-to-unit {:day 1, :month :jan, :year 2020} :day 0))))
+
+  (t/testing "subtract-from-unit"
+    (t/is (= {:day 22, :month :aug, :year 2044}
+             (sut/subtract-from-unit {:day 1, :month :jan, :year 2020} :day -9000)))
+    (t/is (= {:year 1995, :month :may, :day 12}
+             (sut/subtract-from-unit {:day 1, :month :jan, :year 2020} :day 9000)))
+    (t/is (= {:day 1, :month :jan, :year 2020}
+             (sut/subtract-from-unit {:day 1, :month :jan, :year 2020} :day 0)))))
 
 
 (t/deftest ^:kaocha/pending demo-test

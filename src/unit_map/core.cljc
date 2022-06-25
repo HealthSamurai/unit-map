@@ -496,3 +496,7 @@
 
     :else
     (u/n-times x (partial inc-unit unit) umap)))
+
+
+(defn subtract-from-unit [umap unit x]
+  (add-to-unit umap unit (- x)))
