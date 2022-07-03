@@ -4,6 +4,12 @@
             [clojure.data]))
 
 
+#_"TODO:
+- guess-sys-with-seqs
+- refactor (first (guess-sys ...))
+- refactor repeating guess-sys calls"
+
+
 (defonce ctx #_"TODO: can it be done without global atom state?"
   (atom nil))
 #_(reset! ctx nil)
