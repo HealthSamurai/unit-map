@@ -1096,7 +1096,18 @@
                              {:day 28, :month :feb, :year 2021})))
     (t/is (= {:month 11, :day 1}
              (sut/difference {:day 1, :month :mar, :year 2021}
-                             {:day 31, :month :mar, :year 2020})))))
+                             {:day 31, :month :mar, :year 2020})))
+
+
+    (t/is (= {:month 1, :day 3}
+             (sut/difference {:day 29, :month :jan, :year 2022}
+                             {:day 1, :month :mar, :year 2022})))
+    (t/is (= {:month 1, :day 2}
+             (sut/difference {:day 30, :month :jan, :year 2022}
+                             {:day 1, :month :mar, :year 2022})))
+    (t/is (= {:month 1, :day 1}
+             (sut/difference {:day 31, :month :jan, :year 2022}
+                             {:day 1, :month :mar, :year 2022})))))
 
 
 (t/deftest ^:kaocha/pending demo-test
