@@ -644,31 +644,32 @@
            more-deltas)))
 
 
-(defn unit-difference [{:keys [borrow? a b result]}
-                       [unit useq]]
-  (let [b (cond->> b borrow? (inc-unit unit))
+(defn unit-difference [a b unit useq]
+  (let [a-val   (some->> (get a unit) (sequence-index-of useq a))
+        b-val   (some->> (get b unit) (sequence-index-of useq b))
+        diff    (- (or a-val 0) (or b-val 0))
+        borrow? (neg? diff)]
+    {:borrowed borrow?
+     :result (if borrow?
+               (let [borrow (sequence-length useq b)]
+                 (+ diff borrow))
+               diff)}))
 
-        diff ((fnil - 0 0)
-              (some->> (get a unit) (sequence-index-of useq a))
-              (some->> (get b unit) (sequence-index-of useq b)))]
 
-    {:a       (dissoc a unit)
-     :b       (dissoc b unit)
-     :borrow? (neg? diff)
-     :result  (cond
-                (zero? diff)
-                result
-
-                (neg? diff)
-                (let [borrow (sequence-length useq b)]
-                  (assoc result unit (+ diff borrow)))
-
-                :else
-                (assoc result unit diff))}))
+(defn units-difference-reduce-fn [a b {:keys [acc borrow?]} [unit useq]]
+  (let [{borrow-next? :borrowed, unit-res :result}
+        (unit-difference a
+                         (cond->> b borrow? (inc-unit unit))
+                         unit
+                         useq)]
+    {:borrow? borrow-next?
+     :acc (cond-> acc
+            (not= 0 unit-res)
+            (assoc unit unit-res))}))
 
 
 (defn difference [x y]
   (let [[a b] (cond-> [x y] (lt? x y) reverse)]
-    (:result (reduce unit-difference
-                     {:a a, :b b}
-                     (sys-unit-seqs (first (sys-intersection a b)))))))
+    (:acc (reduce (partial units-difference-reduce-fn a b)
+                  {}
+                  (sys-unit-seqs (first (sys-intersection a b)))))))
