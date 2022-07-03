@@ -413,6 +413,13 @@
     (get-unit-seq* unit next-unit)))
 
 
+(defn sys-unit-seqs [sys]
+  (map (fn [unit next-unit]
+         [unit (get-unit-seq* unit next-unit)])
+       sys
+       (rest (conj sys nil))))
+
+
 ;;;;;;;;;; inc & dec
 
 
@@ -544,20 +551,16 @@
 
 
 (defn cmp-in-sys [sys x y]
-  (let [sys-w-seqs (map (fn [unit next-unit]
-                          [unit (get-unit-seq* unit next-unit)])
-                        sys
-                        (rest (conj sys nil)))]
-    (or (->> sys-w-seqs
-             reverse
-             (map (fn [[unit processed-sequence]]
-                    (sequence-cmp processed-sequence
-                                  x
-                                  (get x unit)
-                                  (get y unit))))
-             (drop-while zero?)
-             first)
-        0)))
+  (or (->> (sys-unit-seqs sys)
+           reverse
+           (map (fn [[unit processed-sequence]]
+                  (sequence-cmp processed-sequence
+                                x
+                                (get x unit)
+                                (get y unit))))
+           (drop-while zero?)
+           first)
+      0))
 
 
 (defn cmp [x y]
