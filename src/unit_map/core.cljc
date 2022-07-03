@@ -408,8 +408,8 @@
 
 
 (defn get-unit-seq [umap unit]
-  (let [sys       (guess-sys umap unit)
-        next-unit (u/get-next-element (first sys) unit)]
+  (let [sys       (first (guess-sys umap unit))
+        next-unit (u/get-next-element sys unit)]
     (get-unit-seq* unit next-unit)))
 
 
