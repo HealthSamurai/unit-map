@@ -642,3 +642,33 @@
    (reduce subtract-delta
            (subtract-delta x delta)
            more-deltas)))
+
+
+(defn unit-difference [{:keys [borrow? a b result]}
+                       [unit useq]]
+  (let [b (cond->> b borrow? (inc-unit unit))
+
+        diff ((fnil - 0 0)
+              (some->> (get a unit) (sequence-index-of useq a))
+              (some->> (get b unit) (sequence-index-of useq b)))]
+
+    {:a       (dissoc a unit)
+     :b       (dissoc b unit)
+     :borrow? (neg? diff)
+     :result  (cond
+                (zero? diff)
+                result
+
+                (neg? diff)
+                (let [borrow (sequence-length useq b)]
+                  (assoc result unit (+ diff borrow)))
+
+                :else
+                (assoc result unit diff))}))
+
+
+(defn difference [x y]
+  (let [[a b] (cond-> [x y] (lt? x y) reverse)]
+    (:result (reduce unit-difference
+                     {:a a, :b b}
+                     (sys-unit-seqs (first (sys-intersection a b)))))))

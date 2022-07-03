@@ -1043,7 +1043,60 @@
     (t/is (sut/eq? {:hour 0}
                    (sut/subtract-delta {:hour 2 :tz {:hour -2}} {:hour 2})))
     (t/is (sut/eq? {:hour 2}
-                   (sut/subtract-delta {:hour 3 :tz {:hour 2}} {:hour 1 :tz {:hour 2}})))))
+                   (sut/subtract-delta {:hour 3 :tz {:hour 2}} {:hour 1 :tz {:hour 2}}))))
+
+  (t/testing "difference"
+    (t/is (= {:day 6}
+             (sut/difference {:day 20, :month :jul, :year 2020}
+                             {:day 26, :month :jul, :year 2020})))
+    (t/is (= {:day 6}
+             (sut/difference {:day 26, :month :jul, :year 2020}
+                             {:day 20, :month :jul, :year 2020})))
+    (t/is (= {:day 22, :year 23}
+             (sut/difference {:day 27, :month :jul, :year 2020}
+                             {:day 5, :month :jul, :year 1997})))
+    (t/is (= {:day 22, :year 23}
+             (sut/difference {:day 5, :month :jul, :year 1997}
+                             {:day 27, :month :jul, :year 2020})))
+    (t/is (= {:year 1}
+             (sut/difference {:year 1} {:year -1})))
+    (t/is (= {:year 1}
+             (sut/difference {:year -1} {:year 1})))
+    (t/is (empty? (sut/difference {:day 27, :month :jul, :year 2020}
+                                  {:day 27, :month :jul, :year 2020})))
+    (t/is (= {:day 1}
+             (sut/difference {:day 28, :month :jul, :year 2020}
+                             {:day 27, :month :jul, :year 2020})))
+    #_(t/is (= {:hour 0}
+               (sut/difference {:hour 12, :min 30, :tz {:hour -2}}
+                               {:hour 14, :min 30, :tz {:hour 0}})))
+    (t/is (= {:year 2, :day 5}
+             (sut/difference {:day 28, :month :jun, :year 2020}
+                             {:day 3, :month :jul, :year 2022})))
+    (t/is (= {:year 2, :month 1, :day 6}
+             (sut/difference {:day 28, :month :may, :year 2020}
+                             {:day 3, :month :jul, :year 2022})))
+    (t/is (= {:day 5}
+             (sut/difference {:day 28, :month :jun, :year 2022}
+                             {:day 3, :month :jul, :year 2022})))
+    (t/is (= {:day 2}
+             (sut/difference {:day 1, :month :mar, :year 2020}
+                             {:day 28, :month :feb, :year 2020})))
+    (t/is (= {:day 1}
+             (sut/difference {:day 1, :month :mar, :year 2021}
+                             {:day 28, :month :feb, :year 2021})))
+    (t/is (= {:year 2, :day 2}
+             (sut/difference {:day 1, :month :mar, :year 2022}
+                             {:day 28, :month :feb, :year 2020})))
+    (t/is (= {:year 1, :day 1}
+             (sut/difference {:day 1, :month :mar, :year 2020}
+                             {:day 28, :month :feb, :year 2019})))
+    (t/is (= {:month 11, :day 27}
+             (sut/difference {:day 1, :month :mar, :year 2020}
+                             {:day 28, :month :feb, :year 2021})))
+    (t/is (= {:month 11, :day 1}
+             (sut/difference {:day 1, :month :mar, :year 2021}
+                             {:day 31, :month :mar, :year 2020})))))
 
 
 (t/deftest ^:kaocha/pending demo-test
