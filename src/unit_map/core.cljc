@@ -608,9 +608,7 @@
 
   ([x delta]
    (reduce (fn [result unit]
-             (add-to-unit result
-                          unit
-                          (get delta unit 0)))
+             (add-to-unit result unit (get delta unit 0)))
            x
            (reverse (first (sys-intersection x delta)))))
 
@@ -627,9 +625,7 @@
 
   ([x delta]
    (reduce (fn [result unit]
-             (subtract-from-unit result
-                                 unit
-                                 (get delta unit 0)))
+             (subtract-from-unit result unit (get delta unit 0)))
            x
            (reverse (first (sys-intersection x delta)))))
 
