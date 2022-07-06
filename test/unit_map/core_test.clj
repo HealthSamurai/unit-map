@@ -182,7 +182,19 @@
   (sut/defseq :mm #unit-map/seq[0 1 .. 9   -> :cm])
   (sut/defseq :cm #unit-map/seq[0 1 .. 99  -> :m])
   (sut/defseq :m  #unit-map/seq[0 1 .. 999 -> :km])
-  (sut/defseq :km #unit-map/seq[0 1 .. ##Inf]))
+  (sut/defseq :km #unit-map/seq[0 1 .. ##Inf])
+
+  (sut/defseq :epoch/year  #unit-map/seq[:year <=>
+                                         (fn [{:keys [epoch]}]
+                                           (if (= :BC epoch) ##Inf 1))
+                                         (fn [{:keys [epoch]}]
+                                           (if (= :BC epoch) -1 1))
+                                         ..
+                                         (fn [{:keys [epoch]}]
+                                           (if (= :BC epoch) 1 ##Inf))
+                                         -> :epoch])
+
+  (sut/defseq :epoch  #unit-map/seq[:BC :AD]))
 
 (do ;;NOTE: systems
   (sut/defsys imperial [:mil :inch :foot :mile])
@@ -218,7 +230,10 @@
   (sut/defsys ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year])
   (sut/defsys ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
 
-  (sut/defsys weeks [:weekday :week]))
+  (sut/defsys weeks [:weekday :week])
+
+  (sut/defsys ms-year-epoch [:ms :sec :min :hour :day :month :epoch/year :epoch])
+  (sut/defsys year-epoch [:epoch/year :epoch]))
 
 
 (t/deftest sys-detection
@@ -820,6 +835,14 @@
                 {:am-pm/hour 6, :am-pm/period :pm} {:am-pm/hour 7, :am-pm/period :pm} {:am-pm/hour 8, :am-pm/period :pm}
                 {:am-pm/hour 9, :am-pm/period :pm} {:am-pm/hour 10, :am-pm/period :pm} {:am-pm/hour 11, :am-pm/period :pm}]
                (take 24 (iterate (partial sut/inc-unit :am-pm/hour) value)))))
+
+    (t/testing "epoch"
+      (t/is (= [{:year -2} {:year -1} {:year 1} {:year 2}]
+               (take 4 (iterate #(sut/inc-unit :year %) {:year -2}))))
+
+      (t/is (= [{:epoch :BC, :epoch/year 2} {:epoch :BC, :epoch/year 1}
+                {:epoch :AD, :epoch/year 1} {:epoch :AD, :epoch/year 2}]
+               (take 4 (iterate #(sut/inc-unit :epoch/year %) {:epoch :BC :epoch/year 2})))))
 
     (t/testing "calendar"
       (def value {:day 1, :month :jan, :year 2020})

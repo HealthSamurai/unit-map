@@ -7,7 +7,9 @@
 #_"TODO:
 - guess-sys-with-seqs
 - refactor (first (guess-sys ...))
-- refactor repeating guess-sys calls"
+- refactor repeating guess-sys calls
+- use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
+- refactor to be able to pass ctx"
 
 
 (defonce ctx #_"TODO: can it be done without global atom state?"
@@ -310,9 +312,9 @@
              (>= start x end))
          (or (= start x)
              (= end x)
-             (and (not= ##-Inf start)
+             (and (u/finite? start)
                   (-> x (- start) (mod step) zero?))
-             (and (not= ##Inf end)
+             (and (u/finite? end)
                   (-> x (+ end) (mod step) zero?))))))
 
 
@@ -485,12 +487,14 @@
   (get-last-el (get-unit-seq umap unit) umap))
 
 
+#_"TODO: handle when get-next-unit returns nil"
 (defn inc-unit [unit {:as umap, unit-value unit, :or {unit-value (get-min-value umap unit)}}]
   (or (some->> unit-value
                (get-next-unit-value (get-unit-seq umap unit) umap)
                (assoc umap unit))
-      (inc-unit (get-next-unit umap unit)
-                (assoc umap unit (get-min-value umap unit)))))
+      (as-> umap $
+        (inc-unit (get-next-unit $ unit) $)
+        (assoc $ unit (get-min-value $ unit)))))
 
 
 (defn dec-unit [unit {:as umap, unit-value unit, :or {unit-value (get-min-value umap unit)}}]
