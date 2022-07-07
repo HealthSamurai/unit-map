@@ -198,17 +198,8 @@
      (guess-sys* units))))
 
 
-(defn sys-intersection* [& syss]
-  (->> syss
-       (map set)
-       (apply clojure.set/intersection)
-       sort))
-
-
 (defn sys-intersection [& unit-maps]
-  (->> unit-maps
-       (map guess-sys)
-       (apply sys-intersection*)))
+  (guess-sys (reduce merge unit-maps)))
 
 
 (defn find-diff-branches [xs ys]

@@ -431,9 +431,10 @@
                     {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
                     {:cm 49})))
 
-    (t/is (empty? (sut/sys-intersection
-                    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
-                    {})))
+    (t/is (= [ms-year ns-year ns-ms-year]
+             (sut/sys-intersection
+               {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
+               {})))
 
     (t/is (= [ms-year ns-year ns-ms-year]
              (sut/sys-intersection
