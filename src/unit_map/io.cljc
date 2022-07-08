@@ -1,6 +1,5 @@
 (ns unit-map.io
   (:require [unit-map.util :as u]
-            [unit-map.ops :as ops]
             [clojure.string :as str])
   (:refer-clojure :exclude [format]))
 
@@ -90,7 +89,6 @@
         width              (u/ffilter integer? rest-fmt)]
     {:value     value
      :lang      lang
-     :type      (ops/get-type fmt-vec)
      :name-fmt  (or (u/ffilter keyword? rest-fmt)
                     (when lang :full))
      :function  (u/ffilter fn? rest-fmt)
@@ -155,7 +153,6 @@
         unit-value (or (when function (function value fmt-el))
                        (when lang (get-in (locale lang) [fmt v name-fmt]))
                        v
-                       (ops/sequence-nth (ops/unit-definition value fmt) value 0)
                        fmt)
         pad-width  (or pad-width (max (format-patterns fmt 0) (count (str unit-value))))
         pad-str    (or pad-str
@@ -170,11 +167,11 @@
   (str/join (map (partial format-el t fmt-vec) fmt-vec)))
 
 
-(defn convertable? [value in out]
+#_(defn convertable? [value in out]
   (let [v (parse value in)]
     (ops/eq? v (-> v  (format out) (parse out)))))
 
 
-(defn valid? [s fmt]
+#_(defn valid? [s fmt]
   (let [d (parse s fmt)]
     (ops/eq? d (ops/ensure-less-significant-units d))))

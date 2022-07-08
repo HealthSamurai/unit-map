@@ -1,47 +1,33 @@
 (ns unit-map.io-test
   (:require [clojure.test :refer :all :as t]
             [unit-map.util :as u]
-            [unit-map.ops :as ops]
-            [unit-map.type.chrono.datetime :as datetime]
             [unit-map.type.chrono.util.misc :as chrono.misc]
             [unit-map.io :as sut]
             [clojure.string :as str]))
 
 
-(use-fixtures
-  :once
-  (fn [t]
-    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
-    (t)))
-
-
 (deftest nil-safe
   (t/is (= {} (sut/parse nil nil)))
-  (t/is (= "01" (sut/format nil [:day])))
+  #_(t/is (= "01" (sut/format nil [:day])))
   (t/is (= "" (sut/format nil nil))))
 
 
 (deftest parse-format-test
   (testing "parse" ;; TODO: add meta tests
     (testing "numeral representation of month"
-      (t/is (=
-              {:year 2011 :month 1 :day 1}
+      (t/is (= {:year 2011 :month 1 :day 1}
               (sut/parse "2011-01-01" chrono.misc/iso-fmt)))
 
-      (t/is (=
-              {:year 2011 :month 1 :day 1 :hour 12 :min 0}
+      (t/is (= {:year 2011 :month 1 :day 1 :hour 12 :min 0}
               (sut/parse "2011-01-01T12:00" chrono.misc/iso-fmt)))
 
-      (t/is (=
-              {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0}
+      (t/is (= {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0}
               (sut/parse "2011-01-01T12:00:00" chrono.misc/iso-fmt)))
 
-      (t/is (=
-              {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100}
+      (t/is (= {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100}
               (sut/parse "2011-01-01T12:04:05.100" chrono.misc/iso-fmt)))
 
-      (t/is (=
-              {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}
+      (t/is (= {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}
               (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])))))
 
   (testing "format"
@@ -67,8 +53,8 @@
     (is (= "--1+ baz"
            (sut/format {:foo 1, :bar "baz"} [[:foo 3 \-] \+ [:bar 4]])))
     (testing "custom keys"
-      (is (= "5.000001234" (sut/format {:sec 5 :ns 1234} [[:sec 1] \. :ms [:ns 6]])))
-      (is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
+      #_(is (= "5.000001234" (sut/format {:sec 5 :ns 1234} [[:sec 1] \. :ms [:ns 6]])))
+      #_(is (= "5.000123456" (sut/format {:sec 5 :ns 123456} [[:sec 1] \. :ms :ns])))))
 
   (testing "parse should return parsed value even if format not strictly cosistent"
     (is (= {:year 2011}
