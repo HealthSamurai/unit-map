@@ -668,3 +668,57 @@
     (:acc (reduce (partial units-difference-reduce-fn a b)
                   {}
                   (sys-unit-seqs (first (sys-intersection a b)))))))
+
+
+#_(defn difference-parts [units sys-seqs]
+  (:acc (reduce
+          (fn [acc unit]
+            (let [[seqs [this-unit & rest-seqs]]
+                  (split-with (fn [[u _]] (not= unit u))
+                              (:rest-seqs acc))]
+              (if (some? this-unit)
+                (-> acc
+                    (assoc :rest-seqs rest-seqs)
+                    (update :acc conj {:to-unit unit
+                                       :seqs (conj seqs this-unit)}))
+                acc)))
+          {:acc []
+           :rest-seqs (reverse sys-seqs)}
+          (reverse units))))
+
+
+#_(defn difference-in [units x y]
+  (let [[a b]    (cond-> [x y] (lt? x y) reverse)
+        sys-seqs (sys-unit-seqs (first (sys-intersection a b)))
+        parts    (difference-parts units sys-seqs)]
+    (reduce
+      (fn [acc {:keys [to-unit seqs]}]
+        (reduce
+          (fn [{:keys [a b acc]} [unit useq]]
+            (let [{:keys [borrowed result]}
+                  (unit-difference a b unit useq)]
+              {:acc (assoc acc unit result)
+               :a (dissoc a unit)
+               :b (dissoc b unit)}))
+          acc
+          seqs))
+      {:a a
+       :b b
+       :acc {}}
+      parts)))
+
+
+; 2022-05-03 2019-07-28
+;
+; 31-28=3
+; 2022-05-03 2019-08 3
+; 3+31+30+31+30+31=156
+; 2022-05-03 2020
+;
+; 156+366+365=887
+; 2022-05-03 2022
+;
+; 887+3=890
+; 2022-05 2022 890
+;
+; 890+31+28+31+30=1010

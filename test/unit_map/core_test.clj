@@ -1131,7 +1131,34 @@
                              {:day 1, :month :mar, :year 2022})))
     (t/is (= {:month 1, :day 1}
              (sut/difference {:day 31, :month :jan, :year 2022}
-                             {:day 1, :month :mar, :year 2022})))))
+                             {:day 1, :month :mar, :year 2022}))))
+
+  #_(t/testing "difference-in"
+    (t/is (= {:day 1010}
+             (sut/difference-in [:ms :day]
+                                {:year 2019, :month :jul, :day 28}
+                                {:year 2022, :month :may, :day 3})))
+
+    (t/is (= {:year 2, :month 9}
+             (sut/difference-in [:month :year]
+                                {:year 2019, :month :jul, :day 28}
+                                {:year 2022, :month :may, :day 3})))
+
+    (t/is (= {:month 33}
+             (sut/difference-in [:month]
+                                {:year 2019, :month :jul, :day 28}
+                                {:year 2022, :month :may, :day 3})))
+
+    (t/is (= {:year 2, :month 9, :day 6}
+             (sut/difference-in [:month :day :year]
+                                {:year 2019, :month :jul, :day 28}
+                                {:year 2022, :month :may, :day 3})))
+
+    (t/is (= {:day 1009, :ms 48600000}
+             (sut/difference-in [:ms :day]
+                                {:year 2019, :month :jul, :day 28
+                                 :hour 10, :min 30}
+                                {:year 2022, :month :may, :day 3})))))
 
 
 (t/deftest ^:kaocha/pending demo-test
