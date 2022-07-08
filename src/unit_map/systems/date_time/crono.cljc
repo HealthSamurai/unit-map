@@ -1,6 +1,6 @@
-(ns unit-map.type.chrono.util.crono
-  (:require [unit-map.ops :as ops]
-            [unit-map.type.chrono.util.now :as now]))
+(ns unit-map.systems.date-time.crono
+  (:require [unit-map.core :as umap]
+            [unit-map.systems.date-time.now :as now]))
 
 
 (defn day-of-week
@@ -45,9 +45,9 @@
   (let [every       (keyword every)
         at          (cond-> at (map? at) vector)
         assumptions (map #(merge (select-keys current-time (get needed-for every)) %) at)]
-    (if (nil? (first (filter #(ops/lt? current-time %) assumptions)))
-      (ops/plus (first assumptions) ^:delta{every 1})
-      (first (filter #(ops/lt? current-time %) assumptions)))))
+    (if (nil? (first (filter #(umap/lt? current-time %) assumptions)))
+      (umap/add-delta (first assumptions) {every 1})
+      (first (filter #(umap/lt? current-time %) assumptions)))))
 
 
 (defn validate-cfg [cfg]
@@ -78,7 +78,7 @@
   ([current-time {every :every until :until :as when'}]
    (if until
      (let [utmost-time (merge (select-keys current-time (get needed-for every)) until)]
-       (ops/lt? current-time utmost-time))
+       (umap/lt? current-time utmost-time))
      true)))
 
 

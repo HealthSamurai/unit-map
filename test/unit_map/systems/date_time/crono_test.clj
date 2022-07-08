@@ -1,14 +1,8 @@
-(ns unit-map.type.chrono.util.crono-test
-  (:require [unit-map.type.chrono.util.crono :as sut]
-            [unit-map.ops :as ops]
+(ns unit-map.systems.date-time.crono-test
+  (:require [unit-map.systems.date-time.crono :as sut]
             [clojure.test :refer :all :as t]
-            [unit-map.type.chrono.datetime :as datetime]))
+            [unit-map.systems.date-time.defs]))
 
-(use-fixtures
-  :each
-  (fn [t]
-    (defmethod ops/definition :default-type [_] datetime/gregorian-military)
-    (t)))
 
 (deftest crono-test
 

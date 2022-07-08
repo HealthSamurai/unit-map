@@ -1,5 +1,5 @@
-(ns unit-map.type.chrono.util.calendar-test
-  (:require [unit-map.type.chrono.util.calendar :as sut]
+(ns unit-map.systems.date-time.calendar-test
+  (:require [unit-map.systems.date-time.calendar :as sut]
             [clojure.test :refer [deftest] :as t]))
 
 #_(deftest calendar-test

@@ -1,7 +1,7 @@
 (ns unit-map.io-test
   (:require [clojure.test :refer :all :as t]
             [unit-map.util :as u]
-            [unit-map.type.chrono.util.misc :as chrono.misc]
+            [unit-map.systems.date-time.misc :as date-time.misc]
             [unit-map.io :as sut]
             [clojure.string :as str]))
 
@@ -16,16 +16,16 @@
   (testing "parse" ;; TODO: add meta tests
     (testing "numeral representation of month"
       (t/is (= {:year 2011 :month 1 :day 1}
-              (sut/parse "2011-01-01" chrono.misc/iso-fmt)))
+              (sut/parse "2011-01-01" date-time.misc/iso-fmt)))
 
       (t/is (= {:year 2011 :month 1 :day 1 :hour 12 :min 0}
-              (sut/parse "2011-01-01T12:00" chrono.misc/iso-fmt)))
+              (sut/parse "2011-01-01T12:00" date-time.misc/iso-fmt)))
 
       (t/is (= {:year 2011 :month 1 :day 1 :hour 12 :min 0 :sec 0}
-              (sut/parse "2011-01-01T12:00:00" chrono.misc/iso-fmt)))
+              (sut/parse "2011-01-01T12:00:00" date-time.misc/iso-fmt)))
 
       (t/is (= {:year 2011 :month 1 :day 1 :hour 12 :min 4 :sec 5 :ms 100}
-              (sut/parse "2011-01-01T12:04:05.100" chrono.misc/iso-fmt)))
+              (sut/parse "2011-01-01T12:04:05.100" date-time.misc/iso-fmt)))
 
       (t/is (= {:day 16, :month 9, :year 2019, :hour 23, :min 59, :sec 1}
               (sut/parse "16.09.2019 23:59:01" [:day \. :month \. :year \space :hour \: :min \: :sec])))))
@@ -38,8 +38,8 @@
     (let [t {:year 2019, :month 9, :day 16, :hour 23, :min 0, :sec 38, :ms 911}]
       (t/is (= t
                (-> t
-                   (sut/format chrono.misc/iso-fmt)
-                   (sut/parse chrono.misc/iso-fmt))))))
+                   (sut/format date-time.misc/iso-fmt)
+                   (sut/parse date-time.misc/iso-fmt))))))
 
   (testing "format with specified width"
     (is (= "06.03.20"

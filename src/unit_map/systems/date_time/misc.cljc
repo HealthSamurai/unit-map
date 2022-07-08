@@ -1,6 +1,5 @@
-(ns unit-map.type.chrono.util.misc
-  (:require [unit-map.ops :as ops]
-            [unit-map.type.chrono.util.now :as now]))
+(ns unit-map.systems.date-time.misc
+  (:require [unit-map.core :as umap]))
 
 
 ;; TODO: tz fmt support
@@ -26,7 +25,7 @@
 
 
 (defn from-epoch [e]
-  (ops/plus epoch ^:delta{:sec e}))
+  (umap/add-delta epoch {:sec e}))
 
 
 (defn seconds [d]
@@ -37,7 +36,6 @@
 
 
 (defn to-epoch [date]
-
   (let [years (range (:year epoch) (:year date))
         months (range 1 (:month date))]
     (-> date
@@ -47,8 +45,3 @@
         (update :day #(reduce (fn [days month]
                                 (+ days (days-in-month {:month month :year (:year date)}))) % months))
         seconds)))
-
-
-(defn timestamp
-  ([]  (timestamp (now/utc)))
-  ([t] (to-epoch t)))
