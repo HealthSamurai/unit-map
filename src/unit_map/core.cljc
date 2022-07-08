@@ -229,7 +229,7 @@
 (defn find-conversion [x y]
   (let [x-syss (guess-sys x)
         y-syss (guess-sys y)
-        branches-diff (or (first (sys-intersection* x-syss y-syss))
+        branches-diff (or (first (sys-intersection x y))
                           (find-diff-branches (first x-syss) #_"TODO: find better sys match algo"
                                               (first y-syss)))
         conv-start (first branches-diff)
