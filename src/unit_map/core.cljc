@@ -156,13 +156,12 @@
 
 (defn defsys* [ctx sys-name units]
   (assert (sys-continuous?* ctx units))
-  (let [sys-def `(def ~sys-name ~units)]
-    (swap! ctx assoc-in [:systems sys-name] units)
-    sys-def))
+  (swap! ctx assoc-in [:systems sys-name] units)
+  units)
 
 
 (defmacro defsys [sys-name units]
-  (defsys* ctx sys-name units))
+  `(defsys* ctx (quote ~sys-name) ~units))
 
 
 ;;;;;;;;;; sys info

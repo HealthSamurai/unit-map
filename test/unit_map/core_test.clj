@@ -233,7 +233,13 @@
   (sut/defsys weeks [:weekday :week])
 
   (sut/defsys ms-year-epoch [:ms :sec :min :hour :day :month :epoch/year :epoch])
-  (sut/defsys year-epoch [:epoch/year :epoch]))
+  (sut/defsys year-epoch [:epoch/year :epoch])
+
+  (->> (for [[sys sys-def] (:systems @sut/ctx)
+             :when (symbol? sys)]
+         (list 'def sys sys-def))
+       (cons 'do)
+       eval #_"TODO: refactor this"))
 
 
 (t/deftest sys-detection
