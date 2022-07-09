@@ -80,22 +80,22 @@
              (:eq-units tregistry))))
 
   (t/testing "valid systems"
-    (t/is (sut/sys-continuous?* tregistry [::a ::b ::c ::d]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b2 ::c2 ::d]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b2 ::c2]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b3 ::c3]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b4 ::c4]))
-    (t/is (sut/sys-continuous?* tregistry [::b5 ::c5]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b6 ::c6 ::d]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b6 ::c6]))
-    (t/is (sut/sys-continuous?* tregistry [::a ::b ::c6 ::d])))
+    (t/is (sut/sys-continuous? tregistry [::a ::b ::c ::d]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b2 ::c2 ::d]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b2 ::c2]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b3 ::c3]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b4 ::c4]))
+    (t/is (sut/sys-continuous? tregistry [::b5 ::c5]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b6 ::c6 ::d]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b6 ::c6]))
+    (t/is (sut/sys-continuous? tregistry [::a ::b ::c6 ::d])))
 
   (t/testing "invalid systems"
-    (t/is (not (sut/sys-continuous?* tregistry [::d ::c ::b ::a])))
-    (t/is (not (sut/sys-continuous?* tregistry [::a ::b2 ::c])))
-    (t/is (not (sut/sys-continuous?* tregistry [::a ::b3 ::c3 ::d])))
+    (t/is (not (sut/sys-continuous? tregistry [::d ::c ::b ::a])))
+    (t/is (not (sut/sys-continuous? tregistry [::a ::b2 ::c])))
+    (t/is (not (sut/sys-continuous? tregistry [::a ::b3 ::c3 ::d])))
 
-    (t/is (not (sut/sys-continuous?* tregistry [::a])))))
+    (t/is (not (sut/sys-continuous? tregistry [::a])))))
 
 
 (do ;;NOTE: seqs

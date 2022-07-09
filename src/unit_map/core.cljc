@@ -153,7 +153,7 @@
   `(defseq! registry-atom ~unit ~useq))
 
 
-(defn sys-continuous?* [registry units]
+(defn sys-continuous? [registry units]
   (let [reverse-units (reverse units)]
     (->> (map vector
               (cons nil reverse-units)
@@ -163,12 +163,8 @@
              (get-in registry [:seqs prev-unit cur-unit]))))))
 
 
-(defn sys-continuous? [units]
-  (sys-continuous?* @registry-atom units))
-
-
 (defn defsys* [registry-atom sys-name units]
-  (assert (sys-continuous?* @registry-atom units))
+  (assert (sys-continuous? @registry-atom units))
   (swap! registry-atom assoc-in [:systems sys-name] units)
   units)
 
