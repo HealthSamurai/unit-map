@@ -246,74 +246,74 @@
 
 (t/deftest sys-detection
   (t/is (= ms-hour
-           (first (sut/guess-sys {::min 30, ::hour 15}))))
+           (sut/guess-sys {::min 30, ::hour 15})))
 
   (t/is (= ms-day-am-pm
-           (first (sut/guess-sys {::min 30, ::ampm-hour 3, ::ampm-period :pm}))))
+           (sut/guess-sys {::min 30, ::ampm-hour 3, ::ampm-period :pm})))
 
   (t/is (= ns-ms-day
-           (first (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1}))))
+           (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1})))
 
   (t/is (= ns-ms-hour
-           (first (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 25}))))
+           (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 25})))
 
   (t/is (= ns-ms-hour
-           (first (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1501}))))
+           (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1501})))
 
   (t/is (= seconds
-           (first (sut/guess-sys {::ns 1, ::ms 1, ::sec 90061}))))
+           (sut/guess-sys {::ns 1, ::ms 1, ::sec 90061})))
 
   (t/is (= seconds
-           (first (sut/guess-sys {::ns 1, ::ms 90061001}))))
+           (sut/guess-sys {::ns 1, ::ms 90061001})))
 
   (t/is (= ns-timestamp
-           (first (sut/guess-sys {::ns 90061001000001}))))
+           (sut/guess-sys {::ns 90061001000001})))
 
 
   (t/is (= ns-day
-           (first (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1, ::hour 1, ::day 1}))))
+           (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1, ::hour 1, ::day 1})))
 
   (t/is (= ns-hour
-           (first (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1, ::hour 25}))))
+           (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1, ::hour 25})))
 
   (t/is (= ns-hour
-           (first (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1501}))))
+           (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1501})))
 
   (t/is (= ns-seconds
-           (first (sut/guess-sys {::ns 1000001, ::sec 90061}))))
+           (sut/guess-sys {::ns 1000001, ::sec 90061})))
 
   (t/is (= ns-timestamp
-           (first (sut/guess-sys {::ns 90061001000001}))))
+           (sut/guess-sys {::ns 90061001000001})))
 
   (t/is (= ns-day
-           (first (sut/guess-sys {::ns 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ns 1}}))))
+           (sut/guess-sys {::ns 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ns 1}})))
 
 
   (t/is (= ms-day
-           (first (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1}))))
+           (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1})))
 
   (t/is (= ms-hour
-           (first (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 25}))))
+           (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 25})))
 
   (t/is (= ms-hour
-           (first (sut/guess-sys {::ms 1, ::sec 1, ::min 1501}))))
+           (sut/guess-sys {::ms 1, ::sec 1, ::min 1501})))
 
   (t/is (= ms-day
-           (first (sut/guess-sys {::ms 1, ::sec 1, ::min 1501}
-                                 ::day))))
+           (sut/guess-sys {::ms 1, ::sec 1, ::min 1501}
+                          ::day)))
 
   (t/is (= seconds
-           (first (sut/guess-sys {::ms 1, ::sec 90061}))))
+           (sut/guess-sys {::ms 1, ::sec 90061})))
 
   (t/is (= timestamp
-           (first (sut/guess-sys {::ms 90061001}))))
+           (sut/guess-sys {::ms 90061001})))
 
   (t/is (= ms-day
-           (first (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ms 1}}))))
+           (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ms 1}})))
 
-  (t/is (empty? (sut/guess-sys {})))
+  (t/is (nil? (sut/guess-sys {})))
 
-  (t/is (empty? (sut/guess-sys nil))))
+  (t/is (nil? (sut/guess-sys nil))))
 
 
 (t/deftest find-diff-branches-unit-test
@@ -420,31 +420,31 @@
 
 (t/deftest sys-conversion
   (t/testing "interseciton"
-    (t/is (= [ms-year ns-year ns-ms-year]
+    (t/is (= ms-year
              (sut/sys-intersection
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
                {:delta {::hour 3}})))
 
-    (t/is (= [ms-year ns-year ns-ms-year]
+    (t/is (= ms-year
              (sut/sys-intersection
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
                {::year 2021, ::month :sep, ::day 7, ::hour 22, ::min 30, :tz {::hour 3}})))
 
-    (t/is (= [ms-year ns-year ns-ms-year]
+    (t/is (= ms-year
              (sut/sys-intersection
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
                {::year 2021})))
 
-    (t/is (empty? (sut/sys-intersection
-                    {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
-                    {::cm 49})))
+    (t/is (nil? (sut/sys-intersection
+                  {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
+                  {::cm 49})))
 
-    (t/is (= [ms-year ns-year ns-ms-year]
+    (t/is (= ms-year
              (sut/sys-intersection
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
                {})))
 
-    (t/is (= [ms-year ns-year ns-ms-year]
+    (t/is (= ms-year
              (sut/sys-intersection
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}))))
 

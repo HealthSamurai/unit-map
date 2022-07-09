@@ -6,7 +6,6 @@
 
 #_"TODO:
 - guess-sys-with-seqs
-- refactor (first (guess-sys ...))
 - refactor repeating guess-sys calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
 - refactor to be able to pass registry-atom"
@@ -195,7 +194,7 @@
 (def guess-sys*
   (memoize
     (fn [units]
-      (supporting-systems (vals (:systems @registry-atom)) units))))
+      (first (supporting-systems (vals (:systems @registry-atom)) units)))))
 
 
 (defn guess-sys
@@ -235,11 +234,9 @@
 
 
 (defn find-conversion [registry x y]
-  (let [x-syss (guess-sys x)
-        y-syss (guess-sys y)
-        branches-diff (or (first (sys-intersection x y))
-                          (find-diff-branches (first x-syss) #_"TODO: find better sys match algo"
-                                              (first y-syss)))
+  (let [branches-diff (or (sys-intersection x y)
+                          (find-diff-branches (guess-sys x) #_"TODO: find better sys match algo"
+                                              (guess-sys y)))
         conv-start (first branches-diff)
         valid? (or (not (::branches (meta conv-start)))
                    (let [[[x :as xs] [y :as ys]] conv-start]
@@ -389,13 +386,13 @@
 (defn get-next-unit
   "next = more significant"
   [umap unit]
-  (u/get-next-element (first (guess-sys umap unit)) unit))
+  (u/get-next-element (guess-sys umap unit) unit))
 
 
 (defn get-prev-unit
   "prev = less significant"
   [umap unit]
-  (u/get-prev-element (first (guess-sys umap unit)) unit))
+  (u/get-prev-element (guess-sys umap unit) unit))
 
 
 (defn unit-seq [useqs unit next-unit]
@@ -409,7 +406,7 @@
 
 
 (defn get-unit-seq [umap unit]
-  (let [sys       (first (guess-sys umap unit))
+  (let [sys       (guess-sys umap unit)
         next-unit (u/get-next-element sys unit)]
     (get-unit-seq* unit next-unit)))
 
@@ -533,11 +530,10 @@
 
 
 (defn cmp [x y]
-  (or (when-let [sys (->> (sys-intersection x y)
-                          first)]
+  (or (when-let [sys (sys-intersection x y)]
         (cmp-in-sys sys x y))
-      (when-let [sys (or (first (guess-sys x))
-                         (first (guess-sys y)))]
+      (when-let [sys (or (guess-sys x)
+                         (guess-sys y))]
         (cmp-in-sys sys x y))
       (when (= x y)
         0)))
@@ -622,7 +618,7 @@
    (reduce (fn [result unit]
              (add-to-unit result unit (get delta unit 0)))
            x
-           (reverse (first (sys-intersection x delta)))))
+           (reverse (sys-intersection x delta))))
 
   ([x delta & more-deltas]
    (reduce add-delta
@@ -639,7 +635,7 @@
    (reduce (fn [result unit]
              (subtract-from-unit result unit (get delta unit 0)))
            x
-           (reverse (first (sys-intersection x delta)))))
+           (reverse (sys-intersection x delta))))
 
   ([x delta & more-deltas]
    (reduce subtract-delta
@@ -675,7 +671,7 @@
   (let [[a b] (cond-> [x y] (lt? x y) reverse)]
     (:acc (reduce (partial units-difference-reduce-fn a b)
                   {}
-                  (sys-unit-seqs (first (sys-intersection a b)))))))
+                  (sys-unit-seqs (sys-intersection a b))))))
 
 
 #_(defn difference-parts [units sys-seqs]
@@ -697,7 +693,7 @@
 
 #_(defn difference-in [units x y]
   (let [[a b]    (cond-> [x y] (lt? x y) reverse)
-        sys-seqs (sys-unit-seqs (first (sys-intersection a b)))
+        sys-seqs (sys-unit-seqs (sys-intersection a b))
         parts    (difference-parts units sys-seqs)]
     (reduce
       (fn [acc {:keys [to-unit seqs]}]
