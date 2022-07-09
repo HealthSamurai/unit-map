@@ -1,5 +1,6 @@
 (ns unit-map.systems.date-time.misc
-  (:require [unit-map.core :as umap]))
+  (:require [unit-map.core :as umap]
+            [unit-map.systems.date-time.defs]))
 
 
 ;; TODO: tz fmt support

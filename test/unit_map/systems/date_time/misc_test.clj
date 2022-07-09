@@ -1,10 +1,9 @@
 (ns unit-map.systems.date-time.misc-test
   (:require [unit-map.systems.date-time.misc :as sut]
-            [unit-map.systems.date-time.defs]
             [clojure.test :as t]))
 
 
-(t/deftest ^:kaocha/pending from-epoch-test
+(t/deftest from-epoch-test
   (t/is (= {:day 22, :month 4, :year 2020, :sec 40, :min 49, :hour 1} (sut/from-epoch 1587520180)))
   (t/is (= {:day 1, :month 1, :year 1970} (sut/from-epoch 0))))
 
