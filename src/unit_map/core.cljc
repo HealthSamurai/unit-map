@@ -9,12 +9,12 @@
 - refactor (first (guess-sys ...))
 - refactor repeating guess-sys calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
-- refactor to be able to pass ctx"
+- refactor to be able to pass registry-atom"
 
 
-(defonce ctx #_"TODO: can it be done without global atom state?"
+(defonce registry-atom #_"TODO: can it be done without global atom state?"
   (atom nil))
-#_(reset! ctx nil)
+#_(reset! registry-atom nil)
 
 
 ;;;;;;;;;; read seq
@@ -96,8 +96,8 @@
 ;;;;;;;;;; defseq & defsys
 
 
-(defn push-to-seq-graph [seqs-map unit unit-seq]
-  (let [eq-seqs (when-let [eq-unit (:eq-unit unit-seq)]
+(defn push-to-seq-graph [seqs-map unit useq]
+  (let [eq-seqs (when-let [eq-unit (:eq-unit useq)]
                   (->> (vals seqs-map)
                        (keep #(get % eq-unit))))
 
@@ -108,12 +108,12 @@
         to-this-unit (->> (vals seqs-map)
                           (keep #(get % unit)))
 
-        to-eq-new (when-let [eq-unit (:eq-unit unit-seq)]
+        to-eq-new (when-let [eq-unit (:eq-unit useq)]
                     (->> to-this-unit
                          (map #(assoc % :next-unit eq-unit))
                          distinct))
 
-        this-seq (assoc unit-seq :unit unit)
+        this-seq (assoc useq :unit unit)
 
         to-save (concat [this-seq]
                         to-this-unit-new
@@ -138,39 +138,43 @@
         (conj new-group))))
 
 
-(defn defseq* [ctx unit unit-seq]
-  (swap! ctx #(-> %
-                  (update :seqs push-to-seq-graph unit unit-seq)
-                  (update :eq-units push-to-eq-units unit unit-seq)))
-  unit-seq)
+(defn reg-useq [registry unit useq]
+  (-> registry
+      (update :seqs push-to-seq-graph unit useq)
+      (update :eq-units push-to-eq-units unit useq)))
 
 
-(defmacro defseq [unit unit-seq]
-  `(defseq* ctx ~unit ~unit-seq))
+(defn defseq! [registry-atom unit useq]
+  (swap! registry-atom reg-useq unit useq)
+  useq)
 
 
-(defn sys-continuous?* [ctx units]
+(defmacro defseq [unit useq]
+  `(defseq! registry-atom ~unit ~useq))
+
+
+(defn sys-continuous?* [registry units]
   (let [reverse-units (reverse units)]
     (->> (map vector
               (cons nil reverse-units)
               reverse-units)
          (every?
            (fn [[cur-unit prev-unit]]
-             (get-in @ctx [:seqs prev-unit cur-unit]))))))
+             (get-in registry [:seqs prev-unit cur-unit]))))))
 
 
 (defn sys-continuous? [units]
-  (sys-continuous?* ctx units))
+  (sys-continuous?* @registry-atom units))
 
 
-(defn defsys* [ctx sys-name units]
-  (assert (sys-continuous?* ctx units))
-  (swap! ctx assoc-in [:systems sys-name] units)
+(defn defsys* [registry-atom sys-name units]
+  (assert (sys-continuous?* @registry-atom units))
+  (swap! registry-atom assoc-in [:systems sys-name] units)
   units)
 
 
 (defmacro defsys [sys-name units]
-  `(defsys* ctx (quote ~sys-name) ~units))
+  `(defsys* registry-atom (quote ~sys-name) ~units))
 
 
 ;;;;;;;;;; sys info
@@ -185,8 +189,8 @@
        set))
 
 
-(defn guess-ctx-sys [ctx units]
-  (->> (vals (:systems ctx))
+(defn supporting-systems [all-systems units]
+  (->> all-systems
        (filter (comp (partial clojure.set/subset? units)
                      set))
        sort))
@@ -195,7 +199,7 @@
 (def guess-sys*
   (memoize
     (fn [units]
-      (guess-ctx-sys @ctx units))))
+      (supporting-systems (vals (:systems @registry-atom)) units))))
 
 
 (defn guess-sys
@@ -245,7 +249,7 @@
                    (let [[[x :as xs] [y :as ys]] conv-start]
                      (or (empty? xs)
                          (empty? ys)
-                         (contains? (->> (:eq-units @ctx)
+                         (contains? (->> (:eq-units @registry-atom)
                                          (filter #(contains? % x))
                                          first)
                                     y))))]
@@ -398,14 +402,14 @@
   (u/get-prev-element (first (guess-sys umap unit)) unit))
 
 
-(defn get-ctx-unit-seq [ctx unit next-unit]
-  (get-in ctx [:seqs unit next-unit]))
+(defn unit-seq [useqs unit next-unit]
+  (get-in useqs [unit next-unit]))
 
 
 (def get-unit-seq*
   (memoize
     (fn [unit next-unit]
-      (get-ctx-unit-seq @ctx unit next-unit))))
+      (unit-seq (:seqs @registry-atom) unit next-unit))))
 
 
 (defn get-unit-seq [umap unit]

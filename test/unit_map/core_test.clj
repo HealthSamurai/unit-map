@@ -4,32 +4,34 @@
 
 
 (t/deftest defseq-defsys
-  (def tctx (atom nil))
+  (def tregistry-atom (atom nil))
 
-  (sut/defseq* tctx ::a #unit-map/seq[0 1 -> ::b])
-  (sut/defseq* tctx ::b #unit-map/seq[0 1 -> ::c])
-  (sut/defseq* tctx ::c #unit-map/seq[0 1 -> ::d])
-  (sut/defseq* tctx ::d #unit-map/seq[0 1])
+  (sut/defseq! tregistry-atom ::a #unit-map/seq[0 1 -> ::b])
+  (sut/defseq! tregistry-atom ::b #unit-map/seq[0 1 -> ::c])
+  (sut/defseq! tregistry-atom ::c #unit-map/seq[0 1 -> ::d])
+  (sut/defseq! tregistry-atom ::d #unit-map/seq[0 1])
 
-  (sut/defseq* tctx ::aa #unit-map/seq[0 2 -> ::b])
-  (sut/defseq* tctx ::a #unit-map/seq[0 1 2 3 -> ::c])
+  (sut/defseq! tregistry-atom ::aa #unit-map/seq[0 2 -> ::b])
+  (sut/defseq! tregistry-atom ::a #unit-map/seq[0 1 2 3 -> ::c])
 
-  (sut/defseq* tctx ::b2 #unit-map/seq[::b <=> -2 -1 0 -> ::c2])
-  (sut/defseq* tctx ::c2 #unit-map/seq[-2 -1 0 -> ::d])
-  (sut/defseq* tctx ::c2 #unit-map/seq[-2 -1 .. ##-Inf])
+  (sut/defseq! tregistry-atom ::b2 #unit-map/seq[::b <=> -2 -1 0 -> ::c2])
+  (sut/defseq! tregistry-atom ::c2 #unit-map/seq[-2 -1 0 -> ::d])
+  (sut/defseq! tregistry-atom ::c2 #unit-map/seq[-2 -1 .. ##-Inf])
 
-  (sut/defseq* tctx ::b3 #unit-map/seq[::b2 <=> 2 1 0 -> ::c3])
-  (sut/defseq* tctx ::c3 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq! tregistry-atom ::b3 #unit-map/seq[::b2 <=> 2 1 0 -> ::c3])
+  (sut/defseq! tregistry-atom ::c3 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq* tctx ::b4 #unit-map/seq[::b <=> 2 1 0 -> ::c4])
-  (sut/defseq* tctx ::c4 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq! tregistry-atom ::b4 #unit-map/seq[::b <=> 2 1 0 -> ::c4])
+  (sut/defseq! tregistry-atom ::c4 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq* tctx ::b5 #unit-map/seq[2 1 0 -> ::c5])
-  (sut/defseq* tctx ::c5 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq! tregistry-atom ::b5 #unit-map/seq[2 1 0 -> ::c5])
+  (sut/defseq! tregistry-atom ::c5 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq* tctx ::b6 #unit-map/seq[::b <=> 2 1 0 -> ::c6])
-  (sut/defseq* tctx ::c6 #unit-map/seq[::c <=> 2 1 0 -> ::d])
-  (sut/defseq* tctx ::c6 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq! tregistry-atom ::b6 #unit-map/seq[::b <=> 2 1 0 -> ::c6])
+  (sut/defseq! tregistry-atom ::c6 #unit-map/seq[::c <=> 2 1 0 -> ::d])
+  (sut/defseq! tregistry-atom ::c6 #unit-map/seq[2 1 .. ##-Inf])
+
+  (def tregistry @tregistry-atom)
 
   (t/testing "seqs graph"
     (def graph-assert
@@ -69,31 +71,31 @@
        ::c6 {::d {:sequence [2 1 0], :unit ::c6, :next-unit ::d}
              nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit ::c6}}})
 
-    (t/is (= graph-assert (:seqs @tctx)))
+    (t/is (= graph-assert (:seqs tregistry)))
 
     (t/is (= #{#{::a} #{::aa}
                #{::b ::b2 ::b3 ::b4 ::b6} #{::b5}
                #{::c ::c6} #{::c2} #{::c3} #{::c4} #{::c5}
                #{::d}}
-             (:eq-units @tctx))))
+             (:eq-units tregistry))))
 
   (t/testing "valid systems"
-    (t/is (sut/sys-continuous?* tctx [::a ::b ::c ::d]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b2 ::c2 ::d]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b2 ::c2]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b3 ::c3]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b4 ::c4]))
-    (t/is (sut/sys-continuous?* tctx [::b5 ::c5]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b6 ::c6 ::d]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b6 ::c6]))
-    (t/is (sut/sys-continuous?* tctx [::a ::b ::c6 ::d])))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b ::c ::d]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b2 ::c2 ::d]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b2 ::c2]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b3 ::c3]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b4 ::c4]))
+    (t/is (sut/sys-continuous?* tregistry [::b5 ::c5]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b6 ::c6 ::d]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b6 ::c6]))
+    (t/is (sut/sys-continuous?* tregistry [::a ::b ::c6 ::d])))
 
   (t/testing "invalid systems"
-    (t/is (not (sut/sys-continuous?* tctx [::d ::c ::b ::a])))
-    (t/is (not (sut/sys-continuous?* tctx [::a ::b2 ::c])))
-    (t/is (not (sut/sys-continuous?* tctx [::a ::b3 ::c3 ::d])))
+    (t/is (not (sut/sys-continuous?* tregistry [::d ::c ::b ::a])))
+    (t/is (not (sut/sys-continuous?* tregistry [::a ::b2 ::c])))
+    (t/is (not (sut/sys-continuous?* tregistry [::a ::b3 ::c3 ::d])))
 
-    (t/is (not (sut/sys-continuous?* tctx [::a])))))
+    (t/is (not (sut/sys-continuous?* tregistry [::a])))))
 
 
 (do ;;NOTE: seqs
@@ -235,7 +237,7 @@
   (sut/defsys ms-year-epoch [::ms ::sec ::min ::hour ::day ::month ::epoch-year ::epoch])
   (sut/defsys year-epoch [::epoch-year ::epoch])
 
-  (->> (for [[sys sys-def] (:systems @sut/ctx)
+  (->> (for [[sys sys-def] (:systems @sut/registry-atom)
              :when (symbol? sys)]
          (list 'def sys sys-def))
        (cons 'do)
@@ -729,7 +731,7 @@
   (t/testing "get-next-unit-value"
     (t/is (= (range 60)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/ctx [:seqs ::sec ::min])
+                              (get-in @sut/registry-atom [:seqs ::sec ::min])
                               nil
                               %)
                            0)
@@ -737,7 +739,7 @@
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/ctx [:seqs ::month ::year])
+                              (get-in @sut/registry-atom [:seqs ::month ::year])
                               nil
                               %)
                            :jan)
@@ -745,7 +747,7 @@
 
     (t/is (= (range 1970 2021)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/ctx [:seqs ::year nil])
+                              (get-in @sut/registry-atom [:seqs ::year nil])
                               nil
                               %)
                            1970)
@@ -753,7 +755,7 @@
 
     (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/ctx [:seqs ::ampm-hour ::ampm-period])
+                              (get-in @sut/registry-atom [:seqs ::ampm-hour ::ampm-period])
                               nil
                               %)
                            12)
@@ -770,7 +772,7 @@
   (t/testing "get-prev-unit-value"
     (t/is (= (reverse (range 60))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/ctx [:seqs ::sec ::min])
+                              (get-in @sut/registry-atom [:seqs ::sec ::min])
                               nil
                               %)
                            59)
@@ -778,7 +780,7 @@
 
     (t/is (= (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/ctx [:seqs ::month ::year])
+                              (get-in @sut/registry-atom [:seqs ::month ::year])
                               nil
                               %)
                            :dec)
@@ -786,7 +788,7 @@
 
     (t/is (= (reverse (range 1970 2021))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/ctx [:seqs ::year nil])
+                              (get-in @sut/registry-atom [:seqs ::year nil])
                               nil
                               %)
                            2020)
@@ -794,7 +796,7 @@
 
     (t/is (= (reverse [12 1 2 3 4 5 6 7 8 9 10 11])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/ctx [:seqs ::ampm-hour ::ampm-period])
+                              (get-in @sut/registry-atom [:seqs ::ampm-hour ::ampm-period])
                               nil
                               %)
                            11)
