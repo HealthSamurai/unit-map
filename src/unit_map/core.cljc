@@ -234,7 +234,7 @@
                  (conj ^::branches[(vec x-branch) (vec y-branch)])))))))
 
 
-(defn find-conversion [x y]
+(defn find-conversion [registry x y]
   (let [x-syss (guess-sys x)
         y-syss (guess-sys y)
         branches-diff (or (first (sys-intersection x y))
@@ -245,7 +245,7 @@
                    (let [[[x :as xs] [y :as ys]] conv-start]
                      (or (empty? xs)
                          (empty? ys)
-                         (contains? (->> (:eq-units @registry-atom)
+                         (contains? (->> (:eq-units registry)
                                          (filter #(contains? % x))
                                          first)
                                     y))))]

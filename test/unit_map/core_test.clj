@@ -459,6 +459,7 @@
               {[::month] [::month]}
               {[::year]  [::year]}]
              (sut/find-conversion
+               @sut/registry-atom
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30}
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30})))
 
@@ -470,6 +471,7 @@
               {[::month] [::month]}
               {[::year]  [::year]}]
              (sut/find-conversion
+               @sut/registry-atom
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30}
                {::year 2021, ::month :sep, ::day 7, ::ampm-period :pm, ::ampm-hour 9, ::min 30})))
 
@@ -483,6 +485,7 @@
                 {[::month] [::month]}
                 {[::year]  [::year]}]
                (sut/find-conversion
+                 @sut/registry-atom
                  {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, ::sec 10, ::ms 10}
                  {::year 2021, ::month :sep, ::day 7, ::ampm-period :pm, ::ampm-hour 9, ::min 30, ::sec 10, ::ms 10, ::ns 10}))))
 
@@ -496,18 +499,21 @@
                 {[::month] [::month]}
                 {[::year]  [::year]}]
                (sut/find-conversion
+                 @sut/registry-atom
                  {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, ::sec 10, ::ns 10000010}
                  {::year 2021, ::month :sep, ::day 7, ::ampm-period :pm, ::ampm-hour 9, ::min 30, ::sec 10, ::ms 10, ::ns 10}))))
 
     (t/testing "no conversion"
       (t/is (empty?
               (sut/find-conversion
+                @sut/registry-atom
                 {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, ::sec 10, ::ns 10000010}
                 {::m 1, ::cm 82}))))
 
     (t/testing "no common units, no common finish"
       (t/is (= [{[::weekday ::week] [::day ::month ::year]}]
                (sut/find-conversion
+                 @sut/registry-atom
                  {::week 6}
                  {::year 2022, ::month :jan, ::day 1}))))))
 
