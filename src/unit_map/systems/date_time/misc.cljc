@@ -7,7 +7,7 @@
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 
-(defn leap-year? [year] (defs/leap-year? year))
+(defn leap-year? [date] (defs/leap-year? date))
 
 
 (defn days-in-month [date] (defs/days-in-month date))
@@ -33,7 +33,7 @@
     (-> date
         (dissoc :year :month)
         (update :day #(reduce (fn [days year]
-                                (+ days (if (leap-year? year) 366 365))) % years))
+                                (+ days (if (leap-year? {:year year}) 366 365))) % years))
         (update :day #(reduce (fn [days month]
                                 (+ days (days-in-month {:month month :year (:year date)}))) % months))
         seconds)))

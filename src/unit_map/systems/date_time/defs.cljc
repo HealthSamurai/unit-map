@@ -2,17 +2,17 @@
   (:require [unit-map.core :as u]))
 
 
-(defn leap-year? [year]
+(defn leap-year? [{:keys [year]}]
   (and (zero? (rem year 4))
        (or (pos? (rem year 100))
            (zero? (rem year 400)))))
 
 
-(defn days-in-month [{:keys [month year]}]
+(defn days-in-month [{:as date, :keys [month year]}]
   (cond
     (some nil? [month year])            ##Inf
     (contains? #{4 6 9 11} month)       30
-    (and (leap-year? year) (= 2 month)) 29
+    (and (leap-year? date) (= 2 month)) 29
     (= 2 month)                         28
     :else                               31))
 
