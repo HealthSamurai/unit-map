@@ -383,7 +383,7 @@
           (recur (+ i increment) rest-s))))))
 
 
-;;;;;;;;;; type
+;;;;;;;;;; system utils
 
 
 (defn get-next-unit
