@@ -1,25 +1,16 @@
 (ns unit-map.systems.date-time.misc
   (:require [unit-map.core :as umap]
-            [unit-map.systems.date-time.defs]))
+            [unit-map.systems.date-time.defs :as defs]))
 
 
 ;; TODO: tz fmt support
 (def iso-fmt [:year "-" :month "-" :day "T" :hour ":" :min ":" :sec "." :ms])
 
 
-(defn leap-year? [y]
-  (and (zero? (rem y 4))
-       (or (pos? (rem y 100))
-           (zero? (rem y 400)))))
+(defn leap-year? [year] (defs/leap-year? year))
 
 
-(defn days-in-month [{m :month, y :year}]
-  (cond
-    (some nil? [m y])            ##Inf
-    (contains? #{4 6 9 11} m)    30
-    (and (leap-year? y) (= 2 m)) 29
-    (= 2 m)                      28
-    :else                        31))
+(defn days-in-month [date] (defs/days-in-month date))
 
 
 (def epoch {:year 1970 :day 1 :month 1})
