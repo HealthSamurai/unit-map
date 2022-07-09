@@ -506,40 +506,6 @@
         (assoc $ unit (get-max-value $ unit)))))
 
 
-(defn add-to-unit [umap unit x] #_"TODO: handle unnormalized values"
-  (cond
-    (zero? x)
-    umap
-
-    (and (< 1 (abs x))
-         (static-sequence? (get-unit-seq umap unit)))
-    (let [useq        (get-unit-seq umap unit)
-          idx         (if-let [v (get umap unit)]
-                         (sequence-index-of useq umap v)
-                         (sequence-first-index useq umap))
-          sum         (+ idx x)
-          modulo      (sequence-length useq umap)
-          result-idx  (cond-> sum (u/finite? modulo) (mod modulo))
-          carry-delta (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
-          result      (sequence-nth useq umap result-idx)
-          result-umap (assoc umap unit result)]
-      (if (zero? carry-delta)
-        result-umap
-        (recur result-umap
-               (get-next-unit umap unit)
-               carry-delta)))
-
-    (neg? x)
-    (u/n-times (- x) (partial dec-unit unit) umap)
-
-    :else
-    (u/n-times x (partial inc-unit unit) umap)))
-
-
-(defn subtract-from-unit [umap unit x]
-  (add-to-unit umap unit (- x)))
-
-
 ;;;;;;;;;; cmp
 #_"TODO: add zero?"
 
@@ -611,6 +577,40 @@
 
 
 ;;;;;;;;;; arithmetic
+
+
+(defn add-to-unit [umap unit x] #_"TODO: handle unnormalized values"
+  (cond
+    (zero? x)
+    umap
+
+    (and (< 1 (abs x))
+         (static-sequence? (get-unit-seq umap unit)))
+    (let [useq        (get-unit-seq umap unit)
+          idx         (if-let [v (get umap unit)]
+                         (sequence-index-of useq umap v)
+                         (sequence-first-index useq umap))
+          sum         (+ idx x)
+          modulo      (sequence-length useq umap)
+          result-idx  (cond-> sum (u/finite? modulo) (mod modulo))
+          carry-delta (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
+          result      (sequence-nth useq umap result-idx)
+          result-umap (assoc umap unit result)]
+      (if (zero? carry-delta)
+        result-umap
+        (recur result-umap
+               (get-next-unit umap unit)
+               carry-delta)))
+
+    (neg? x)
+    (u/n-times (- x) (partial dec-unit unit) umap)
+
+    :else
+    (u/n-times x (partial inc-unit unit) umap)))
+
+
+(defn subtract-from-unit [umap unit x]
+  (add-to-unit umap unit (- x)))
 
 
 (defn add-delta

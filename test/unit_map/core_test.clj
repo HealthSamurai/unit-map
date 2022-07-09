@@ -886,23 +886,7 @@
                          (partition-by ::month)))
 
       (t/is (= 12 (count calendar)))
-      (t/is (= 365 (count (flatten calendar))))))
-
-  (t/testing "add-to-unit"
-    (t/is (= {::hour 0, ::day 22, ::month :aug, ::year 2044}
-             (sut/add-to-unit {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour 216000)))
-    (t/is (= {::hour 0 ,::year 1995, ::month :may, ::day 12}
-             (sut/add-to-unit {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour -216000)))
-    (t/is (= {::day 1, ::month :jan, ::year 2020}
-             (sut/add-to-unit {::day 1, ::month :jan, ::year 2020} ::hour 0))))
-
-  (t/testing "subtract-from-unit"
-    (t/is (= {::hour 0, ::day 22, ::month :aug, ::year 2044}
-             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour -216000)))
-    (t/is (= {::hour 0,::year 1995, ::month :may, ::day 12}
-             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour 216000)))
-    (t/is (= {::day 1, ::month :jan, ::year 2020}
-             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour 0)))))
+      (t/is (= 365 (count (flatten calendar)))))))
 
 
 (t/deftest cmp
@@ -939,6 +923,22 @@
 
 
 (t/deftest arithmetic
+  (t/testing "add-to-unit"
+    (t/is (= {::hour 0, ::day 22, ::month :aug, ::year 2044}
+             (sut/add-to-unit {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour 216000)))
+    (t/is (= {::hour 0 ,::year 1995, ::month :may, ::day 12}
+             (sut/add-to-unit {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour -216000)))
+    (t/is (= {::day 1, ::month :jan, ::year 2020}
+             (sut/add-to-unit {::day 1, ::month :jan, ::year 2020} ::hour 0))))
+
+  (t/testing "subtract-from-unit"
+    (t/is (= {::hour 0, ::day 22, ::month :aug, ::year 2044}
+             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour -216000)))
+    (t/is (= {::hour 0,::year 1995, ::month :may, ::day 12}
+             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour 216000)))
+    (t/is (= {::day 1, ::month :jan, ::year 2020}
+             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour 0))))
+
   (t/testing "+"
     (def t
       {::year  2018
