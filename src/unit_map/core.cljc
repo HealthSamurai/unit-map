@@ -21,21 +21,30 @@
 
 
 (defn range? [x]
-  (and (map? x) (::range (meta x))))
+  (and (map? x)
+       (every? #(contains? x %)
+               [:start :end :step])))
+
+
+(defn create-range [start end step]
+  {:start start
+   :end   end
+   :step  step})
 
 
 (defn process-range [pprev prev next-seq nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next-seq]))]}
-  ^::range{:start (or pprev prev)
-           :step  (if (nil? pprev)
-                    (if (integer? next-seq)
-                      (- nnext next-seq)
-                      next-seq)
-                    (if (integer? prev)
-                      (- prev pprev)
-                      prev))
-           :end   (or nnext next-seq)})
+  (let [start (or pprev prev)
+        end   (or nnext next-seq)
+        step  (if (nil? pprev)
+                (if (integer? next-seq)
+                  (- nnext next-seq)
+                  next-seq)
+                (if (integer? prev)
+                  (- prev pprev)
+                  prev))]
+    (create-range start end step)))
 
 
 (defn process-equivalent [s]
