@@ -148,8 +148,8 @@
   useq)
 
 
-(defmacro defseq [unit useq]
-  `(defseq! registry-atom ~unit ~useq))
+(defn defseq [unit useq]
+  (defseq! registry-atom unit useq))
 
 
 (defn sys-continuous? [registry units]
@@ -168,8 +168,8 @@
   units)
 
 
-(defmacro defsys [sys-name units]
-  `(defsys* registry-atom (quote ~sys-name) ~units))
+(defn defsys [sys-name units]
+  (defsys* registry-atom sys-name units))
 
 
 ;;;;;;;;;; sys info

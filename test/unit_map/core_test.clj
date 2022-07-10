@@ -199,43 +199,43 @@
   (sut/defseq ::epoch  #unit-map/seq[:BC :AD]))
 
 (do ;;NOTE: systems
-  (sut/defsys imperial [::mil ::inch ::foot ::mile])
+  (sut/defsys 'imperial [::mil ::inch ::foot ::mile])
 
-  (sut/defsys metric   [::mm ::cm ::m ::km])
+  (sut/defsys 'metric   [::mm ::cm ::m ::km])
 
-  (sut/defsys ms-hour    [::ms ::sec ::min ::hour])
-  (sut/defsys ns-hour    [::ns ::sec ::min ::hour])
-  (sut/defsys ns-ms-hour [::ns ::ms ::sec ::min ::hour])
+  (sut/defsys 'ms-hour    [::ms ::sec ::min ::hour])
+  (sut/defsys 'ns-hour    [::ns ::sec ::min ::hour])
+  (sut/defsys 'ns-ms-hour [::ns ::ms ::sec ::min ::hour])
 
-  (sut/defsys timestamp    [::ms])
-  (sut/defsys ns-timestamp [::ns])
+  (sut/defsys 'timestamp    [::ms])
+  (sut/defsys 'ns-timestamp [::ns])
 
-  (sut/defsys seconds [::ns ::ms ::sec])
-  (sut/defsys ns-seconds [::ns ::sec])
+  (sut/defsys 'seconds [::ns ::ms ::sec])
+  (sut/defsys 'ns-seconds [::ns ::sec])
 
-  (sut/defsys ms-day    [::ms ::sec ::min ::hour ::day])
-  (sut/defsys ns-day    [::ns ::sec ::min ::hour ::day])
-  (sut/defsys ns-ms-day [::ns ::ms ::sec ::min ::hour ::day])
+  (sut/defsys 'ms-day    [::ms ::sec ::min ::hour ::day])
+  (sut/defsys 'ns-day    [::ns ::sec ::min ::hour ::day])
+  (sut/defsys 'ns-ms-day [::ns ::ms ::sec ::min ::hour ::day])
 
-  (sut/defsys ms-day-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
-  (sut/defsys ns-day-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day])
-  (sut/defsys ns-ms-day-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
+  (sut/defsys 'ms-day-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
+  (sut/defsys 'ns-day-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day])
+  (sut/defsys 'ns-ms-day-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
 
-  (sut/defsys date       [::day ::month ::year])
-  (sut/defsys month-year [::month ::year])
+  (sut/defsys 'date       [::day ::month ::year])
+  (sut/defsys 'month-year [::month ::year])
 
-  (sut/defsys ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
-  (sut/defsys ns-year    [::ns ::sec ::min ::hour ::day ::month ::year])
-  (sut/defsys ns-ms-year [::ns ::ms ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys 'ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys 'ns-year    [::ns ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys 'ns-ms-year [::ns ::ms ::sec ::min ::hour ::day ::month ::year])
 
-  (sut/defsys ms-year-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
-  (sut/defsys ns-year-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
-  (sut/defsys ns-ms-year-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
+  (sut/defsys 'ms-year-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
+  (sut/defsys 'ns-year-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
+  (sut/defsys 'ns-ms-year-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
 
-  (sut/defsys weeks [::weekday ::week])
+  (sut/defsys 'weeks [::weekday ::week])
 
-  (sut/defsys ms-year-epoch [::ms ::sec ::min ::hour ::day ::month ::epoch-year ::epoch])
-  (sut/defsys year-epoch [::epoch-year ::epoch])
+  (sut/defsys 'ms-year-epoch [::ms ::sec ::min ::hour ::day ::month ::epoch-year ::epoch])
+  (sut/defsys 'year-epoch [::epoch-year ::epoch])
 
   (->> (for [[sys sys-def] (:systems @sut/registry-atom)
              :when (symbol? sys)]
@@ -1185,7 +1185,7 @@
   (sut/defseq ::month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> ::year])
   (sut/defseq ::year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (sut/defsys ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys 'ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
 
   #_(sut/deffmt :iso/month [::month (fn [v fmt-el] '???)])
   #_(sut/deffmt :iso/day [::day 2 "0"])
