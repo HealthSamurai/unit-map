@@ -17,28 +17,30 @@
     :else                               31))
 
 
-(u/defseq :ns   #unit-map/seq[0 1 .. 999999999 -> :sec])
-(u/defseq :ms   #unit-map/seq[0 1 .. 999 -> :sec])
-(u/defseq :sec  #unit-map/seq[0 1 .. 59 -> :min])
-(u/defseq :min  #unit-map/seq[0 1 .. 59 -> :hour])
-(u/defseq :hour #unit-map/seq[0 1 .. ##Inf])
-(u/defseq :hour #unit-map/seq[0 1 .. 23 -> :day])
+(def seqs
+  [:ns   #unit-map/seq[0 1 .. 999999999 -> :sec]
+   :ms   #unit-map/seq[0 1 .. 999 -> :sec]
+   :sec  #unit-map/seq[0 1 .. 59 -> :min]
+   :min  #unit-map/seq[0 1 .. 59 -> :hour]
+   :hour #unit-map/seq[0 1 .. ##Inf]
+   :hour #unit-map/seq[0 1 .. 23 -> :day]
 
-(u/defseq :hour   #unit-map/seq[12 1 2 .. 11 -> :period])
-(u/defseq :period #unit-map/seq[:am :pm -> :day])
+   :hour   #unit-map/seq[12 1 2 .. 11 -> :period]
+   :period #unit-map/seq[:am :pm -> :day]
 
-(u/defseq :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-(u/defseq :month #unit-map/seq[1 2 .. 12 -> :year])
-(u/defseq :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+   :day   #unit-map/seq[1 2 .. days-in-month -> :month]
+   :month #unit-map/seq[1 2 .. 12 -> :year]
+   :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]])
 
 
-(u/defsys :date [:day :month :year])
+(def systems
+  [:date [:day :month :year]
 
-(u/defsys :ms-year [:ms :sec :min :hour :day :month :year])
-(u/defsys :ns-year [:ns :sec :min :hour :day :month :year])
+   :ms-year [:ms :sec :min :hour :day :month :year]
+   :ns-year [:ns :sec :min :hour :day :month :year]
 
-(u/defsys :am-pm-ms-year [:ms :sec :min :hour :period :day :month :year])
-(u/defsys :am-pm-ns-year [:ns :sec :min :hour :period :day :month :year])
+   :am-pm-ms-year [:ms :sec :min :hour :period :day :month :year]
+   :am-pm-ns-year [:ns :sec :min :hour :period :day :month :year]])
 
 
 #_"NOTE: not sure if this system is needed by default"

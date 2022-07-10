@@ -3,6 +3,9 @@
             [clojure.test :as t]))
 
 
+(def registry-atom (atom nil))
+
+
 (t/deftest defseq-defsys
   (def tregistry-atom (atom nil))
 
@@ -150,94 +153,94 @@
       #{:jun :jul :aug} :summer
       #{:sep :oct :nov} :autumn))
 
-  (sut/defseq ::ns   #unit-map/seq[0 1 .. 999999999 -> ::sec])
+  (sut/defseq registry-atom ::ns   #unit-map/seq[0 1 .. 999999999 -> ::sec])
 
-  (sut/defseq ::ns   #unit-map/seq[0 1 .. 999999 -> ::ms])
-  (sut/defseq ::ms   #unit-map/seq[0 1 .. 999 -> ::sec])
-  (sut/defseq ::sec  #unit-map/seq[0 1 .. 59 -> ::min])
-  (sut/defseq ::min  #unit-map/seq[0 1 .. 59 -> ::hour])
-  (sut/defseq ::hour #unit-map/seq[0 1 .. 23 -> ::day])
+  (sut/defseq registry-atom ::ns   #unit-map/seq[0 1 .. 999999 -> ::ms])
+  (sut/defseq registry-atom ::ms   #unit-map/seq[0 1 .. 999 -> ::sec])
+  (sut/defseq registry-atom ::sec  #unit-map/seq[0 1 .. 59 -> ::min])
+  (sut/defseq registry-atom ::min  #unit-map/seq[0 1 .. 59 -> ::hour])
+  (sut/defseq registry-atom ::hour #unit-map/seq[0 1 .. 23 -> ::day])
 
-  (sut/defseq ::ms   #unit-map/seq[0 1 .. ##Inf])
-  (sut/defseq ::ns   #unit-map/seq[0 1 .. ##Inf])
-  (sut/defseq ::sec  #unit-map/seq[0 1 .. ##Inf])
-  (sut/defseq ::hour #unit-map/seq[0 1 .. ##Inf])
-  (sut/defseq ::day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
+  (sut/defseq registry-atom ::ms   #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq registry-atom ::ns   #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq registry-atom ::sec  #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq registry-atom ::hour #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq registry-atom ::day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
-  (sut/defseq ::ampm-hour   #unit-map/seq[::hour <=> 12 1 2 .. 11 -> ::ampm-period])
-  (sut/defseq ::ampm-period #unit-map/seq[:am :pm -> ::day])
+  (sut/defseq registry-atom ::ampm-hour   #unit-map/seq[::hour <=> 12 1 2 .. 11 -> ::ampm-period])
+  (sut/defseq registry-atom ::ampm-period #unit-map/seq[:am :pm -> ::day])
 
-  (sut/defseq ::day   #unit-map/seq[1 2 .. days-in-month -> ::month])
-  (sut/defseq ::month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> ::year])
-  (sut/defseq ::year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (sut/defseq registry-atom ::day   #unit-map/seq[1 2 .. days-in-month -> ::month])
+  (sut/defseq registry-atom ::month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> ::year])
+  (sut/defseq registry-atom ::year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (sut/defseq ::weekday  #unit-map/seq[::day <=> :mon :tue :wed :thu :fri :sat :sun -> ::week])
-  (sut/defseq ::week     #unit-map/seq[1 2 .. 52])
-  (sut/defseq ::weekpart #unit-map/seq[::weekday <=> weekday])
-  (sut/defseq ::season   #unit-map/seq[::month <=> season])
+  (sut/defseq registry-atom ::weekday  #unit-map/seq[::day <=> :mon :tue :wed :thu :fri :sat :sun -> ::week])
+  (sut/defseq registry-atom ::week     #unit-map/seq[1 2 .. 52])
+  (sut/defseq registry-atom ::weekpart #unit-map/seq[::weekday <=> weekday])
+  (sut/defseq registry-atom ::season   #unit-map/seq[::month <=> season])
 
-  (sut/defseq ::mil  #unit-map/seq[0 1 .. 999  -> ::inch])
-  (sut/defseq ::inch #unit-map/seq[0 1 .. 11   -> ::foot])
-  (sut/defseq ::foot #unit-map/seq[0 1 .. 5279 -> ::mile])
-  (sut/defseq ::mile #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq registry-atom ::mil  #unit-map/seq[0 1 .. 999  -> ::inch])
+  (sut/defseq registry-atom ::inch #unit-map/seq[0 1 .. 11   -> ::foot])
+  (sut/defseq registry-atom ::foot #unit-map/seq[0 1 .. 5279 -> ::mile])
+  (sut/defseq registry-atom ::mile #unit-map/seq[0 1 .. ##Inf])
 
-  (sut/defseq ::mm #unit-map/seq[0 1 .. 9   -> ::cm])
-  (sut/defseq ::cm #unit-map/seq[0 1 .. 99  -> ::m])
-  (sut/defseq ::m  #unit-map/seq[0 1 .. 999 -> ::km])
-  (sut/defseq ::km #unit-map/seq[0 1 .. ##Inf])
+  (sut/defseq registry-atom ::mm #unit-map/seq[0 1 .. 9   -> ::cm])
+  (sut/defseq registry-atom ::cm #unit-map/seq[0 1 .. 99  -> ::m])
+  (sut/defseq registry-atom ::m  #unit-map/seq[0 1 .. 999 -> ::km])
+  (sut/defseq registry-atom ::km #unit-map/seq[0 1 .. ##Inf])
 
-  (sut/defseq ::epoch-year  #unit-map/seq[::year <=>
-                                          (fn [{::keys [epoch]}]
-                                            (if (= :BC epoch) ##Inf 1))
-                                          (fn [{::keys [epoch]}]
-                                            (if (= :BC epoch) -1 1))
-                                          ..
-                                          (fn [{::keys [epoch]}]
-                                            (if (= :BC epoch) 1 ##Inf))
-                                          -> ::epoch])
+  (sut/defseq registry-atom ::epoch-year  #unit-map/seq[::year <=>
+                                                        (fn [{::keys [epoch]}]
+                                                          (if (= :BC epoch) ##Inf 1))
+                                                        (fn [{::keys [epoch]}]
+                                                          (if (= :BC epoch) -1 1))
+                                                        ..
+                                                        (fn [{::keys [epoch]}]
+                                                          (if (= :BC epoch) 1 ##Inf))
+                                                        -> ::epoch])
 
-  (sut/defseq ::epoch  #unit-map/seq[:BC :AD]))
+  (sut/defseq registry-atom ::epoch  #unit-map/seq[:BC :AD]))
 
 (do ;;NOTE: systems
-  (sut/defsys 'imperial [::mil ::inch ::foot ::mile])
+  (sut/defsys registry-atom 'imperial [::mil ::inch ::foot ::mile])
 
-  (sut/defsys 'metric   [::mm ::cm ::m ::km])
+  (sut/defsys registry-atom 'metric   [::mm ::cm ::m ::km])
 
-  (sut/defsys 'ms-hour    [::ms ::sec ::min ::hour])
-  (sut/defsys 'ns-hour    [::ns ::sec ::min ::hour])
-  (sut/defsys 'ns-ms-hour [::ns ::ms ::sec ::min ::hour])
+  (sut/defsys registry-atom 'ms-hour    [::ms ::sec ::min ::hour])
+  (sut/defsys registry-atom 'ns-hour    [::ns ::sec ::min ::hour])
+  (sut/defsys registry-atom 'ns-ms-hour [::ns ::ms ::sec ::min ::hour])
 
-  (sut/defsys 'timestamp    [::ms])
-  (sut/defsys 'ns-timestamp [::ns])
+  (sut/defsys registry-atom 'timestamp    [::ms])
+  (sut/defsys registry-atom 'ns-timestamp [::ns])
 
-  (sut/defsys 'seconds [::ns ::ms ::sec])
-  (sut/defsys 'ns-seconds [::ns ::sec])
+  (sut/defsys registry-atom 'seconds [::ns ::ms ::sec])
+  (sut/defsys registry-atom 'ns-seconds [::ns ::sec])
 
-  (sut/defsys 'ms-day    [::ms ::sec ::min ::hour ::day])
-  (sut/defsys 'ns-day    [::ns ::sec ::min ::hour ::day])
-  (sut/defsys 'ns-ms-day [::ns ::ms ::sec ::min ::hour ::day])
+  (sut/defsys registry-atom 'ms-day    [::ms ::sec ::min ::hour ::day])
+  (sut/defsys registry-atom 'ns-day    [::ns ::sec ::min ::hour ::day])
+  (sut/defsys registry-atom 'ns-ms-day [::ns ::ms ::sec ::min ::hour ::day])
 
-  (sut/defsys 'ms-day-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
-  (sut/defsys 'ns-day-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day])
-  (sut/defsys 'ns-ms-day-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
+  (sut/defsys registry-atom 'ms-day-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
+  (sut/defsys registry-atom 'ns-day-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day])
+  (sut/defsys registry-atom 'ns-ms-day-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day])
 
-  (sut/defsys 'date       [::day ::month ::year])
-  (sut/defsys 'month-year [::month ::year])
+  (sut/defsys registry-atom 'date       [::day ::month ::year])
+  (sut/defsys registry-atom 'month-year [::month ::year])
 
-  (sut/defsys 'ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
-  (sut/defsys 'ns-year    [::ns ::sec ::min ::hour ::day ::month ::year])
-  (sut/defsys 'ns-ms-year [::ns ::ms ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys registry-atom 'ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys registry-atom 'ns-year    [::ns ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys registry-atom 'ns-ms-year [::ns ::ms ::sec ::min ::hour ::day ::month ::year])
 
-  (sut/defsys 'ms-year-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
-  (sut/defsys 'ns-year-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
-  (sut/defsys 'ns-ms-year-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
+  (sut/defsys registry-atom 'ms-year-am-pm    [::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
+  (sut/defsys registry-atom 'ns-year-am-pm    [::ns ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
+  (sut/defsys registry-atom 'ns-ms-year-am-pm [::ns ::ms ::sec ::min ::ampm-hour ::ampm-period ::day ::month ::year])
 
-  (sut/defsys 'weeks [::weekday ::week])
+  (sut/defsys registry-atom 'weeks [::weekday ::week])
 
-  (sut/defsys 'ms-year-epoch [::ms ::sec ::min ::hour ::day ::month ::epoch-year ::epoch])
-  (sut/defsys 'year-epoch [::epoch-year ::epoch])
+  (sut/defsys registry-atom 'ms-year-epoch [::ms ::sec ::min ::hour ::day ::month ::epoch-year ::epoch])
+  (sut/defsys registry-atom 'year-epoch [::epoch-year ::epoch])
 
-  (->> (for [[sys sys-def] (:systems @sut/registry-atom)
+  (->> (for [[sys sys-def] (:systems @registry-atom)
              :when (symbol? sys)]
          (list 'def sys sys-def))
        (cons 'do)
@@ -246,74 +249,74 @@
 
 (t/deftest sys-detection
   (t/is (= ms-hour
-           (sut/guess-sys {::min 30, ::hour 15})))
+           (sut/guess-sys registry-atom {::min 30, ::hour 15})))
 
   (t/is (= ms-day-am-pm
-           (sut/guess-sys {::min 30, ::ampm-hour 3, ::ampm-period :pm})))
+           (sut/guess-sys registry-atom {::min 30, ::ampm-hour 3, ::ampm-period :pm})))
 
   (t/is (= ns-ms-day
-           (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1})))
+           (sut/guess-sys registry-atom {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1})))
 
   (t/is (= ns-ms-hour
-           (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 25})))
+           (sut/guess-sys registry-atom {::ns 1, ::ms 1, ::sec 1, ::min 1, ::hour 25})))
 
   (t/is (= ns-ms-hour
-           (sut/guess-sys {::ns 1, ::ms 1, ::sec 1, ::min 1501})))
+           (sut/guess-sys registry-atom {::ns 1, ::ms 1, ::sec 1, ::min 1501})))
 
   (t/is (= seconds
-           (sut/guess-sys {::ns 1, ::ms 1, ::sec 90061})))
+           (sut/guess-sys registry-atom {::ns 1, ::ms 1, ::sec 90061})))
 
   (t/is (= seconds
-           (sut/guess-sys {::ns 1, ::ms 90061001})))
+           (sut/guess-sys registry-atom {::ns 1, ::ms 90061001})))
 
   (t/is (= ns-timestamp
-           (sut/guess-sys {::ns 90061001000001})))
+           (sut/guess-sys registry-atom {::ns 90061001000001})))
 
 
   (t/is (= ns-day
-           (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1, ::hour 1, ::day 1})))
+           (sut/guess-sys registry-atom {::ns 1000001, ::sec 1, ::min 1, ::hour 1, ::day 1})))
 
   (t/is (= ns-hour
-           (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1, ::hour 25})))
+           (sut/guess-sys registry-atom {::ns 1000001, ::sec 1, ::min 1, ::hour 25})))
 
   (t/is (= ns-hour
-           (sut/guess-sys {::ns 1000001, ::sec 1, ::min 1501})))
+           (sut/guess-sys registry-atom {::ns 1000001, ::sec 1, ::min 1501})))
 
   (t/is (= ns-seconds
-           (sut/guess-sys {::ns 1000001, ::sec 90061})))
+           (sut/guess-sys registry-atom {::ns 1000001, ::sec 90061})))
 
   (t/is (= ns-timestamp
-           (sut/guess-sys {::ns 90061001000001})))
+           (sut/guess-sys registry-atom {::ns 90061001000001})))
 
   (t/is (= ns-day
-           (sut/guess-sys {::ns 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ns 1}})))
+           (sut/guess-sys registry-atom {::ns 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ns 1}})))
 
 
   (t/is (= ms-day
-           (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1})))
+           (sut/guess-sys registry-atom {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1})))
 
   (t/is (= ms-hour
-           (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 25})))
+           (sut/guess-sys registry-atom {::ms 1, ::sec 1, ::min 1, ::hour 25})))
 
   (t/is (= ms-hour
-           (sut/guess-sys {::ms 1, ::sec 1, ::min 1501})))
+           (sut/guess-sys registry-atom {::ms 1, ::sec 1, ::min 1501})))
 
   (t/is (= ms-day
-           (sut/guess-sys {::ms 1, ::sec 1, ::min 1501}
+           (sut/guess-sys registry-atom {::ms 1, ::sec 1, ::min 1501}
                           ::day)))
 
   (t/is (= seconds
-           (sut/guess-sys {::ms 1, ::sec 90061})))
+           (sut/guess-sys registry-atom {::ms 1, ::sec 90061})))
 
   (t/is (= timestamp
-           (sut/guess-sys {::ms 90061001})))
+           (sut/guess-sys registry-atom {::ms 90061001})))
 
   (t/is (= ms-day
-           (sut/guess-sys {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ms 1}})))
+           (sut/guess-sys registry-atom {::ms 1, ::sec 1, ::min 1, ::hour 1, ::day 1 :delta {::ms 1}})))
 
-  (t/is (nil? (sut/guess-sys {})))
+  (t/is (nil? (sut/guess-sys registry-atom {})))
 
-  (t/is (nil? (sut/guess-sys nil))))
+  (t/is (nil? (sut/guess-sys registry-atom nil))))
 
 
 (t/deftest find-diff-branches-unit-test
@@ -421,32 +424,32 @@
 (t/deftest sys-conversion
   (t/testing "interseciton"
     (t/is (= ms-year
-             (sut/sys-intersection
-               {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
-               {:delta {::hour 3}})))
+             (sut/sys-intersection registry-atom
+                                   {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
+                                   {:delta {::hour 3}})))
 
     (t/is (= ms-year
-             (sut/sys-intersection
-               {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
-               {::year 2021, ::month :sep, ::day 7, ::hour 22, ::min 30, :tz {::hour 3}})))
+             (sut/sys-intersection registry-atom
+                                   {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
+                                   {::year 2021, ::month :sep, ::day 7, ::hour 22, ::min 30, :tz {::hour 3}})))
 
     (t/is (= ms-year
-             (sut/sys-intersection
-               {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
-               {::year 2021})))
+             (sut/sys-intersection registry-atom
+                                   {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
+                                   {::year 2021})))
 
-    (t/is (nil? (sut/sys-intersection
-                  {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
-                  {::cm 49})))
-
-    (t/is (= ms-year
-             (sut/sys-intersection
-               {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
-               {})))
+    (t/is (nil? (sut/sys-intersection registry-atom
+                                      {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
+                                      {::cm 49})))
 
     (t/is (= ms-year
-             (sut/sys-intersection
-               {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}))))
+             (sut/sys-intersection registry-atom
+                                   {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}
+                                   {})))
+
+    (t/is (= ms-year
+             (sut/sys-intersection registry-atom
+                                   {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, :tz {::hour 2}}))))
 
   (t/testing "find conversion"
     #_"TODO: timezones"
@@ -459,7 +462,7 @@
               {[::month] [::month]}
               {[::year]  [::year]}]
              (sut/find-conversion
-               @sut/registry-atom
+               registry-atom
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30}
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30})))
 
@@ -471,7 +474,7 @@
               {[::month] [::month]}
               {[::year]  [::year]}]
              (sut/find-conversion
-               @sut/registry-atom
+               registry-atom
                {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30}
                {::year 2021, ::month :sep, ::day 7, ::ampm-period :pm, ::ampm-hour 9, ::min 30})))
 
@@ -485,7 +488,7 @@
                 {[::month] [::month]}
                 {[::year]  [::year]}]
                (sut/find-conversion
-                 @sut/registry-atom
+                 registry-atom
                  {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, ::sec 10, ::ms 10}
                  {::year 2021, ::month :sep, ::day 7, ::ampm-period :pm, ::ampm-hour 9, ::min 30, ::sec 10, ::ms 10, ::ns 10}))))
 
@@ -499,21 +502,21 @@
                 {[::month] [::month]}
                 {[::year]  [::year]}]
                (sut/find-conversion
-                 @sut/registry-atom
+                 registry-atom
                  {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, ::sec 10, ::ns 10000010}
                  {::year 2021, ::month :sep, ::day 7, ::ampm-period :pm, ::ampm-hour 9, ::min 30, ::sec 10, ::ms 10, ::ns 10}))))
 
     (t/testing "no conversion"
       (t/is (empty?
               (sut/find-conversion
-                @sut/registry-atom
+                registry-atom
                 {::year 2021, ::month :sep, ::day 7, ::hour 21, ::min 30, ::sec 10, ::ns 10000010}
                 {::m 1, ::cm 82}))))
 
     (t/testing "no common units, no common finish"
       (t/is (= [{[::weekday ::week] [::day ::month ::year]}]
                (sut/find-conversion
-                 @sut/registry-atom
+                 registry-atom
                  {::week 6}
                  {::year 2022, ::month :jan, ::day 1}))))))
 
@@ -690,54 +693,65 @@
 (t/deftest sys-utils-test
   (t/testing "next/prev unit"
     (t/is (= ::month
-             (sut/get-next-unit {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (sut/get-next-unit registry-atom
+                                {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                 ::day)))
 
     (t/is (= ::hour
-             (sut/get-prev-unit {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (sut/get-prev-unit registry-atom
+                                {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                 ::day)))
 
     (t/is (= nil
-             (sut/get-next-unit {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (sut/get-next-unit registry-atom
+                                {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                 ::year)))
 
     (t/is (= ::sec
-             (sut/get-prev-unit {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (sut/get-prev-unit registry-atom
+                                {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                 ::min)))
 
     (t/is (= ::ms
-             (sut/get-prev-unit {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (sut/get-prev-unit registry-atom
+                                {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                 ::sec)))
 
     (t/is (= nil
-             (sut/get-prev-unit {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (sut/get-prev-unit registry-atom
+                                {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                 ::ms)))
 
     (t/is (= ::year
-             (sut/get-next-unit {::min 30}
+             (sut/get-next-unit registry-atom
+                                {::min 30}
                                 ::month)))
 
     (t/is (= ::day
-             (sut/get-prev-unit {::min 30}
+             (sut/get-prev-unit registry-atom
+                                {::min 30}
                                 ::month))))
 
   (t/testing "get-unit-seq"
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (:sequence (sut/get-unit-seq {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (:sequence (sut/get-unit-seq registry-atom
+                                          {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                           ::month))))
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (:sequence (sut/get-unit-seq {::min 30}
+             (:sequence (sut/get-unit-seq registry-atom
+                                          {::min 30}
                                           ::month))))
 
     (t/is (= (:sequence #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
-             (:sequence (sut/get-unit-seq {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
+             (:sequence (sut/get-unit-seq registry-atom
+                                          {::year 2022 ::month :jun ::day 4 ::hour 12 ::min 30}
                                           ::year)))))
 
   (t/testing "get-next-unit-value"
     (t/is (= (range 60)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/registry-atom [:seqs ::sec ::min])
+                              (get-in @registry-atom [:seqs ::sec ::min])
                               nil
                               %)
                            0)
@@ -745,7 +759,7 @@
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/registry-atom [:seqs ::month ::year])
+                              (get-in @registry-atom [:seqs ::month ::year])
                               nil
                               %)
                            :jan)
@@ -753,7 +767,7 @@
 
     (t/is (= (range 1970 2021)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/registry-atom [:seqs ::year nil])
+                              (get-in @registry-atom [:seqs ::year nil])
                               nil
                               %)
                            1970)
@@ -761,7 +775,7 @@
 
     (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @sut/registry-atom [:seqs ::ampm-hour ::ampm-period])
+                              (get-in @registry-atom [:seqs ::ampm-hour ::ampm-period])
                               nil
                               %)
                            12)
@@ -778,7 +792,7 @@
   (t/testing "get-prev-unit-value"
     (t/is (= (reverse (range 60))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/registry-atom [:seqs ::sec ::min])
+                              (get-in @registry-atom [:seqs ::sec ::min])
                               nil
                               %)
                            59)
@@ -786,7 +800,7 @@
 
     (t/is (= (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/registry-atom [:seqs ::month ::year])
+                              (get-in @registry-atom [:seqs ::month ::year])
                               nil
                               %)
                            :dec)
@@ -794,7 +808,7 @@
 
     (t/is (= (reverse (range 1970 2021))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/registry-atom [:seqs ::year nil])
+                              (get-in @registry-atom [:seqs ::year nil])
                               nil
                               %)
                            2020)
@@ -802,7 +816,7 @@
 
     (t/is (= (reverse [12 1 2 3 4 5 6 7 8 9 10 11])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @sut/registry-atom [:seqs ::ampm-hour ::ampm-period])
+                              (get-in @registry-atom [:seqs ::ampm-hour ::ampm-period])
                               nil
                               %)
                            11)
@@ -830,9 +844,9 @@
                                  {}))))
 
   (t/testing "get min/max value"
-    (t/is (= ##-Inf (sut/get-min-value {::year 2022} ::year)))
+    (t/is (= ##-Inf (sut/get-min-value registry-atom {::year 2022} ::year)))
 
-    (t/is (= ##Inf (sut/get-max-value {::year 2022} ::year)))))
+    (t/is (= ##Inf (sut/get-max-value registry-atom {::year 2022} ::year)))))
 
 
 (t/deftest inc-dec-test
@@ -849,21 +863,21 @@
                 {::ampm-hour 3, ::ampm-period :pm} {::ampm-hour 4, ::ampm-period :pm} {::ampm-hour 5, ::ampm-period :pm}
                 {::ampm-hour 6, ::ampm-period :pm} {::ampm-hour 7, ::ampm-period :pm} {::ampm-hour 8, ::ampm-period :pm}
                 {::ampm-hour 9, ::ampm-period :pm} {::ampm-hour 10, ::ampm-period :pm} {::ampm-hour 11, ::ampm-period :pm}]
-               (take 24 (iterate (partial sut/inc-unit ::ampm-hour) value)))))
+               (take 24 (iterate (partial sut/inc-unit registry-atom ::ampm-hour) value)))))
 
     (t/testing "epoch"
       (t/is (= [{::year -2} {::year -1} {::year 1} {::year 2}]
-               (take 4 (iterate #(sut/inc-unit ::year %) {::year -2}))))
+               (take 4 (iterate #(sut/inc-unit registry-atom ::year %) {::year -2}))))
 
       (t/is (= [{::epoch :BC, ::epoch-year 2} {::epoch :BC, ::epoch-year 1}
                 {::epoch :AD, ::epoch-year 1} {::epoch :AD, ::epoch-year 2}]
-               (take 4 (iterate #(sut/inc-unit ::epoch-year %) {::epoch :BC ::epoch-year 2})))))
+               (take 4 (iterate #(sut/inc-unit registry-atom ::epoch-year %) {::epoch :BC ::epoch-year 2})))))
 
     (t/testing "calendar"
       (def value {::day 1, ::month :jan, ::year 2020})
 
       (def calendar (->> value
-                         (iterate (partial sut/inc-unit ::day))
+                         (iterate (partial sut/inc-unit registry-atom ::day))
                          (take-while (comp #{2020} ::year))
                          (partition-by ::month)))
 
@@ -883,13 +897,13 @@
                 {::ampm-hour 8, ::ampm-period :am} {::ampm-hour 7, ::ampm-period :am} {::ampm-hour 6, ::ampm-period :am}
                 {::ampm-hour 5, ::ampm-period :am} {::ampm-hour 4, ::ampm-period :am} {::ampm-hour 3, ::ampm-period :am}
                 {::ampm-hour 2, ::ampm-period :am} {::ampm-hour 1, ::ampm-period :am} {::ampm-hour 12, ::ampm-period :am}]
-               (take 24 (iterate (partial sut/dec-unit ::ampm-hour) value)))))
+               (take 24 (iterate (partial sut/dec-unit registry-atom ::ampm-hour) value)))))
 
     (t/testing "calendar"
       (def value {::day 31, ::month :dec, ::year 2019})
 
       (def calendar (->> value
-                         (iterate (partial sut/dec-unit ::day))
+                         (iterate (partial sut/dec-unit registry-atom ::day))
                          (take-while (comp #{2019} ::year))
                          (partition-by ::month)))
 
@@ -899,53 +913,56 @@
 
 (t/deftest cmp
   (t/testing "eq?"
-    (t/is (sut/eq? {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/eq? {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/eq? {} {}))
-    (t/is (sut/not-eq? {} {::year 2020})))
+    (t/is (sut/eq? registry-atom
+                   {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/eq? registry-atom
+                   {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/eq? registry-atom
+                   {} {}))
+    (t/is (sut/not-eq? registry-atom {} {::year 2020})))
 
   (t/testing "not-eq?"
-    (t/is (not (sut/not-eq? {::day 26, ::month :jul, ::year 2020})))
-    (t/is (sut/not-eq? {::day 25, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/not-eq? {} {::day 26, ::month :jul, ::year 2020})))
+    (t/is (not (sut/not-eq? registry-atom {::day 26, ::month :jul, ::year 2020})))
+    (t/is (sut/not-eq? registry-atom {::day 25, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/not-eq? registry-atom {} {::day 26, ::month :jul, ::year 2020})))
 
   (t/testing "lt?"
-    (t/is (sut/lt? {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/lt? {::day 26, ::month :jul, ::year 2020} {::day 27, ::month :jul, ::year 2020} {::day 28, ::month :jul, ::year 2020}))
-    (t/is (sut/lt? {} {::day 26, ::month :jul, ::year 2020})))
+    (t/is (sut/lt? registry-atom {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/lt? registry-atom {::day 26, ::month :jul, ::year 2020} {::day 27, ::month :jul, ::year 2020} {::day 28, ::month :jul, ::year 2020}))
+    (t/is (sut/lt? registry-atom {} {::day 26, ::month :jul, ::year 2020})))
 
   (t/testing "gt?"
-    (t/is (sut/gt? {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/gt? {::day 27, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 25, ::month :jul, ::year 2020}))
-    (t/is (sut/gt? {::day 26, ::month :jul, ::year 2020} {})))
+    (t/is (sut/gt? registry-atom {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/gt? registry-atom {::day 27, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 25, ::month :jul, ::year 2020}))
+    (t/is (sut/gt? registry-atom {::day 26, ::month :jul, ::year 2020} {})))
 
   (t/testing "lte?"
-    (t/is (sut/lte? {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/lte? {::day 26, ::month :jul, ::year 2020} {::day 27, ::month :jul, ::year 2020} {::day 27, ::month :jul, ::year 2020}))
-    (t/is (sut/lte? {} {::day 26, ::month :jul, ::year 2020})))
+    (t/is (sut/lte? registry-atom {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/lte? registry-atom {::day 26, ::month :jul, ::year 2020} {::day 27, ::month :jul, ::year 2020} {::day 27, ::month :jul, ::year 2020}))
+    (t/is (sut/lte? registry-atom {} {::day 26, ::month :jul, ::year 2020})))
 
   (t/testing "gte?"
-    (t/is (sut/gte? {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/gte? {::day 27, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020}))
-    (t/is (sut/gte? {::day 26, ::month :jul, ::year 2020} {}))))
+    (t/is (sut/gte? registry-atom {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/gte? registry-atom {::day 27, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020} {::day 26, ::month :jul, ::year 2020}))
+    (t/is (sut/gte? registry-atom {::day 26, ::month :jul, ::year 2020} {}))))
 
 
 (t/deftest arithmetic
   (t/testing "add-to-unit"
     (t/is (= {::hour 0, ::day 22, ::month :aug, ::year 2044}
-             (sut/add-to-unit {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour 216000)))
+             (sut/add-to-unit registry-atom {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour 216000)))
     (t/is (= {::hour 0 ,::year 1995, ::month :may, ::day 12}
-             (sut/add-to-unit {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour -216000)))
+             (sut/add-to-unit registry-atom {::hour 0 ::day 1, ::month :jan, ::year 2020} ::hour -216000)))
     (t/is (= {::day 1, ::month :jan, ::year 2020}
-             (sut/add-to-unit {::day 1, ::month :jan, ::year 2020} ::hour 0))))
+             (sut/add-to-unit registry-atom {::day 1, ::month :jan, ::year 2020} ::hour 0))))
 
   (t/testing "subtract-from-unit"
     (t/is (= {::hour 0, ::day 22, ::month :aug, ::year 2044}
-             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour -216000)))
+             (sut/subtract-from-unit registry-atom {::day 1, ::month :jan, ::year 2020} ::hour -216000)))
     (t/is (= {::hour 0,::year 1995, ::month :may, ::day 12}
-             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour 216000)))
+             (sut/subtract-from-unit registry-atom {::day 1, ::month :jan, ::year 2020} ::hour 216000)))
     (t/is (= {::day 1, ::month :jan, ::year 2020}
-             (sut/subtract-from-unit {::day 1, ::month :jan, ::year 2020} ::hour 0))))
+             (sut/subtract-from-unit registry-atom {::day 1, ::month :jan, ::year 2020} ::hour 0))))
 
   (t/testing "+"
     (def t
@@ -958,193 +975,259 @@
        ::ms    500})
 
     (t/is (= (merge t {::ms 700})
-             (sut/add-delta t {::ms 200})))
+             (sut/add-delta registry-atom
+                            t {::ms 200})))
 
     (t/is (= (merge t {::ms 100, ::sec 31})
-             (sut/add-delta t {::ms 600})))
+             (sut/add-delta registry-atom
+                            t {::ms 600})))
 
     (t/is (= {::ms 1500}
-             (sut/add-delta {::ms 600} {::ms 600} {::ms 300})))
+             (sut/add-delta registry-atom
+                            {::ms 600} {::ms 600} {::ms 300})))
 
     (t/is (= {::ms 500, ::sec 1}
-             (sut/add-delta {::sec 0, ::ms 600} {::ms 600} {::ms 300})))
+             (sut/add-delta registry-atom
+                            {::sec 0, ::ms 600} {::ms 600} {::ms 300})))
 
     (t/is (= (merge t {::sec 50})
-             (sut/add-delta t {::sec 20})))
+             (sut/add-delta registry-atom
+                            t {::sec 20})))
 
     (t/is (= (merge t {::sec 50})
-             (sut/add-delta t {::sec 20})))
+             (sut/add-delta registry-atom
+                            t {::sec 20})))
 
     (t/is (= (merge t {::hour 12, ::min 50})
-             (sut/add-delta t {::min 20})))
+             (sut/add-delta registry-atom
+                            t {::min 20})))
 
     (t/is (= (merge t {::hour 13 ::min 0})
-             (sut/add-delta t {::min 30})))
+             (sut/add-delta registry-atom
+                            t {::min 30})))
 
     (t/is (= {::year 2019 ::month :jan ::day 1}
-             (sut/add-delta {::year 2018 ::month :dec ::day 31} {::day 1})))
+             (sut/add-delta registry-atom
+                            {::year 2018 ::month :dec ::day 31} {::day 1})))
 
     (t/is (= {::year 2018 ::month :feb ::day 1}
-             (sut/add-delta {::year 2018 ::month :jan ::day 1} {::day 31})))
+             (sut/add-delta registry-atom
+                            {::year 2018 ::month :jan ::day 1} {::day 31})))
 
     (t/is (= {::year 2020 ::month :jan ::day 1}
-             (sut/add-delta {::year 2018 ::month :dec ::day 31} {::day 366})))
+             (sut/add-delta registry-atom
+                            {::year 2018 ::month :dec ::day 31} {::day 366})))
 
     (t/is (= {::year 2018 ::month :mar ::day 1}
-             (sut/add-delta {::year 2018 ::month :feb ::day 28} {::day 1})))
+             (sut/add-delta registry-atom
+                            {::year 2018 ::month :feb ::day 28} {::day 1})))
 
     (t/is (= {::year 2018 ::month :mar ::day 31}
-             (sut/add-delta {::year 2018 ::month :mar ::day 30} {::day 1})))
+             (sut/add-delta registry-atom
+                            {::year 2018 ::month :mar ::day 30} {::day 1})))
 
     (t/is (= {::year 2018 ::month :apr ::day 1}
-             (sut/add-delta {::year 2018 ::month :mar ::day 31} {::day 1})))
+             (sut/add-delta registry-atom
+                            {::year 2018 ::month :mar ::day 31} {::day 1})))
 
     (t/is (= {::ms 400}
-             (sut/add-delta {::ms 100} {::ms 300})))
+             (sut/add-delta registry-atom
+                            {::ms 100} {::ms 300})))
 
     (t/is (= {::ms 200 ::sec 1}
-             (sut/add-delta {::sec 0, ::ms 900} {::ms 300})))
+             (sut/add-delta registry-atom
+                            {::sec 0, ::ms 900} {::ms 300})))
 
     (t/is (= {::sec 30 ::min 1}
-             (sut/add-delta {::min 0, ::sec 40} {::sec 50})))
+             (sut/add-delta registry-atom
+                            {::min 0, ::sec 40} {::sec 50})))
 
     (t/is (= {::min 30 ::hour 1}
-             (sut/add-delta {::min 40} {::min 50})))
+             (sut/add-delta registry-atom
+                            {::min 40} {::min 50})))
 
     (t/is (= {::hour 3 ::day 1}
-             (sut/add-delta {::day 0, ::hour 13} {::hour 14})))
+             (sut/add-delta registry-atom
+                            {::day 0, ::hour 13} {::hour 14})))
 
     (t/is (= {::year 2011 ::month :jan ::day 2 ::hour 4}
-             (sut/add-delta {::year 2011 ::month :jan ::day 1 ::hour 23} {::hour 5})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 1 ::hour 23} {::hour 5})))
 
     (t/is (= {::year 2011 ::month :feb ::day 2}
-             (sut/add-delta {::year 2011 ::month :jan ::day 30} {::day 3})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 30} {::day 3})))
 
     (t/is (= {::year 2012 ::month :jan ::day 1}
-             (sut/add-delta {::year 2011 ::month :jan ::day 1} {::day 365})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 1} {::day 365})))
 
     (t/is (= {::year 2012 ::month :jan ::day 1 ::hour 4}
-             (sut/add-delta {::year 2011 ::month :dec ::day 31 ::hour 23} {::hour 5})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :dec ::day 31 ::hour 23} {::hour 5})))
 
     (t/is (= {::year 2010 ::month :dec ::day 31 ::hour 23}
-             (sut/add-delta {::year 2011 ::month :jan ::day 1 ::hour 0} {::hour -1})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 1 ::hour 0} {::hour -1})))
 
     (t/is (= {::year 2010 ::month :dec ::day 31 ::hour 23 ::min 59 ::sec 59}
-             (sut/add-delta {::year 2011 ::month :jan ::day 1 ::hour 0} {::sec -1})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 1 ::hour 0} {::sec -1})))
 
     (t/is (= {::year 2010 ::month :dec ::day 31 ::hour 23 ::min 59 ::sec 59 ::ms 999}
-             (sut/add-delta {::year 2011 ::month :jan ::day 1 ::hour 0} {::ms -1})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 1 ::hour 0} {::ms -1})))
 
     (t/is (= {::year 2010 ::month :dec ::day 31 ::hour 23 ::min 30}
-             (sut/add-delta {::year 2011 ::month :jan ::day 1 ::hour 23} {::hour -23 ::min -30})))
+             (sut/add-delta registry-atom
+                            {::year 2011 ::month :jan ::day 1 ::hour 23} {::hour -23 ::min -30})))
 
     (t/is (= {::year 2019 ::month :dec ::day 1}
-             (sut/add-delta {::year 2019 ::month :nov ::day 1} {::month 1})))
+             (sut/add-delta registry-atom
+                            {::year 2019 ::month :nov ::day 1} {::month 1})))
 
     (t/is (= {::year 2020 ::month :jan ::day 1}
-             (sut/add-delta {::year 2019 ::month :nov ::day 1} {::month 2})))
+             (sut/add-delta registry-atom
+                            {::year 2019 ::month :nov ::day 1} {::month 2})))
 
     (t/is (= {::year 2020 ::month :jan ::day 1}
-             (sut/add-delta {::year 2019 ::month :dec ::day 1} {::month 1})))
+             (sut/add-delta registry-atom
+                            {::year 2019 ::month :dec ::day 1} {::month 1})))
 
     (t/is (= {::year 2019 ::month :dec ::day 31}
-             (sut/add-delta {::year 2019 ::month :nov ::day 31} {::month 1})))
+             (sut/add-delta registry-atom
+                            {::year 2019 ::month :nov ::day 31} {::month 1})))
 
     (t/is (= {::year 2020 ::month :feb}
-             (sut/add-delta {::year 2020 ::month :feb} {::day 0})))
+             (sut/add-delta registry-atom
+                            {::year 2020 ::month :feb} {::day 0})))
 
     (t/is (= {::year 2019, ::month :dec, ::day 10, ::hour 15, ::min 17, ::sec 50, ::ms 911}
-             (sut/add-delta {::year 2019, ::month :dec, ::day 10, ::hour 13, ::min 17, ::sec 50, ::ms 911} {::hour 2})))
+             (sut/add-delta registry-atom
+                            {::year 2019, ::month :dec, ::day 10, ::hour 13, ::min 17, ::sec 50, ::ms 911} {::hour 2})))
 
     (t/is (= {::hour 14 :tz {::hour 2}}
-             (sut/add-delta {::hour 4 :tz {::hour 2}} {::hour 10})))
+             (sut/add-delta registry-atom
+                            {::hour 4 :tz {::hour 2}} {::hour 10})))
 
     (t/is (= {::hour 2 :tz {::hour -2}}
-             (sut/add-delta {::hour 1 :tz {::hour -2}} {::hour 1}))))
+             (sut/add-delta registry-atom
+                            {::hour 1 :tz {::hour -2}} {::hour 1}))))
 
   (t/testing "-"
     (t/is (= {::year 2016, ::month :jan, ::day 1, ::hour 23, ::min 30}
-             (sut/subtract-delta {::year 2016, ::month :dec, ::day 31, ::hour 23, ::min 30} {::day 365})))
+             (sut/subtract-delta registry-atom
+                                 {::year 2016, ::month :dec, ::day 31, ::hour 23, ::min 30} {::day 365})))
 
     (t/is (= {::year 2015, ::month :dec, ::day 31, ::hour 23, ::min 30}
-             (sut/subtract-delta {::year 2016 ::month :dec ::day 31 ::hour 23 ::min 30} {::day 366})))
+             (sut/subtract-delta registry-atom
+                                 {::year 2016 ::month :dec ::day 31 ::hour 23 ::min 30} {::day 366})))
 
     (t/is (= {::year 2020 ::month :jan ::day 31}
-             (sut/subtract-delta {::year 2020 ::month :feb}
+             (sut/subtract-delta registry-atom
+                                 {::year 2020 ::month :feb}
                                  {::day 1})))
     (t/is (= {::year 2020 ::month :feb}
-             (sut/subtract-delta {::year 2020 ::month :feb}
+             (sut/subtract-delta registry-atom
+                                 {::year 2020 ::month :feb}
                                  {::day 0})))
 
-    (t/is (sut/eq? {::hour 0, :tz {::hour -2}}
-                   (sut/subtract-delta {::hour 2 :tz {::hour -2}} {::hour 2})))
-    (t/is (sut/eq? {::hour 0}
-                   (sut/subtract-delta {::hour 2 :tz {::hour -2}} {::hour 2})))
-    (t/is (sut/eq? {::hour 2}
-                   (sut/subtract-delta {::hour 3 :tz {::hour 2}} {::hour 1 :tz {::hour 2}}))))
+    (t/is (sut/eq? registry-atom
+                   {::hour 0, :tz {::hour -2}}
+                   (sut/subtract-delta registry-atom
+                                       {::hour 2 :tz {::hour -2}} {::hour 2})))
+    (t/is (sut/eq? registry-atom
+                   {::hour 0}
+                   (sut/subtract-delta registry-atom
+                                       {::hour 2 :tz {::hour -2}} {::hour 2})))
+    (t/is (sut/eq? registry-atom
+                   {::hour 2}
+                   (sut/subtract-delta registry-atom
+                                       {::hour 3 :tz {::hour 2}} {::hour 1 :tz {::hour 2}}))))
 
   (t/testing "difference"
     (t/is (= {::day 6}
-             (sut/difference {::day 20, ::month :jul, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 20, ::month :jul, ::year 2020}
                              {::day 26, ::month :jul, ::year 2020})))
     (t/is (= {::day 6}
-             (sut/difference {::day 26, ::month :jul, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 26, ::month :jul, ::year 2020}
                              {::day 20, ::month :jul, ::year 2020})))
     (t/is (= {::day 22, ::year 23}
-             (sut/difference {::day 27, ::month :jul, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 27, ::month :jul, ::year 2020}
                              {::day 5, ::month :jul, ::year 1997})))
     (t/is (= {::day 22, ::year 23}
-             (sut/difference {::day 5, ::month :jul, ::year 1997}
+             (sut/difference registry-atom
+                             {::day 5, ::month :jul, ::year 1997}
                              {::day 27, ::month :jul, ::year 2020})))
     (t/is (= {::year 1}
-             (sut/difference {::year 1} {::year -1})))
+             (sut/difference registry-atom
+                             {::year 1} {::year -1})))
     (t/is (= {::year 1}
-             (sut/difference {::year -1} {::year 1})))
-    (t/is (empty? (sut/difference {::day 27, ::month :jul, ::year 2020}
+             (sut/difference registry-atom
+                             {::year -1} {::year 1})))
+    (t/is (empty? (sut/difference registry-atom
+                                  {::day 27, ::month :jul, ::year 2020}
                                   {::day 27, ::month :jul, ::year 2020})))
     (t/is (= {::day 1}
-             (sut/difference {::day 28, ::month :jul, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 28, ::month :jul, ::year 2020}
                              {::day 27, ::month :jul, ::year 2020})))
     #_(t/is (= {::hour 0}
-               (sut/difference {::hour 12, ::min 30, :tz {::hour -2}}
+               (sut/difference registry-atom
+                               {::hour 12, ::min 30, :tz {::hour -2}}
                                {::hour 14, ::min 30, :tz {::hour 0}})))
     (t/is (= {::year 2, ::day 5}
-             (sut/difference {::day 28, ::month :jun, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 28, ::month :jun, ::year 2020}
                              {::day 3, ::month :jul, ::year 2022})))
     (t/is (= {::year 2, ::month 1, ::day 6}
-             (sut/difference {::day 28, ::month :may, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 28, ::month :may, ::year 2020}
                              {::day 3, ::month :jul, ::year 2022})))
     (t/is (= {::day 5}
-             (sut/difference {::day 28, ::month :jun, ::year 2022}
+             (sut/difference registry-atom
+                             {::day 28, ::month :jun, ::year 2022}
                              {::day 3, ::month :jul, ::year 2022})))
     (t/is (= {::day 2}
-             (sut/difference {::day 1, ::month :mar, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 1, ::month :mar, ::year 2020}
                              {::day 28, ::month :feb, ::year 2020})))
     (t/is (= {::day 1}
-             (sut/difference {::day 1, ::month :mar, ::year 2021}
+             (sut/difference registry-atom
+                             {::day 1, ::month :mar, ::year 2021}
                              {::day 28, ::month :feb, ::year 2021})))
     (t/is (= {::year 2, ::day 2}
-             (sut/difference {::day 1, ::month :mar, ::year 2022}
+             (sut/difference registry-atom
+                             {::day 1, ::month :mar, ::year 2022}
                              {::day 28, ::month :feb, ::year 2020})))
     (t/is (= {::year 1, ::day 1}
-             (sut/difference {::day 1, ::month :mar, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 1, ::month :mar, ::year 2020}
                              {::day 28, ::month :feb, ::year 2019})))
     (t/is (= {::month 11, ::day 27}
-             (sut/difference {::day 1, ::month :mar, ::year 2020}
+             (sut/difference registry-atom
+                             {::day 1, ::month :mar, ::year 2020}
                              {::day 28, ::month :feb, ::year 2021})))
     (t/is (= {::month 11, ::day 1}
-             (sut/difference {::day 1, ::month :mar, ::year 2021}
+             (sut/difference registry-atom
+                             {::day 1, ::month :mar, ::year 2021}
                              {::day 31, ::month :mar, ::year 2020})))
 
 
     (t/is (= {::month 1, ::day 3}
-             (sut/difference {::day 29, ::month :jan, ::year 2022}
+             (sut/difference registry-atom
+                             {::day 29, ::month :jan, ::year 2022}
                              {::day 1, ::month :mar, ::year 2022})))
     (t/is (= {::month 1, ::day 2}
-             (sut/difference {::day 30, ::month :jan, ::year 2022}
+             (sut/difference registry-atom
+                             {::day 30, ::month :jan, ::year 2022}
                              {::day 1, ::month :mar, ::year 2022})))
     (t/is (= {::month 1, ::day 1}
-             (sut/difference {::day 31, ::month :jan, ::year 2022}
+             (sut/difference registry-atom
+                             {::day 31, ::month :jan, ::year 2022}
                              {::day 1, ::month :mar, ::year 2022}))))
 
   #_(t/testing "difference-in"
@@ -1176,16 +1259,16 @@
 
 
 (t/deftest ^:kaocha/pending demo-test
-  (sut/defseq ::ms   #unit-map/seq[0 1 .. 999 -> ::sec])
-  (sut/defseq ::sec  #unit-map/seq[0 1 .. 59 -> ::min])
-  (sut/defseq ::min  #unit-map/seq[0 1 .. 59 -> ::hour])
-  (sut/defseq ::hour #unit-map/seq[0 1 .. 23 -> ::day])
+  (sut/defseq registry-atom ::ms   #unit-map/seq[0 1 .. 999 -> ::sec])
+  (sut/defseq registry-atom ::sec  #unit-map/seq[0 1 .. 59 -> ::min])
+  (sut/defseq registry-atom ::min  #unit-map/seq[0 1 .. 59 -> ::hour])
+  (sut/defseq registry-atom ::hour #unit-map/seq[0 1 .. 23 -> ::day])
 
-  (sut/defseq ::day   #unit-map/seq[1 2 .. days-in-month -> ::month])
-  (sut/defseq ::month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> ::year])
-  (sut/defseq ::year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (sut/defseq registry-atom ::day   #unit-map/seq[1 2 .. days-in-month -> ::month])
+  (sut/defseq registry-atom ::month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> ::year])
+  (sut/defseq registry-atom ::year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (sut/defsys 'ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
+  (sut/defsys registry-atom 'ms-year    [::ms ::sec ::min ::hour ::day ::month ::year])
 
   #_(sut/deffmt :iso/month [::month (fn [v fmt-el] '???)])
   #_(sut/deffmt :iso/day [::day 2 "0"])

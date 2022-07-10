@@ -8,13 +8,7 @@
 - guess-sys-with-seqs
 - refactor repeating guess-sys calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
-- refactor to be able to pass registry-atom
 - move calendar & crono to scripts"
-
-
-(defonce registry-atom #_"TODO: can it be done without global atom state?"
-  (atom nil))
-#_(reset! registry-atom nil)
 
 
 ;;;;;;;;;; read seq
@@ -149,7 +143,7 @@
   useq)
 
 
-(defn defseq [unit useq]
+(defn defseq [registry-atom unit useq]
   (defseq! registry-atom unit useq))
 
 
@@ -169,7 +163,7 @@
   units)
 
 
-(defn defsys [sys-name units]
+(defn defsys [registry-atom sys-name units]
   (defsys* registry-atom sys-name units))
 
 
@@ -194,20 +188,20 @@
 
 (def guess-sys*
   (memoize
-    (fn [units]
+    (fn [registry-atom units]
       (first (supporting-systems (vals (:systems @registry-atom)) units)))))
 
 
 (defn guess-sys
-  ([unit-map unit]
-   (guess-sys (assoc unit-map unit nil)))
-  ([unit-map]
+  ([registry-atom unit-map unit]
+   (guess-sys registry-atom (assoc unit-map unit nil)))
+  ([registry-atom unit-map]
    (when-let [units (not-empty (get-units unit-map))]
-     (guess-sys* units))))
+     (guess-sys* registry-atom units))))
 
 
-(defn sys-intersection [& unit-maps]
-  (guess-sys (reduce merge unit-maps)))
+(defn sys-intersection [registry-atom & unit-maps]
+  (guess-sys registry-atom (reduce merge unit-maps)))
 
 
 (defn find-diff-branches [xs ys]
@@ -234,16 +228,16 @@
                  (conj ^::branches[(vec x-branch) (vec y-branch)])))))))
 
 
-(defn find-conversion [registry x y]
-  (let [branches-diff (or (sys-intersection x y)
-                          (find-diff-branches (guess-sys x) #_"TODO: find better sys match algo"
-                                              (guess-sys y)))
+(defn find-conversion [registry-atom x y]
+  (let [branches-diff (or (sys-intersection registry-atom x y)
+                          (find-diff-branches (guess-sys registry-atom x) #_"TODO: find better sys match algo"
+                                              (guess-sys registry-atom y)))
         conv-start (first branches-diff)
         valid? (or (not (::branches (meta conv-start)))
                    (let [[[x :as xs] [y :as ys]] conv-start]
                      (or (empty? xs)
                          (empty? ys)
-                         (contains? (->> (:eq-units registry)
+                         (contains? (->> (:eq-units @registry-atom)
                                          (filter #(contains? % x))
                                          first)
                                     y))))]
@@ -386,14 +380,14 @@
 
 (defn get-next-unit
   "next = more significant"
-  [umap unit]
-  (u/get-next-element (guess-sys umap unit) unit))
+  [registry-atom umap unit]
+  (u/get-next-element (guess-sys registry-atom umap unit) unit))
 
 
 (defn get-prev-unit
   "prev = less significant"
-  [umap unit]
-  (u/get-prev-element (guess-sys umap unit) unit))
+  [registry-atom umap unit]
+  (u/get-prev-element (guess-sys registry-atom umap unit) unit))
 
 
 (defn unit-seq [useqs unit next-unit]
@@ -402,19 +396,19 @@
 
 (def get-unit-seq*
   (memoize
-    (fn [unit next-unit]
+    (fn [registry-atom unit next-unit]
       (unit-seq (:seqs @registry-atom) unit next-unit))))
 
 
-(defn get-unit-seq [umap unit]
-  (let [sys       (guess-sys umap unit)
+(defn get-unit-seq [registry-atom umap unit]
+  (let [sys       (guess-sys registry-atom umap unit)
         next-unit (u/get-next-element sys unit)]
-    (get-unit-seq* unit next-unit)))
+    (get-unit-seq* registry-atom unit next-unit)))
 
 
-(defn sys-unit-seqs [sys]
+(defn sys-unit-seqs [registry-atom sys]
   (map (fn [unit next-unit]
-         [unit (get-unit-seq* unit next-unit)])
+         [unit (get-unit-seq* registry-atom unit next-unit)])
        sys
        (rest (conj sys nil))))
 
@@ -476,32 +470,32 @@
       end)))
 
 
-(defn get-min-value [umap unit]
-  (get-first-el (get-unit-seq umap unit) umap))
+(defn get-min-value [registry-atom umap unit]
+  (get-first-el (get-unit-seq registry-atom umap unit) umap))
 
 
-(defn get-max-value [umap unit]
-  (get-last-el (get-unit-seq umap unit) umap))
+(defn get-max-value [registry-atom umap unit]
+  (get-last-el (get-unit-seq registry-atom umap unit) umap))
 
 
 #_"TODO: handle when get-next-unit returns nil"
-(defn inc-unit [unit {:as umap, unit-value unit, :or {unit-value (get-min-value umap unit)}}]
+(defn inc-unit [registry-atom unit {:as umap, unit-value unit, :or {unit-value (get-min-value registry-atom umap unit)}}]
   (or (some->> unit-value
-               (get-next-unit-value (get-unit-seq umap unit) umap)
+               (get-next-unit-value (get-unit-seq registry-atom umap unit) umap)
                (assoc umap unit))
       (as-> umap $
-        (inc-unit (get-next-unit $ unit) $)
-        (assoc $ unit (get-min-value $ unit)))))
+        (inc-unit registry-atom (get-next-unit registry-atom $ unit) $)
+        (assoc $ unit (get-min-value registry-atom $ unit)))))
 
 
-(defn dec-unit [unit {:as umap, unit-value unit, :or {unit-value (get-min-value umap unit)}}]
+(defn dec-unit [registry-atom unit {:as umap, unit-value unit, :or {unit-value (get-min-value registry-atom umap unit)}}]
   (or (some->> unit-value
-               (get-prev-unit-value (get-unit-seq umap unit) umap)
+               (get-prev-unit-value (get-unit-seq registry-atom umap unit) umap)
                (assoc umap unit))
       (as-> umap $
         (dissoc $ unit)
-        (dec-unit (get-next-unit $ unit) $)
-        (assoc $ unit (get-max-value $ unit)))))
+        (dec-unit registry-atom (get-next-unit registry-atom $ unit) $)
+        (assoc $ unit (get-max-value registry-atom $ unit)))))
 
 
 ;;;;;;;;;; cmp
@@ -517,8 +511,8 @@
     :else 1))
 
 
-(defn cmp-in-sys [sys x y]
-  (or (->> (sys-unit-seqs sys)
+(defn cmp-in-sys [registry-atom sys x y]
+  (or (->> (sys-unit-seqs registry-atom sys)
            reverse
            (map (fn [[unit processed-sequence]]
                   (sequence-cmp processed-sequence
@@ -530,60 +524,60 @@
       0))
 
 
-(defn cmp [x y]
-  (or (when-let [sys (sys-intersection x y)]
-        (cmp-in-sys sys x y))
-      (when-let [sys (or (guess-sys x)
-                         (guess-sys y))]
-        (cmp-in-sys sys x y))
+(defn cmp [registry-atom x y]
+  (or (when-let [sys (sys-intersection registry-atom x y)]
+        (cmp-in-sys registry-atom sys x y))
+      (when-let [sys (or (guess-sys registry-atom x)
+                         (guess-sys registry-atom y))]
+        (cmp-in-sys registry-atom sys x y))
       (when (= x y)
         0)))
 
 
 (defn eq?
-  ([_]          true)
-  ([x y]        (= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred eq? x y more)))
+  ([_ _] true)
+  ([registry-atom x y]        (= 0 (cmp registry-atom x y)))
+  ([registry-atom x y & more] (apply u/apply-binary-pred #(eq? registry-atom  %1 %2) x y more)))
 
 
 (def not-eq? (complement eq?))
 
 
 (defn lt?
-  ([_]          true)
-  ([x y]        (neg? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred lt? x y more)))
+  ([_ _] true)
+  ([registry-atom x y]        (neg? (cmp registry-atom x y)))
+  ([registry-atom x y & more] (apply u/apply-binary-pred #(lt? registry-atom  %1 %2) x y more)))
 
 
 (defn gt?
-  ([_]          true)
-  ([x y]        (pos? (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred gt? x y more)))
+  ([_ _] true)
+  ([registry-atom x y]        (pos? (cmp registry-atom x y)))
+  ([registry-atom x y & more] (apply u/apply-binary-pred #(gt? registry-atom  %1 %2) x y more)))
 
 
 (defn lte?
-  ([_]          true)
-  ([x y]        (>= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred lte? x y more)))
+  ([_ _] true)
+  ([registry-atom x y]        (>= 0 (cmp registry-atom x y)))
+  ([registry-atom x y & more] (apply u/apply-binary-pred #(lte? registry-atom  %1 %2) x y more)))
 
 
 (defn gte?
-  ([_]          true)
-  ([x y]        (<= 0 (cmp x y)))
-  ([x y & more] (apply u/apply-binary-pred gte? x y more)))
+  ([_ _] true)
+  ([registry-atom x y]        (<= 0 (cmp registry-atom x y)))
+  ([registry-atom x y & more] (apply u/apply-binary-pred #(gte? registry-atom  %1 %2) x y more)))
 
 
 ;;;;;;;;;; arithmetic
 
 
-(defn add-to-unit [umap unit x] #_"TODO: handle unnormalized values"
+(defn add-to-unit [registry-atom umap unit x] #_"TODO: handle unnormalized values"
   (cond
     (zero? x)
     umap
 
     (and (< 1 (abs x))
-         (static-sequence? (get-unit-seq umap unit)))
-    (let [useq        (get-unit-seq umap unit)
+         (static-sequence? (get-unit-seq registry-atom umap unit)))
+    (let [useq        (get-unit-seq registry-atom umap unit)
           idx         (if-let [v (get umap unit)]
                          (sequence-index-of useq umap v)
                          (sequence-first-index useq umap))
@@ -595,52 +589,53 @@
           result-umap (assoc umap unit result)]
       (if (zero? carry-delta)
         result-umap
-        (recur result-umap
-               (get-next-unit umap unit)
+        (recur registry-atom
+               result-umap
+               (get-next-unit registry-atom umap unit)
                carry-delta)))
 
     (neg? x)
-    (u/n-times (- x) (partial dec-unit unit) umap)
+    (u/n-times (- x) (partial dec-unit registry-atom unit) umap)
 
     :else
-    (u/n-times x (partial inc-unit unit) umap)))
+    (u/n-times x (partial inc-unit registry-atom unit) umap)))
 
 
-(defn subtract-from-unit [umap unit x]
-  (add-to-unit umap unit (- x)))
+(defn subtract-from-unit [registry-atom umap unit x]
+  (add-to-unit registry-atom umap unit (- x)))
 
 
 (defn add-delta
-  ([] {})
+  ([_registry-atom] {})
 
-  ([x] x)
+  ([_registry-atom x] x)
 
-  ([x delta]
+  ([registry-atom x delta]
    (reduce (fn [result unit]
-             (add-to-unit result unit (get delta unit 0)))
+             (add-to-unit registry-atom result unit (get delta unit 0)))
            x
-           (reverse (sys-intersection x delta))))
+           (reverse (sys-intersection registry-atom x delta))))
 
-  ([x delta & more-deltas]
-   (reduce add-delta
-           (add-delta x delta)
+  ([registry-atom x delta & more-deltas]
+   (reduce #(add-delta registry-atom %1 %2)
+           (add-delta registry-atom x delta)
            more-deltas)))
 
 
 (defn subtract-delta
-  ([] {})
+  ([_registry-atom] {})
 
-  ([x] x)
+  ([_registry-atom x] x)
 
-  ([x delta]
+  ([registry-atom x delta]
    (reduce (fn [result unit]
-             (subtract-from-unit result unit (get delta unit 0)))
+             (subtract-from-unit registry-atom result unit (get delta unit 0)))
            x
-           (reverse (sys-intersection x delta))))
+           (reverse (sys-intersection registry-atom x delta))))
 
-  ([x delta & more-deltas]
-   (reduce subtract-delta
-           (subtract-delta x delta)
+  ([registry-atom x delta & more-deltas]
+   (reduce #(subtract-delta registry-atom %1 %2)
+           (subtract-delta registry-atom x delta)
            more-deltas)))
 
 
@@ -656,10 +651,10 @@
                diff)}))
 
 
-(defn units-difference-reduce-fn [a b {:keys [acc borrow?]} [unit useq]]
+(defn units-difference-reduce-fn [registry-atom a b {:keys [acc borrow?]} [unit useq]]
   (let [{borrow-next? :borrowed, unit-res :result}
         (unit-difference a
-                         (cond->> b borrow? (inc-unit unit))
+                         (cond->> b borrow? (inc-unit registry-atom unit))
                          unit
                          useq)]
     {:borrow? borrow-next?
@@ -668,11 +663,11 @@
             (assoc unit unit-res))}))
 
 
-(defn difference [x y]
-  (let [[a b] (cond-> [x y] (lt? x y) reverse)]
-    (:acc (reduce (partial units-difference-reduce-fn a b)
+(defn difference [registry-atom x y]
+  (let [[a b] (cond-> [x y] (lt? registry-atom x y) reverse)]
+    (:acc (reduce #(units-difference-reduce-fn registry-atom a b %1 %2)
                   {}
-                  (sys-unit-seqs (sys-intersection a b))))))
+                  (sys-unit-seqs registry-atom (sys-intersection registry-atom a b))))))
 
 
 #_(defn difference-parts [units sys-seqs]
@@ -692,9 +687,9 @@
           (reverse units))))
 
 
-#_(defn difference-in [units x y]
+#_(defn difference-in [registry-atom units x y]
   (let [[a b]    (cond-> [x y] (lt? x y) reverse)
-        sys-seqs (sys-unit-seqs (sys-intersection a b))
+        sys-seqs (sys-unit-seqs registry-atom (sys-intersection a b))
         parts    (difference-parts units sys-seqs)]
     (reduce
       (fn [acc {:keys [to-unit seqs]}]
