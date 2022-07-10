@@ -8,7 +8,8 @@
 - guess-sys-with-seqs
 - refactor repeating guess-sys calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
-- refactor to be able to pass registry-atom"
+- refactor to be able to pass registry-atom
+- move calendar & crono to scripts"
 
 
 (defonce registry-atom #_"TODO: can it be done without global atom state?"
