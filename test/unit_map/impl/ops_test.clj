@@ -23,8 +23,8 @@
 
   (umap/defseq treg_ :hour   #unit-map/seq[0 1 .. 23 -> :day])
 
-  (umap/defseq treg_ :ampm-hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :ampm-period])
-  (umap/defseq treg_ :ampm-period #unit-map/seq[:am :pm])
+  (umap/defseq treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
+  (umap/defseq treg_ :am-pm/period #unit-map/seq[:am :pm])
 
   (umap/defseq treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
   (umap/defseq treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
@@ -46,7 +46,7 @@
   (umap/defsys treg_ 'date       [:day :month :year])
   (umap/defsys treg_ 'month-year [:month :year])
   (umap/defsys treg_ 'year-epoch [:epoch-year :epoch])
-  (umap/defsys treg_ 'am-pm-time [:ampm-hour :ampm-period])
+  (umap/defsys treg_ 'am-pm-time [:am-pm/hour :am-pm/period])
 
   (->> (for [[sys sys-def] (:systems @treg_)
              :when (symbol? sys)]
@@ -58,18 +58,18 @@
 (t/deftest arithmetic-test
   (t/testing "inc-unit"
     (t/testing "am-pm clock"
-      (def value {:ampm-hour 12, :ampm-period :am})
+      (def value {:am-pm/hour 12, :am-pm/period :am})
 
-      (t/is (= [{:ampm-hour 12, :ampm-period :am} {:ampm-hour 1, :ampm-period :am} {:ampm-hour 2, :ampm-period :am}
-                {:ampm-hour 3, :ampm-period :am} {:ampm-hour 4, :ampm-period :am} {:ampm-hour 5, :ampm-period :am}
-                {:ampm-hour 6, :ampm-period :am} {:ampm-hour 7, :ampm-period :am} {:ampm-hour 8, :ampm-period :am}
-                {:ampm-hour 9, :ampm-period :am} {:ampm-hour 10, :ampm-period :am} {:ampm-hour 11, :ampm-period :am}
+      (t/is (= [{:am-pm/hour 12, :am-pm/period :am} {:am-pm/hour 1, :am-pm/period :am} {:am-pm/hour 2, :am-pm/period :am}
+                {:am-pm/hour 3, :am-pm/period :am} {:am-pm/hour 4, :am-pm/period :am} {:am-pm/hour 5, :am-pm/period :am}
+                {:am-pm/hour 6, :am-pm/period :am} {:am-pm/hour 7, :am-pm/period :am} {:am-pm/hour 8, :am-pm/period :am}
+                {:am-pm/hour 9, :am-pm/period :am} {:am-pm/hour 10, :am-pm/period :am} {:am-pm/hour 11, :am-pm/period :am}
 
-                {:ampm-hour 12, :ampm-period :pm} {:ampm-hour 1, :ampm-period :pm} {:ampm-hour 2, :ampm-period :pm}
-                {:ampm-hour 3, :ampm-period :pm} {:ampm-hour 4, :ampm-period :pm} {:ampm-hour 5, :ampm-period :pm}
-                {:ampm-hour 6, :ampm-period :pm} {:ampm-hour 7, :ampm-period :pm} {:ampm-hour 8, :ampm-period :pm}
-                {:ampm-hour 9, :ampm-period :pm} {:ampm-hour 10, :ampm-period :pm} {:ampm-hour 11, :ampm-period :pm}]
-               (take 24 (iterate (partial sut/inc-unit @treg_ :ampm-hour) value)))))
+                {:am-pm/hour 12, :am-pm/period :pm} {:am-pm/hour 1, :am-pm/period :pm} {:am-pm/hour 2, :am-pm/period :pm}
+                {:am-pm/hour 3, :am-pm/period :pm} {:am-pm/hour 4, :am-pm/period :pm} {:am-pm/hour 5, :am-pm/period :pm}
+                {:am-pm/hour 6, :am-pm/period :pm} {:am-pm/hour 7, :am-pm/period :pm} {:am-pm/hour 8, :am-pm/period :pm}
+                {:am-pm/hour 9, :am-pm/period :pm} {:am-pm/hour 10, :am-pm/period :pm} {:am-pm/hour 11, :am-pm/period :pm}]
+               (take 24 (iterate (partial sut/inc-unit @treg_ :am-pm/hour) value)))))
 
     (t/testing "epoch"
       (t/is (= [{:year -2} {:year -1} {:year 1} {:year 2}]
@@ -92,18 +92,18 @@
 
   (t/testing "dec-unit"
     (t/testing "am-pm clock"
-      (def value {:ampm-hour 11, :ampm-period :pm})
+      (def value {:am-pm/hour 11, :am-pm/period :pm})
 
-      (t/is (= [{:ampm-hour 11, :ampm-period :pm} {:ampm-hour 10, :ampm-period :pm} {:ampm-hour 9, :ampm-period :pm}
-                {:ampm-hour 8, :ampm-period :pm} {:ampm-hour 7, :ampm-period :pm} {:ampm-hour 6, :ampm-period :pm}
-                {:ampm-hour 5, :ampm-period :pm} {:ampm-hour 4, :ampm-period :pm} {:ampm-hour 3, :ampm-period :pm}
-                {:ampm-hour 2, :ampm-period :pm} {:ampm-hour 1, :ampm-period :pm} {:ampm-hour 12, :ampm-period :pm}
+      (t/is (= [{:am-pm/hour 11, :am-pm/period :pm} {:am-pm/hour 10, :am-pm/period :pm} {:am-pm/hour 9, :am-pm/period :pm}
+                {:am-pm/hour 8, :am-pm/period :pm} {:am-pm/hour 7, :am-pm/period :pm} {:am-pm/hour 6, :am-pm/period :pm}
+                {:am-pm/hour 5, :am-pm/period :pm} {:am-pm/hour 4, :am-pm/period :pm} {:am-pm/hour 3, :am-pm/period :pm}
+                {:am-pm/hour 2, :am-pm/period :pm} {:am-pm/hour 1, :am-pm/period :pm} {:am-pm/hour 12, :am-pm/period :pm}
 
-                {:ampm-hour 11, :ampm-period :am} {:ampm-hour 10, :ampm-period :am} {:ampm-hour 9, :ampm-period :am}
-                {:ampm-hour 8, :ampm-period :am} {:ampm-hour 7, :ampm-period :am} {:ampm-hour 6, :ampm-period :am}
-                {:ampm-hour 5, :ampm-period :am} {:ampm-hour 4, :ampm-period :am} {:ampm-hour 3, :ampm-period :am}
-                {:ampm-hour 2, :ampm-period :am} {:ampm-hour 1, :ampm-period :am} {:ampm-hour 12, :ampm-period :am}]
-               (take 24 (iterate (partial sut/dec-unit @treg_ :ampm-hour) value)))))
+                {:am-pm/hour 11, :am-pm/period :am} {:am-pm/hour 10, :am-pm/period :am} {:am-pm/hour 9, :am-pm/period :am}
+                {:am-pm/hour 8, :am-pm/period :am} {:am-pm/hour 7, :am-pm/period :am} {:am-pm/hour 6, :am-pm/period :am}
+                {:am-pm/hour 5, :am-pm/period :am} {:am-pm/hour 4, :am-pm/period :am} {:am-pm/hour 3, :am-pm/period :am}
+                {:am-pm/hour 2, :am-pm/period :am} {:am-pm/hour 1, :am-pm/period :am} {:am-pm/hour 12, :am-pm/period :am}]
+               (take 24 (iterate (partial sut/dec-unit @treg_ :am-pm/hour) value)))))
 
     (t/testing "calendar"
       (def value {:day 31, :month :dec, :year 2019})

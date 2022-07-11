@@ -73,8 +73,8 @@
   (umap/defseq treg_ :hour #unit-map/seq[0 1 .. ##Inf])
   (umap/defseq treg_ :day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
-  (umap/defseq treg_ :ampm-hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :ampm-period])
-  (umap/defseq treg_ :ampm-period #unit-map/seq[:am :pm -> :day])
+  (umap/defseq treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
+  (umap/defseq treg_ :am-pm/period #unit-map/seq[:am :pm -> :day])
 
   (umap/defseq treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
   (umap/defseq treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
@@ -126,9 +126,9 @@
   (umap/defsys treg_ 'ns-day    [:ns :sec :min :hour :day])
   (umap/defsys treg_ 'ns-ms-day [:ns :ms :sec :min :hour :day])
 
-  (umap/defsys treg_ 'ms-day-am-pm    [:ms :sec :min :ampm-hour :ampm-period :day])
-  (umap/defsys treg_ 'ns-day-am-pm    [:ns :sec :min :ampm-hour :ampm-period :day])
-  (umap/defsys treg_ 'ns-ms-day-am-pm [:ns :ms :sec :min :ampm-hour :ampm-period :day])
+  (umap/defsys treg_ 'ms-day-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day])
+  (umap/defsys treg_ 'ns-day-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day])
+  (umap/defsys treg_ 'ns-ms-day-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day])
 
   (umap/defsys treg_ 'date       [:day :month :year])
   (umap/defsys treg_ 'month-year [:month :year])
@@ -137,9 +137,9 @@
   (umap/defsys treg_ 'ns-year    [:ns :sec :min :hour :day :month :year])
   (umap/defsys treg_ 'ns-ms-year [:ns :ms :sec :min :hour :day :month :year])
 
-  (umap/defsys treg_ 'ms-year-am-pm    [:ms :sec :min :ampm-hour :ampm-period :day :month :year])
-  (umap/defsys treg_ 'ns-year-am-pm    [:ns :sec :min :ampm-hour :ampm-period :day :month :year])
-  (umap/defsys treg_ 'ns-ms-year-am-pm [:ns :ms :sec :min :ampm-hour :ampm-period :day :month :year])
+  (umap/defsys treg_ 'ms-year-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (umap/defsys treg_ 'ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (umap/defsys treg_ 'ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
 
   (umap/defsys treg_ 'weeks [:weekday :week])
 
@@ -158,7 +158,7 @@
            (sut/guess-sys @treg_ {:min 30, :hour 15})))
 
   (t/is (= ms-day-am-pm
-           (sut/guess-sys @treg_ {:min 30, :ampm-hour 3, :ampm-period :pm})))
+           (sut/guess-sys @treg_ {:min 30, :am-pm/hour 3, :am-pm/period :pm})))
 
   (t/is (= ns-ms-day
            (sut/guess-sys @treg_ {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})))
@@ -226,13 +226,13 @@
 
 
 (t/deftest find-diff-branches-unit-test
-  (sut/find-diff-branches [:ns :ms :sec :min :ampm-hour :ampm-period :day :month :year]
+  (sut/find-diff-branches [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]
                           [:ns :sec :min :hour :period :day :month :year])
   ;; => [:ns
   ;;     [[:ms] []]
   ;;     :sec
   ;;     :min
-  ;;     [[:ampm-hour :ampm-period] [:hour :period]]
+  ;;     [[:am-pm/hour :am-pm/period] [:hour :period]]
   ;;     :day
   ;;     :month
   ;;     :year]
@@ -375,42 +375,42 @@
     (t/is (= [{[:ms]    [:ms]}
               {[:sec]   [:sec]}
               {[:min]   [:min]}
-              {[:hour]  [:ampm-hour :ampm-period]}
+              {[:hour]  [:am-pm/hour :am-pm/period]}
               {[:day]   [:day]}
               {[:month] [:month]}
               {[:year]  [:year]}]
              (sut/find-conversion
                @treg_
                {:year 2021, :month :sep, :day 7, :hour 21, :min 30}
-               {:year 2021, :month :sep, :day 7, :ampm-period :pm, :ampm-hour 9, :min 30})))
+               {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30})))
 
     (t/testing "different start"
       (t/is (= [{[]       [:ns]}
                 {[:ms]    [:ms]}
                 {[:sec]   [:sec]}
                 {[:min]   [:min]}
-                {[:hour]  [:ampm-hour :ampm-period]}
+                {[:hour]  [:am-pm/hour :am-pm/period]}
                 {[:day]   [:day]}
                 {[:month] [:month]}
                 {[:year]  [:year]}]
                (sut/find-conversion
                  @treg_
                  {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :sec 10, :ms 10}
-                 {:year 2021, :month :sep, :day 7, :ampm-period :pm, :ampm-hour 9, :min 30, :sec 10, :ms 10, :ns 10}))))
+                 {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :sec 10, :ms 10, :ns 10}))))
 
     (t/testing "two parallel graph paths"
       (t/is (= [{[:ns]    [:ns]}
                 {[]       [:ms]}
                 {[:sec]   [:sec]}
                 {[:min]   [:min]}
-                {[:hour]  [:ampm-hour :ampm-period]}
+                {[:hour]  [:am-pm/hour :am-pm/period]}
                 {[:day]   [:day]}
                 {[:month] [:month]}
                 {[:year]  [:year]}]
                (sut/find-conversion
                  @treg_
                  {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :sec 10, :ns 10000010}
-                 {:year 2021, :month :sep, :day 7, :ampm-period :pm, :ampm-hour 9, :min 30, :sec 10, :ms 10, :ns 10}))))
+                 {:year 2021, :month :sep, :day 7, :am-pm/period :pm, :am-pm/hour 9, :min 30, :sec 10, :ms 10, :ns 10}))))
 
     (t/testing "no conversion"
       (t/is (empty?
@@ -681,7 +681,7 @@
 
     (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:seqs :ampm-hour :ampm-period])
+                              (get-in @treg_ [:seqs :am-pm/hour :am-pm/period])
                               nil
                               %)
                            12)
@@ -722,7 +722,7 @@
 
     (t/is (= (reverse [12 1 2 3 4 5 6 7 8 9 10 11])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:seqs :ampm-hour :ampm-period])
+                              (get-in @treg_ [:seqs :am-pm/hour :am-pm/period])
                               nil
                               %)
                            11)
