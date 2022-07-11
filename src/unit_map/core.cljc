@@ -138,13 +138,9 @@
       (update :eq-units push-to-eq-units unit useq)))
 
 
-(defn defseq! [registry-atom unit useq]
+(defn defseq [registry-atom unit useq]
   (swap! registry-atom reg-useq unit useq)
   useq)
-
-
-(defn defseq [registry-atom unit useq]
-  (defseq! registry-atom unit useq))
 
 
 (defn sys-continuous? [registry units]
@@ -157,14 +153,10 @@
              (get-in registry [:seqs prev-unit cur-unit]))))))
 
 
-(defn defsys* [registry-atom sys-name units]
+(defn defsys [registry-atom sys-name units]
   (assert (sys-continuous? @registry-atom units))
   (swap! registry-atom assoc-in [:systems sys-name] units)
   units)
-
-
-(defn defsys [registry-atom sys-name units]
-  (defsys* registry-atom sys-name units))
 
 
 ;;;;;;;;;; sys info

@@ -9,30 +9,30 @@
 (t/deftest defseq-defsys
   (def tregistry-atom (atom nil))
 
-  (sut/defseq! tregistry-atom ::a #unit-map/seq[0 1 -> ::b])
-  (sut/defseq! tregistry-atom ::b #unit-map/seq[0 1 -> ::c])
-  (sut/defseq! tregistry-atom ::c #unit-map/seq[0 1 -> ::d])
-  (sut/defseq! tregistry-atom ::d #unit-map/seq[0 1])
+  (sut/defseq tregistry-atom ::a #unit-map/seq[0 1 -> ::b])
+  (sut/defseq tregistry-atom ::b #unit-map/seq[0 1 -> ::c])
+  (sut/defseq tregistry-atom ::c #unit-map/seq[0 1 -> ::d])
+  (sut/defseq tregistry-atom ::d #unit-map/seq[0 1])
 
-  (sut/defseq! tregistry-atom ::aa #unit-map/seq[0 2 -> ::b])
-  (sut/defseq! tregistry-atom ::a #unit-map/seq[0 1 2 3 -> ::c])
+  (sut/defseq tregistry-atom ::aa #unit-map/seq[0 2 -> ::b])
+  (sut/defseq tregistry-atom ::a #unit-map/seq[0 1 2 3 -> ::c])
 
-  (sut/defseq! tregistry-atom ::b2 #unit-map/seq[::b <=> -2 -1 0 -> ::c2])
-  (sut/defseq! tregistry-atom ::c2 #unit-map/seq[-2 -1 0 -> ::d])
-  (sut/defseq! tregistry-atom ::c2 #unit-map/seq[-2 -1 .. ##-Inf])
+  (sut/defseq tregistry-atom ::b2 #unit-map/seq[::b <=> -2 -1 0 -> ::c2])
+  (sut/defseq tregistry-atom ::c2 #unit-map/seq[-2 -1 0 -> ::d])
+  (sut/defseq tregistry-atom ::c2 #unit-map/seq[-2 -1 .. ##-Inf])
 
-  (sut/defseq! tregistry-atom ::b3 #unit-map/seq[::b2 <=> 2 1 0 -> ::c3])
-  (sut/defseq! tregistry-atom ::c3 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq tregistry-atom ::b3 #unit-map/seq[::b2 <=> 2 1 0 -> ::c3])
+  (sut/defseq tregistry-atom ::c3 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq! tregistry-atom ::b4 #unit-map/seq[::b <=> 2 1 0 -> ::c4])
-  (sut/defseq! tregistry-atom ::c4 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq tregistry-atom ::b4 #unit-map/seq[::b <=> 2 1 0 -> ::c4])
+  (sut/defseq tregistry-atom ::c4 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq! tregistry-atom ::b5 #unit-map/seq[2 1 0 -> ::c5])
-  (sut/defseq! tregistry-atom ::c5 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq tregistry-atom ::b5 #unit-map/seq[2 1 0 -> ::c5])
+  (sut/defseq tregistry-atom ::c5 #unit-map/seq[2 1 .. ##-Inf])
 
-  (sut/defseq! tregistry-atom ::b6 #unit-map/seq[::b <=> 2 1 0 -> ::c6])
-  (sut/defseq! tregistry-atom ::c6 #unit-map/seq[::c <=> 2 1 0 -> ::d])
-  (sut/defseq! tregistry-atom ::c6 #unit-map/seq[2 1 .. ##-Inf])
+  (sut/defseq tregistry-atom ::b6 #unit-map/seq[::b <=> 2 1 0 -> ::c6])
+  (sut/defseq tregistry-atom ::c6 #unit-map/seq[::c <=> 2 1 0 -> ::d])
+  (sut/defseq tregistry-atom ::c6 #unit-map/seq[2 1 .. ##-Inf])
 
   (def tregistry @tregistry-atom)
 
