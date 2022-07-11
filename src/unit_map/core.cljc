@@ -1,7 +1,9 @@
 (ns unit-map.core
-  (:require [unit-map.util :as u]
-            [clojure.set]
-            [clojure.data]))
+  (:require [unit-map.util :as util]
+            [unit-map.impl.reader]
+            [unit-map.impl.registry :as registry]
+            [unit-map.impl.system :as system]
+            [unit-map.impl.ops :as ops]))
 
 
 #_"TODO:
@@ -11,517 +13,29 @@
 - move calendar & crono to scripts"
 
 
-;;;;;;;;;; read seq
-
-
-(defn range? [x]
-  (and (map? x)
-       (every? #(contains? x %)
-               [:start :end :step])))
-
-
-(defn create-range [start end step]
-  {:start start
-   :end   end
-   :step  step})
-
-
-(defn process-range [pprev prev next-seq nnext]
-  {:pre [(and (not-every? nil? [pprev nnext])
-              (every? some? [prev next-seq]))]}
-  (let [start (or pprev prev)
-        end   (or nnext next-seq)
-        step  (if (nil? pprev)
-                (if (integer? next-seq)
-                  (- nnext next-seq)
-                  next-seq)
-                (if (integer? prev)
-                  (- prev pprev)
-                  prev))]
-    (create-range start end step)))
-
-
-(defn process-equivalent [s]
-  (if (= '<=> (second s))
-    {:eq-unit (first s)
-     :sequence (vec (drop 2 s))}
-    {:sequence s}))
-
-
-(defn process-next-unit [s]
-  (if (= '-> (get s (- (count s) 2)))
-    {:sequence (vec (drop-last 2 s))
-     :next-unit (last s)}
-    {:sequence s}))
-
-
-(defn process-enumeration [s]
-  {:sequence
-   (loop [[pprev prev x next-seq nnext & rest] (concat [nil nil] s [nil nil])
-
-          result []
-          buffer []]
-     (cond
-       (nil? x)  (vec (concat result buffer))
-       (= '.. x) (recur (concat [nil nil] rest)
-                        (concat result
-                                (drop-last 2 buffer)
-                                [(process-range pprev prev next-seq nnext)])
-                        [])
-       :else     (recur (concat [prev x next-seq nnext] rest)
-                        result
-                        (conj buffer x))))})
-
-
-(defn process-sequence* [s]
-  (as-> s $
-    (process-equivalent $)
-    (merge $ (process-next-unit (:sequence $)))
-    (merge $ (process-enumeration (:sequence $)))))
-
-
-(def process-sequence (memoize process-sequence*))
-
-
-(defn read-sequence [form]
-  (process-sequence form))
-
-
 ;;;;;;;;;; defseq & defsys
 
 
-(defn push-to-seq-graph [seqs-map unit useq]
-  (let [eq-seqs (when-let [eq-unit (:eq-unit useq)]
-                  (->> (vals seqs-map)
-                       (keep #(get % eq-unit))))
-
-        to-this-unit-new (->> eq-seqs
-                              (map #(assoc % :next-unit unit))
-                              distinct)
-
-        to-this-unit (->> (vals seqs-map)
-                          (keep #(get % unit)))
-
-        to-eq-new (when-let [eq-unit (:eq-unit useq)]
-                    (->> to-this-unit
-                         (map #(assoc % :next-unit eq-unit))
-                         distinct))
-
-        this-seq (assoc useq :unit unit)
-
-        to-save (concat [this-seq]
-                        to-this-unit-new
-                        to-eq-new)]
-    (reduce (fn [acc s]
-              (assoc-in acc
-                        [(:unit s) (:next-unit s)]
-                        (dissoc s :eq-unit)))
-            seqs-map
-            to-save)))
-
-
-(defn push-to-eq-units [eq-units-sets unit {:keys [eq-unit]}]
-  (let [group (->> eq-units-sets
-                   (filter #(or (get % unit) (get % eq-unit)))
-                   first)
-        new-group (-> (or group #{})
-                      (conj unit)
-                      (cond-> (some? eq-unit) (conj eq-unit)))]
-    (-> (or eq-units-sets #{})
-        (disj group)
-        (conj new-group))))
-
-
-(defn reg-useq [registry unit useq]
-  (-> registry
-      (update :seqs push-to-seq-graph unit useq)
-      (update :eq-units push-to-eq-units unit useq)))
-
-
 (defn defseq [registry-atom unit useq]
-  (swap! registry-atom reg-useq unit useq)
+  (swap! registry-atom registry/reg-useq unit useq)
   useq)
 
 
-(defn sys-continuous? [registry units]
-  (let [reverse-units (reverse units)]
-    (->> (map vector
-              (cons nil reverse-units)
-              reverse-units)
-         (every?
-           (fn [[cur-unit prev-unit]]
-             (get-in registry [:seqs prev-unit cur-unit]))))))
-
-
 (defn defsys [registry-atom sys-name units]
-  (assert (sys-continuous? @registry-atom units))
+  (assert (registry/sys-continuous? @registry-atom units))
   (swap! registry-atom assoc-in [:systems sys-name] units)
   units)
 
 
-;;;;;;;;;; sys info
-
-
-(defn get-units [unit-map]
-  (->> unit-map
-       (mapcat (fn [[k v]]
-                 (if (map? v)
-                   (get-units v)
-                   [k])))
-       set))
-
-
-(defn supporting-systems [all-systems units]
-  (->> all-systems
-       (filter (comp (partial clojure.set/subset? units)
-                     set))
-       sort))
-
-
-(def guess-sys*
-  (memoize
-    (fn [registry units]
-      (first (supporting-systems (vals (:systems registry)) units)))))
-
-
-(defn guess-sys
-  ([registry unit-map unit]
-   (guess-sys registry (assoc unit-map unit nil)))
-  ([registry unit-map]
-   (when-let [units (not-empty (get-units unit-map))]
-     (guess-sys* registry units))))
-
-
-(defn sys-intersection [registry & unit-maps]
-  (guess-sys registry (reduce merge unit-maps)))
-
-
-(defn find-diff-branches [xs ys]
-  (loop [cur-xs xs
-         cur-ys ys
-         result []]
-    (if (and (empty? cur-xs) (empty? cur-ys))
-      (not-empty result)
-      (let [equal-pairs-len     (->> (map vector cur-xs cur-ys)
-                                     (take-while (fn [[x y]] (= x y)))
-                                     count)
-            [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
-            rest-ys             (drop equal-pairs-len cur-ys)
-
-            [x-branch rest-xs'] (split-with (complement (set rest-ys)) rest-xs)
-            branch-end          (first rest-xs')
-            [y-branch rest-ys'] (if (some? branch-end)
-                                  (split-with #(not= branch-end %) rest-ys)
-                                  [rest-ys])]
-        (recur rest-xs'
-               rest-ys'
-               (cond-> (into result equal-xys)
-                 (or (seq x-branch) (seq y-branch))
-                 (conj ^::branches[(vec x-branch) (vec y-branch)])))))))
-
-
-(defn find-conversion [registry x y]
-  (let [branches-diff (or (sys-intersection registry x y)
-                          (find-diff-branches (guess-sys registry x) #_"TODO: find better sys match algo"
-                                              (guess-sys registry y)))
-        conv-start (first branches-diff)
-        valid? (or (not (::branches (meta conv-start)))
-                   (let [[[x :as xs] [y :as ys]] conv-start]
-                     (or (empty? xs)
-                         (empty? ys)
-                         (contains? (->> (:eq-units registry)
-                                         (filter #(contains? % x))
-                                         first)
-                                    y))))]
-    (when valid?
-      (mapv (fn [p]
-              (if (::branches (meta p))
-                {(first p) (second p)}
-                {[p] [p]}))
-            branches-diff))))
-
-
-;;;;;;;;;; seq & range utils
-
-
-(defn dynamic-sequence? [useq]
-  (boolean (some #(and (range? %)
-                       (some fn? (vals %)))
-                 (:sequence useq))))
-
-
-(defn static-sequence? [useq]
-  (not (dynamic-sequence? useq)))
-
-
-(defn concretize-range [rng umap]
-  (update-vals rng #(u/try-call % umap)))
-
-
-(defn range-length [rng umap]
-  (let [{:keys [start step end]} (concretize-range rng umap)]
-    (if (some u/infinite? [start end])
-      ##Inf
-      (-> (- end start) (quot step) inc))))
-
-
-(defn sequence-length [useq umap]
-  (->> (:sequence useq)
-       (map #(if (range? %) (range-length % umap) 1))
-       (reduce + 0)))
-
-
-(defn sequence-first-index [useq umap]
-  (let [e (first (:sequence useq))
-        r (when (range? e) (concretize-range e umap))]
-    (cond
-      (nil? e)                 nil
-      (u/infinite? (:start r)) ##-Inf
-      :else                    0)))
-
-
-(defn sequence-last-index [useq umap]
-  (let [e (last (:sequence useq))
-        r (when (range? e) (concretize-range e umap))]
-    (cond
-      (nil? e)               nil
-      (u/infinite? (:end r)) ##Inf
-      :else                  (dec (sequence-length useq umap)))))
-
-
-(defn range-contains? [rng umap x]
-  (let [{:keys [start step end]} (concretize-range rng umap)]
-    (and (or (<= start x end)
-             (>= start x end))
-         (or (= start x)
-             (= end x)
-             (and (u/finite? start)
-                  (-> x (- start) (mod step) zero?))
-             (and (u/finite? end)
-                  (-> x (+ end) (mod step) zero?))))))
-
-
-(defn range-contains-some [rng umap & xs]
-  (->> (sort xs)
-       (filter (partial range-contains? rng umap))
-       first))
-
-
-(defn sequence-contains-some
-  "Returns first (i.e. min) x found in the s"
-  [useq umap x & xs]
-  (let [xs (cons x xs)]
-    (some (some-fn (set xs)
-                   #(when (range? %) (apply range-contains-some % umap xs)))
-          (:sequence useq))))
-
-
-(defn range-index-of
-  "Returns negative index if range start is infinite, 0 index will be end of range."
-  [rng umap x]
-  (let [{:as crng, :keys [start step end]} (concretize-range rng umap)]
-    (cond
-      (not (range-contains-some crng umap x))   nil
-      (and (u/infinite? x) (u/infinite? start)) ##-Inf
-      (u/infinite? x)                           ##Inf
-      (u/infinite? start)                       (- (quot (- end x) step))
-      :else                                     (quot (- x start) step))))
-
-
-(defn sequence-index-of [useq umap x]
-  (loop [i 0, [el & rest-s] (:sequence useq)]
-    (when (some? el)
-      (or (some-> (cond
-                    (= x el)    0
-                    (range? el) (range-index-of el umap x))
-                  (+ i))
-          (recur (+ i (if (and (range? el) (u/finite? (:start el)))
-                        (range-length el umap)
-                        1))
-                 rest-s)))))
-
-
-(defn range-nth [rng umap index]
-  (let [{:keys [start step end]} (concretize-range rng umap)]
-    (if (u/infinite? start)
-      (+ end (* step index))
-      (+ start (* step index)))))
-
-
-(defn sequence-nth [useq umap index]
-  (loop [i 0, [el & rest-s] (:sequence useq)]
-    (when (some? el)
-      (let [increment (if (and (range? el) (u/finite? (:start el)))
-                        (range-length el umap)
-                        1)
-
-            result (cond
-                     (not (or (<= i index (+ i increment -1))
-                              (neg? index)))
-                     nil
-
-                     (range? el) (range-nth el umap (- index i))
-                     :else       el)]
-        (if (some? result)
-          result
-          (recur (+ i increment) rest-s))))))
-
-
-;;;;;;;;;; system utils
-
-
-(defn get-next-unit
-  "next = more significant"
-  [registry umap unit]
-  (u/get-next-element (guess-sys registry umap unit) unit))
-
-
-(defn get-prev-unit
-  "prev = less significant"
-  [registry umap unit]
-  (u/get-prev-element (guess-sys registry umap unit) unit))
-
-
-(defn unit-seq [useqs unit next-unit]
-  (get-in useqs [unit next-unit]))
-
-
-(def get-unit-seq*
-  (memoize
-    (fn [registry unit next-unit]
-      (unit-seq (:seqs registry) unit next-unit))))
-
-
-(defn get-unit-seq [registry umap unit]
-  (let [sys       (guess-sys registry umap unit)
-        next-unit (u/get-next-element sys unit)]
-    (get-unit-seq* registry unit next-unit)))
-
-
-(defn sys-unit-seqs [registry sys]
-  (map (fn [unit next-unit]
-         [unit (get-unit-seq* registry unit next-unit)])
-       sys
-       (rest (conj sys nil))))
-
-
-;;;;;;;;;; inc & dec
-
-
-(defn get-next-unit-value [useq umap x]
-  (loop [[el next & rest] (:sequence useq)]
-    (let [{:keys [step end]} (if (range? el)
-                               (concretize-range el umap)
-                               {})]
-      (cond
-        (nil? el)
-        nil
-
-        (or (= x el) (= x end))
-        (cond-> next (range? next) (-> :start (u/try-call umap)))
-
-        (and (range? el)
-             (range-contains-some el umap x)
-             (range-contains-some el umap (+ x step)))
-        (+ x step)
-
-        :else
-        (recur (cons next rest))))))
-
-
-(defn get-prev-unit-value [useq umap x]
-  (loop [[prev el & rest] (cons nil (:sequence useq))]
-    (let [{:keys [start step]} (if (range? el) (concretize-range el umap) {})]
-      (cond
-        (nil? el)
-        nil
-
-        (or (= x el) (= x start))
-        (cond-> prev (range? prev) (-> :end (u/try-call umap)))
-
-        (and (range? el)
-             (range-contains-some el umap x)
-             (range-contains-some el umap (- x step)))
-        (- x step)
-
-        :else
-        (recur (cons el rest))))))
-
-
-(defn get-first-el [useq umap]
-  (let [start (first (:sequence useq))]
-    (if (range? start)
-      (u/try-call (:start start) umap)
-      start)))
-
-
-(defn get-last-el [useq umap]
-  (let [end (last (:sequence useq))]
-    (if (range? end)
-      (u/try-call (:end end) umap)
-      end)))
-
-
-(defn get-min-value [registry umap unit]
-  (get-first-el (get-unit-seq registry umap unit) umap))
-
-
-(defn get-max-value [registry umap unit]
-  (get-last-el (get-unit-seq registry umap unit) umap))
-
-
-#_"TODO: handle when get-next-unit returns nil"
-(defn inc-unit [registry unit {:as umap, unit-value unit}]
-  (or (some->> (or unit-value (get-min-value registry umap unit))
-               (get-next-unit-value (get-unit-seq registry umap unit) umap)
-               (assoc umap unit))
-      (as-> umap $
-        (inc-unit registry (get-next-unit registry $ unit) $)
-        (assoc $ unit (get-min-value registry $ unit)))))
-
-
-(defn dec-unit [registry unit {:as umap, unit-value unit}]
-  (or (some->> (or unit-value (get-min-value registry umap unit))
-               (get-prev-unit-value (get-unit-seq registry umap unit) umap)
-               (assoc umap unit))
-      (as-> umap $
-        (dissoc $ unit)
-        (dec-unit registry (get-next-unit registry $ unit) $)
-        (assoc $ unit (get-max-value registry $ unit)))))
-
-
-;;;;;;;;;; cmp
-#_"TODO: add zero?"
-
-
-(defn sequence-cmp [useq umap x y]
-  (cond
-    (= x y) 0
-    (nil? x) -1
-    (nil? y) 1
-    (= x (sequence-contains-some useq umap x y)) -1
-    :else 1))
-
-
-(defn cmp-in-sys [registry sys x y]
-  (or (->> (sys-unit-seqs registry sys)
-           reverse
-           (map (fn [[unit processed-sequence]]
-                  (sequence-cmp processed-sequence
-                                x
-                                (get x unit)
-                                (get y unit))))
-           (drop-while zero?)
-           first)
-      0))
+;;;;;;;;;; compare
 
 
 (defn cmp [registry x y]
-  (or (when-let [sys (sys-intersection registry x y)]
-        (cmp-in-sys registry sys x y))
-      (when-let [sys (or (guess-sys registry x)
-                         (guess-sys registry y))]
-        (cmp-in-sys registry sys x y))
+  (or (when-let [sys (system/sys-intersection registry x y)]
+        (ops/cmp-in-sys registry sys x y))
+      (when-let [sys (or (system/guess-sys registry x)
+                         (system/guess-sys registry y))]
+        (ops/cmp-in-sys registry sys x y))
       (when (= x y)
         0)))
 
@@ -529,7 +43,7 @@
 (defn eq?
   ([_ _] true)
   ([registry x y]        (= 0 (cmp registry x y)))
-  ([registry x y & more] (apply u/apply-binary-pred #(eq? registry  %1 %2) x y more)))
+  ([registry x y & more] (apply util/apply-binary-pred #(eq? registry  %1 %2) x y more)))
 
 
 (def not-eq? (complement eq?))
@@ -538,63 +52,28 @@
 (defn lt?
   ([_ _] true)
   ([registry x y]        (neg? (cmp registry x y)))
-  ([registry x y & more] (apply u/apply-binary-pred #(lt? registry  %1 %2) x y more)))
+  ([registry x y & more] (apply util/apply-binary-pred #(lt? registry  %1 %2) x y more)))
 
 
 (defn gt?
   ([_ _] true)
   ([registry x y]        (pos? (cmp registry x y)))
-  ([registry x y & more] (apply u/apply-binary-pred #(gt? registry  %1 %2) x y more)))
+  ([registry x y & more] (apply util/apply-binary-pred #(gt? registry  %1 %2) x y more)))
 
 
 (defn lte?
   ([_ _] true)
   ([registry x y]        (>= 0 (cmp registry x y)))
-  ([registry x y & more] (apply u/apply-binary-pred #(lte? registry  %1 %2) x y more)))
+  ([registry x y & more] (apply util/apply-binary-pred #(lte? registry  %1 %2) x y more)))
 
 
 (defn gte?
   ([_ _] true)
   ([registry x y]        (<= 0 (cmp registry x y)))
-  ([registry x y & more] (apply u/apply-binary-pred #(gte? registry  %1 %2) x y more)))
+  ([registry x y & more] (apply util/apply-binary-pred #(gte? registry  %1 %2) x y more)))
 
 
 ;;;;;;;;;; arithmetic
-
-
-(defn add-to-unit [registry umap unit x] #_"TODO: handle unnormalized values"
-  (cond
-    (zero? x)
-    umap
-
-    (and (< 1 (abs x))
-         (static-sequence? (get-unit-seq registry umap unit)))
-    (let [useq        (get-unit-seq registry umap unit)
-          idx         (if-let [v (get umap unit)]
-                         (sequence-index-of useq umap v)
-                         (sequence-first-index useq umap))
-          sum         (+ idx x)
-          modulo      (sequence-length useq umap)
-          result-idx  (cond-> sum (u/finite? modulo) (mod modulo))
-          carry-delta (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
-          result      (sequence-nth useq umap result-idx)
-          result-umap (assoc umap unit result)]
-      (if (zero? carry-delta)
-        result-umap
-        (recur registry
-               result-umap
-               (get-next-unit registry umap unit)
-               carry-delta)))
-
-    (neg? x)
-    (u/n-times (- x) (partial dec-unit registry unit) umap)
-
-    :else
-    (u/n-times x (partial inc-unit registry unit) umap)))
-
-
-(defn subtract-from-unit [registry umap unit x]
-  (add-to-unit registry umap unit (- x)))
 
 
 (defn add-delta
@@ -604,9 +83,9 @@
 
   ([registry x delta]
    (reduce (fn [result unit]
-             (add-to-unit registry result unit (get delta unit 0)))
+             (ops/add-to-unit registry result unit (get delta unit 0)))
            x
-           (reverse (sys-intersection registry x delta))))
+           (reverse (system/sys-intersection registry x delta))))
 
   ([registry x delta & more-deltas]
    (reduce #(add-delta registry %1 %2)
@@ -621,9 +100,9 @@
 
   ([registry x delta]
    (reduce (fn [result unit]
-             (subtract-from-unit registry result unit (get delta unit 0)))
+             (ops/subtract-from-unit registry result unit (get delta unit 0)))
            x
-           (reverse (sys-intersection registry x delta))))
+           (reverse (system/sys-intersection registry x delta))))
 
   ([registry x delta & more-deltas]
    (reduce #(subtract-delta registry %1 %2)
@@ -631,73 +110,32 @@
            more-deltas)))
 
 
-(defn unit-difference [a b unit useq]
-  (let [a-val   (some->> (get a unit) (sequence-index-of useq a))
-        b-val   (some->> (get b unit) (sequence-index-of useq b))
-        diff    (- (or a-val 0) (or b-val 0))
-        borrow? (neg? diff)]
-    {:borrowed borrow?
-     :result (if borrow?
-               (let [borrow (sequence-length useq b)]
-                 (+ diff borrow))
-               diff)}))
-
-
-(defn units-difference-reduce-fn [registry a b {:keys [acc borrow?]} [unit useq]]
-  (let [{borrow-next? :borrowed, unit-res :result}
-        (unit-difference a
-                         (cond->> b borrow? (inc-unit registry unit))
-                         unit
-                         useq)]
-    {:borrow? borrow-next?
-     :acc (cond-> acc
-            (not= 0 unit-res)
-            (assoc unit unit-res))}))
-
-
 (defn difference [registry x y]
   (let [[a b] (cond-> [x y] (lt? registry x y) reverse)]
-    (:acc (reduce #(units-difference-reduce-fn registry a b %1 %2)
+    (:acc (reduce #(ops/units-difference-reduce-fn registry a b %1 %2)
                   {}
-                  (sys-unit-seqs registry (sys-intersection registry a b))))))
-
-
-#_(defn difference-parts [units sys-seqs]
-  (:acc (reduce
-          (fn [acc unit]
-            (let [[seqs [this-unit & rest-seqs]]
-                  (split-with (fn [[u _]] (not= unit u))
-                              (:rest-seqs acc))]
-              (if (some? this-unit)
-                (-> acc
-                    (assoc :rest-seqs rest-seqs)
-                    (update :acc conj {:to-unit unit
-                                       :seqs (conj seqs this-unit)}))
-                acc)))
-          {:acc []
-           :rest-seqs (reverse sys-seqs)}
-          (reverse units))))
+                  (system/sys-unit-seqs registry (system/sys-intersection registry a b))))))
 
 
 #_(defn difference-in [registry units x y]
-  (let [[a b]    (cond-> [x y] (lt? x y) reverse)
-        sys-seqs (sys-unit-seqs registry (sys-intersection a b))
-        parts    (difference-parts units sys-seqs)]
-    (reduce
-      (fn [acc {:keys [to-unit seqs]}]
-        (reduce
-          (fn [{:keys [a b acc]} [unit useq]]
-            (let [{:keys [borrowed result]}
-                  (unit-difference a b unit useq)]
-              {:acc (assoc acc unit result)
-               :a (dissoc a unit)
-               :b (dissoc b unit)}))
-          acc
-          seqs))
-      {:a a
-       :b b
-       :acc {}}
-      parts)))
+    (let [[a b]    (cond-> [x y] (lt? x y) reverse)
+          sys-seqs (sys-unit-seqs registry (sys-intersection a b))
+          parts    (difference-parts units sys-seqs)]
+      (reduce
+        (fn [acc {:keys [to-unit seqs]}]
+          (reduce
+            (fn [{:keys [a b acc]} [unit useq]]
+              (let [{:keys [borrowed result]}
+                    (unit-difference a b unit useq)]
+                {:acc (assoc acc unit result)
+                 :a (dissoc a unit)
+                 :b (dissoc b unit)}))
+            acc
+            seqs))
+        {:a a
+         :b b
+         :acc {}}
+        parts)))
 
 
 ; 2022-05-03 2019-07-28

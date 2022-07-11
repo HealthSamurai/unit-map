@@ -1,1 +1,1 @@
-{unit-map/seq unit-map.core/read-sequence}
+{unit-map/seq unit-map.impl.reader/read-sequence}
