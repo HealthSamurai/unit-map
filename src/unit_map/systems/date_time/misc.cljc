@@ -16,8 +16,8 @@
 (def epoch {:year 1970 :day 1 :month 1})
 
 
-(defn from-epoch [registry-atom e]
-  (umap/add-delta registry-atom epoch {:sec e}))
+(defn from-epoch [registry e]
+  (umap/add-delta registry epoch {:sec e}))
 
 
 (defn seconds [d]
