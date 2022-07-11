@@ -479,8 +479,8 @@
 
 
 #_"TODO: handle when get-next-unit returns nil"
-(defn inc-unit [registry unit {:as umap, unit-value unit, :or {unit-value (get-min-value registry umap unit)}}]
-  (or (some->> unit-value
+(defn inc-unit [registry unit {:as umap, unit-value unit}]
+  (or (some->> (or unit-value (get-min-value registry umap unit))
                (get-next-unit-value (get-unit-seq registry umap unit) umap)
                (assoc umap unit))
       (as-> umap $
@@ -488,8 +488,8 @@
         (assoc $ unit (get-min-value registry $ unit)))))
 
 
-(defn dec-unit [registry unit {:as umap, unit-value unit, :or {unit-value (get-min-value registry umap unit)}}]
-  (or (some->> unit-value
+(defn dec-unit [registry unit {:as umap, unit-value unit}]
+  (or (some->> (or unit-value (get-min-value registry umap unit))
                (get-prev-unit-value (get-unit-seq registry umap unit) umap)
                (assoc umap unit))
       (as-> umap $
