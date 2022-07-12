@@ -25,8 +25,10 @@
 
 
 (defn defsys [registry-atom sys-name units]
-  (assert (registry/sys-continuous? @registry-atom units))
-  (swap! registry-atom assoc-in [:systems sys-name] units)
+  (swap! registry-atom
+         (fn [registry]
+           (assert (registry/sys-continuous? registry units))
+           (registry/reg-sys registry sys-name units)))
   units)
 
 

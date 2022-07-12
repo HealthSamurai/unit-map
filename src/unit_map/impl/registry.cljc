@@ -57,3 +57,7 @@
          (every?
            (fn [[cur-unit prev-unit]]
              (get-in registry [:seqs prev-unit cur-unit]))))))
+
+
+(defn reg-sys [registry sys-name units]
+  (assoc-in registry [:systems sys-name] units))
