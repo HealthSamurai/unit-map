@@ -20,7 +20,7 @@
 
 
 (defn defseq [registry-atom unit useq]
-  (swap! registry-atom registry/reg-useq unit useq)
+  (swap! registry-atom registry/reg-seq unit useq)
   useq)
 
 

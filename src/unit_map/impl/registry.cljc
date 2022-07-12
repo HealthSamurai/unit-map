@@ -43,7 +43,7 @@
         (conj new-group))))
 
 
-(defn reg-useq [registry unit useq]
+(defn reg-seq [registry unit useq]
   (-> registry
       (update :seqs push-to-seq-graph unit useq)
       (update :eq-units push-to-eq-units unit useq)))

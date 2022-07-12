@@ -6,30 +6,30 @@
 (t/deftest defseq-defsys
   (def registry
     (-> {}
-        (sut/reg-useq :a #unit-map/seq[0 1 -> :b])
-        (sut/reg-useq :b #unit-map/seq[0 1 -> :c])
-        (sut/reg-useq :c #unit-map/seq[0 1 -> :d])
-        (sut/reg-useq :d #unit-map/seq[0 1])
+        (sut/reg-seq :a #unit-map/seq[0 1 -> :b])
+        (sut/reg-seq :b #unit-map/seq[0 1 -> :c])
+        (sut/reg-seq :c #unit-map/seq[0 1 -> :d])
+        (sut/reg-seq :d #unit-map/seq[0 1])
 
-        (sut/reg-useq :aa #unit-map/seq[0 2 -> :b])
-        (sut/reg-useq :a #unit-map/seq[0 1 2 3 -> :c])
+        (sut/reg-seq :aa #unit-map/seq[0 2 -> :b])
+        (sut/reg-seq :a #unit-map/seq[0 1 2 3 -> :c])
 
-        (sut/reg-useq :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
-        (sut/reg-useq :c2 #unit-map/seq[-2 -1 0 -> :d])
-        (sut/reg-useq :c2 #unit-map/seq[-2 -1 .. ##-Inf])
+        (sut/reg-seq :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
+        (sut/reg-seq :c2 #unit-map/seq[-2 -1 0 -> :d])
+        (sut/reg-seq :c2 #unit-map/seq[-2 -1 .. ##-Inf])
 
-        (sut/reg-useq :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
-        (sut/reg-useq :c3 #unit-map/seq[2 1 .. ##-Inf])
+        (sut/reg-seq :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
+        (sut/reg-seq :c3 #unit-map/seq[2 1 .. ##-Inf])
 
-        (sut/reg-useq :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
-        (sut/reg-useq :c4 #unit-map/seq[2 1 .. ##-Inf])
+        (sut/reg-seq :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
+        (sut/reg-seq :c4 #unit-map/seq[2 1 .. ##-Inf])
 
-        (sut/reg-useq :b5 #unit-map/seq[2 1 0 -> :c5])
-        (sut/reg-useq :c5 #unit-map/seq[2 1 .. ##-Inf])
+        (sut/reg-seq :b5 #unit-map/seq[2 1 0 -> :c5])
+        (sut/reg-seq :c5 #unit-map/seq[2 1 .. ##-Inf])
 
-        (sut/reg-useq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
-        (sut/reg-useq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
-        (sut/reg-useq :c6 #unit-map/seq[2 1 .. ##-Inf])))
+        (sut/reg-seq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
+        (sut/reg-seq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
+        (sut/reg-seq :c6 #unit-map/seq[2 1 .. ##-Inf])))
 
   (t/testing "seqs graph"
     (def graph-assert
