@@ -13,7 +13,7 @@
 - guess-sys-with-seqs
 - refactor repeating guess-sys calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
-- move calendar & crono to scripts"
+- move calendar, mask & crono to scripts"
 
 
 ;;;;;;;;;; defseq & defsys
