@@ -21,16 +21,16 @@
       #{:feb}                               (if (leap-year? date) 29 28)
       ##Inf))
 
-  (umap/defseq treg_ :hour   #unit-map/seq[0 1 .. 23 -> :day])
+  (umap/regseq! treg_ :hour   #unit-map/seq[0 1 .. 23 -> :day])
 
-  (umap/defseq treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
-  (umap/defseq treg_ :am-pm/period #unit-map/seq[:am :pm])
+  (umap/regseq! treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
+  (umap/regseq! treg_ :am-pm/period #unit-map/seq[:am :pm])
 
-  (umap/defseq treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (umap/defseq treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
-  (umap/defseq treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (umap/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
+  (umap/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (umap/regseq! treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (umap/defseq treg_ :epoch-year  #unit-map/seq[:year <=>
+  (umap/regseq! treg_ :epoch-year  #unit-map/seq[:year <=>
                                                 (fn [{:keys [epoch]}]
                                                   (if (= :BC epoch) ##Inf 1))
                                                 (fn [{:keys [epoch]}]
@@ -40,13 +40,13 @@
                                                   (if (= :BC epoch) 1 ##Inf))
                                                 -> :epoch])
 
-  (umap/defseq treg_ :epoch  #unit-map/seq[:BC :AD])
+  (umap/regseq! treg_ :epoch  #unit-map/seq[:BC :AD])
 
-  (umap/defsys treg_ 'datetime   [:hour :day :month :year])
-  (umap/defsys treg_ 'date       [:day :month :year])
-  (umap/defsys treg_ 'month-year [:month :year])
-  (umap/defsys treg_ 'year-epoch [:epoch-year :epoch])
-  (umap/defsys treg_ 'am-pm-time [:am-pm/hour :am-pm/period])
+  (umap/regsys! treg_ 'datetime   [:hour :day :month :year])
+  (umap/regsys! treg_ 'date       [:day :month :year])
+  (umap/regsys! treg_ 'month-year [:month :year])
+  (umap/regsys! treg_ 'year-epoch [:epoch-year :epoch])
+  (umap/regsys! treg_ 'am-pm-time [:am-pm/hour :am-pm/period])
 
   (->> (for [[sys sys-def] (:systems @treg_)
              :when (symbol? sys)]

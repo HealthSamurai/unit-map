@@ -44,6 +44,6 @@
 
 
 #_"NOTE: not sure if this system is needed by default"
-#_(u/defseq :ns #unit-map/seq[0 1 .. 999999 -> :ms])
-#_(u/defsys ns-ms-year [:ns :ms :sec :min :hour :day :month :year])
-#_(u/defsys am-pm-ns-ms-year [:ns :ms :sec :min :hour :period :day :month :year])
+#_(u/regseq! :ns #unit-map/seq[0 1 .. 999999 -> :ms])
+#_(u/regsys! ns-ms-year [:ns :ms :sec :min :hour :day :month :year])
+#_(u/regsys! am-pm-ns-ms-year [:ns :ms :sec :min :hour :period :day :month :year])

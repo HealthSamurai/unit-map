@@ -59,43 +59,43 @@
       #{:jun :jul :aug} :summer
       #{:sep :oct :nov} :autumn))
 
-  (umap/defseq treg_ :ns   #unit-map/seq[0 1 .. 999999999 -> :sec])
+  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. 999999999 -> :sec])
 
-  (umap/defseq treg_ :ns   #unit-map/seq[0 1 .. 999999 -> :ms])
-  (umap/defseq treg_ :ms   #unit-map/seq[0 1 .. 999 -> :sec])
-  (umap/defseq treg_ :sec  #unit-map/seq[0 1 .. 59 -> :min])
-  (umap/defseq treg_ :min  #unit-map/seq[0 1 .. 59 -> :hour])
-  (umap/defseq treg_ :hour #unit-map/seq[0 1 .. 23 -> :day])
+  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. 999999 -> :ms])
+  (umap/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999 -> :sec])
+  (umap/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59 -> :min])
+  (umap/regseq! treg_ :min  #unit-map/seq[0 1 .. 59 -> :hour])
+  (umap/regseq! treg_ :hour #unit-map/seq[0 1 .. 23 -> :day])
 
-  (umap/defseq treg_ :ms   #unit-map/seq[0 1 .. ##Inf])
-  (umap/defseq treg_ :ns   #unit-map/seq[0 1 .. ##Inf])
-  (umap/defseq treg_ :sec  #unit-map/seq[0 1 .. ##Inf])
-  (umap/defseq treg_ :hour #unit-map/seq[0 1 .. ##Inf])
-  (umap/defseq treg_ :day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
+  (umap/regseq! treg_ :ms   #unit-map/seq[0 1 .. ##Inf])
+  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. ##Inf])
+  (umap/regseq! treg_ :sec  #unit-map/seq[0 1 .. ##Inf])
+  (umap/regseq! treg_ :hour #unit-map/seq[0 1 .. ##Inf])
+  (umap/regseq! treg_ :day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
-  (umap/defseq treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
-  (umap/defseq treg_ :am-pm/period #unit-map/seq[:am :pm -> :day])
+  (umap/regseq! treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
+  (umap/regseq! treg_ :am-pm/period #unit-map/seq[:am :pm -> :day])
 
-  (umap/defseq treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (umap/defseq treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
-  (umap/defseq treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (umap/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
+  (umap/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (umap/regseq! treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (umap/defseq treg_ :weekday  #unit-map/seq[:day <=> :mon :tue :wed :thu :fri :sat :sun -> :week])
-  (umap/defseq treg_ :week     #unit-map/seq[1 2 .. 52])
-  (umap/defseq treg_ :weekpart #unit-map/seq[:weekday <=> weekday])
-  (umap/defseq treg_ :season   #unit-map/seq[:month <=> season])
+  (umap/regseq! treg_ :weekday  #unit-map/seq[:day <=> :mon :tue :wed :thu :fri :sat :sun -> :week])
+  (umap/regseq! treg_ :week     #unit-map/seq[1 2 .. 52])
+  (umap/regseq! treg_ :weekpart #unit-map/seq[:weekday <=> weekday])
+  (umap/regseq! treg_ :season   #unit-map/seq[:month <=> season])
 
-  (umap/defseq treg_ :mil  #unit-map/seq[0 1 .. 999  -> :inch])
-  (umap/defseq treg_ :inch #unit-map/seq[0 1 .. 11   -> :foot])
-  (umap/defseq treg_ :foot #unit-map/seq[0 1 .. 5279 -> :mile])
-  (umap/defseq treg_ :mile #unit-map/seq[0 1 .. ##Inf])
+  (umap/regseq! treg_ :mil  #unit-map/seq[0 1 .. 999  -> :inch])
+  (umap/regseq! treg_ :inch #unit-map/seq[0 1 .. 11   -> :foot])
+  (umap/regseq! treg_ :foot #unit-map/seq[0 1 .. 5279 -> :mile])
+  (umap/regseq! treg_ :mile #unit-map/seq[0 1 .. ##Inf])
 
-  (umap/defseq treg_ :mm #unit-map/seq[0 1 .. 9   -> :cm])
-  (umap/defseq treg_ :cm #unit-map/seq[0 1 .. 99  -> :m])
-  (umap/defseq treg_ :m  #unit-map/seq[0 1 .. 999 -> :km])
-  (umap/defseq treg_ :km #unit-map/seq[0 1 .. ##Inf])
+  (umap/regseq! treg_ :mm #unit-map/seq[0 1 .. 9   -> :cm])
+  (umap/regseq! treg_ :cm #unit-map/seq[0 1 .. 99  -> :m])
+  (umap/regseq! treg_ :m  #unit-map/seq[0 1 .. 999 -> :km])
+  (umap/regseq! treg_ :km #unit-map/seq[0 1 .. ##Inf])
 
-  (umap/defseq treg_ :epoch-year  #unit-map/seq[:year <=>
+  (umap/regseq! treg_ :epoch-year  #unit-map/seq[:year <=>
                                                 (fn [{:keys [epoch]}]
                                                   (if (= :BC epoch) ##Inf 1))
                                                 (fn [{:keys [epoch]}]
@@ -105,46 +105,46 @@
                                                   (if (= :BC epoch) 1 ##Inf))
                                                 -> :epoch])
 
-  (umap/defseq treg_ :epoch  #unit-map/seq[:BC :AD]))
+  (umap/regseq! treg_ :epoch  #unit-map/seq[:BC :AD]))
 
 (do ;;NOTE: systems
-  (umap/defsys treg_ 'imperial [:mil :inch :foot :mile])
+  (umap/regsys! treg_ 'imperial [:mil :inch :foot :mile])
 
-  (umap/defsys treg_ 'metric   [:mm :cm :m :km])
+  (umap/regsys! treg_ 'metric   [:mm :cm :m :km])
 
-  (umap/defsys treg_ 'ms-hour    [:ms :sec :min :hour])
-  (umap/defsys treg_ 'ns-hour    [:ns :sec :min :hour])
-  (umap/defsys treg_ 'ns-ms-hour [:ns :ms :sec :min :hour])
+  (umap/regsys! treg_ 'ms-hour    [:ms :sec :min :hour])
+  (umap/regsys! treg_ 'ns-hour    [:ns :sec :min :hour])
+  (umap/regsys! treg_ 'ns-ms-hour [:ns :ms :sec :min :hour])
 
-  (umap/defsys treg_ 'timestamp    [:ms])
-  (umap/defsys treg_ 'ns-timestamp [:ns])
+  (umap/regsys! treg_ 'timestamp    [:ms])
+  (umap/regsys! treg_ 'ns-timestamp [:ns])
 
-  (umap/defsys treg_ 'seconds [:ns :ms :sec])
-  (umap/defsys treg_ 'ns-seconds [:ns :sec])
+  (umap/regsys! treg_ 'seconds [:ns :ms :sec])
+  (umap/regsys! treg_ 'ns-seconds [:ns :sec])
 
-  (umap/defsys treg_ 'ms-day    [:ms :sec :min :hour :day])
-  (umap/defsys treg_ 'ns-day    [:ns :sec :min :hour :day])
-  (umap/defsys treg_ 'ns-ms-day [:ns :ms :sec :min :hour :day])
+  (umap/regsys! treg_ 'ms-day    [:ms :sec :min :hour :day])
+  (umap/regsys! treg_ 'ns-day    [:ns :sec :min :hour :day])
+  (umap/regsys! treg_ 'ns-ms-day [:ns :ms :sec :min :hour :day])
 
-  (umap/defsys treg_ 'ms-day-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day])
-  (umap/defsys treg_ 'ns-day-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day])
-  (umap/defsys treg_ 'ns-ms-day-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day])
+  (umap/regsys! treg_ 'ms-day-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day])
+  (umap/regsys! treg_ 'ns-day-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day])
+  (umap/regsys! treg_ 'ns-ms-day-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day])
 
-  (umap/defsys treg_ 'date       [:day :month :year])
-  (umap/defsys treg_ 'month-year [:month :year])
+  (umap/regsys! treg_ 'date       [:day :month :year])
+  (umap/regsys! treg_ 'month-year [:month :year])
 
-  (umap/defsys treg_ 'ms-year    [:ms :sec :min :hour :day :month :year])
-  (umap/defsys treg_ 'ns-year    [:ns :sec :min :hour :day :month :year])
-  (umap/defsys treg_ 'ns-ms-year [:ns :ms :sec :min :hour :day :month :year])
+  (umap/regsys! treg_ 'ms-year    [:ms :sec :min :hour :day :month :year])
+  (umap/regsys! treg_ 'ns-year    [:ns :sec :min :hour :day :month :year])
+  (umap/regsys! treg_ 'ns-ms-year [:ns :ms :sec :min :hour :day :month :year])
 
-  (umap/defsys treg_ 'ms-year-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
-  (umap/defsys treg_ 'ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year])
-  (umap/defsys treg_ 'ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (umap/regsys! treg_ 'ms-year-am-pm    [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (umap/regsys! treg_ 'ns-year-am-pm    [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year])
+  (umap/regsys! treg_ 'ns-ms-year-am-pm [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year])
 
-  (umap/defsys treg_ 'weeks [:weekday :week])
+  (umap/regsys! treg_ 'weeks [:weekday :week])
 
-  (umap/defsys treg_ 'ms-year-epoch [:ms :sec :min :hour :day :month :epoch-year :epoch])
-  (umap/defsys treg_ 'year-epoch [:epoch-year :epoch])
+  (umap/regsys! treg_ 'ms-year-epoch [:ms :sec :min :hour :day :month :epoch-year :epoch])
+  (umap/regsys! treg_ 'year-epoch [:epoch-year :epoch])
 
   (->> (for [[sys sys-def] (:systems @treg_)
              :when (symbol? sys)]

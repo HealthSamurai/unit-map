@@ -16,15 +16,15 @@
 - move calendar, mask & crono to scripts"
 
 
-;;;;;;;;;; defseq & defsys
+;;;;;;;;;; regseq! & regsys!
 
 
-(defn defseq [registry-atom unit useq]
+(defn regseq! [registry-atom unit useq]
   (swap! registry-atom registry/reg-seq unit useq)
   useq)
 
 
-(defn defsys [registry-atom sys-name units]
+(defn regsys! [registry-atom sys-name units]
   (swap! registry-atom
          (fn [registry]
            (assert (registry/sys-continuous? registry units))

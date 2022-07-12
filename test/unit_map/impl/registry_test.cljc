@@ -3,7 +3,7 @@
             [clojure.test :as t]))
 
 
-(t/deftest defseq-defsys
+(t/deftest regseq-regsys
   (def registry
     (-> {}
         (sut/reg-seq :a #unit-map/seq[0 1 -> :b])
