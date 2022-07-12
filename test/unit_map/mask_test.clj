@@ -1,7 +1,6 @@
 (ns unit-map.mask-test
   (:require [unit-map.mask :as sut]
-            [clojure.test :as t]
-            [unit-map.io :as io]))
+            [clojure.test :as t]))
 
 (t/deftest mask-test
   (let [cases {[:hour \: :min \: :sec]

@@ -1,9 +1,12 @@
 (ns unit-map.core
+  (:refer-clojure :exclude [format])
   (:require [unit-map.util :as util]
             [unit-map.impl.reader]
             [unit-map.impl.registry :as registry]
             [unit-map.impl.system :as system]
-            [unit-map.impl.ops :as ops]))
+            [unit-map.impl.ops :as ops]
+            [unit-map.impl.io :as io]
+            [clojure.string :as str]))
 
 
 #_"TODO:
@@ -25,6 +28,17 @@
   (assert (registry/sys-continuous? @registry-atom units))
   (swap! registry-atom assoc-in [:systems sys-name] units)
   units)
+
+
+;;;;;;;;;; parse & format string
+
+
+(defn parse [s fmt-vec & {:keys [strict]}]
+  (io/parse-groups {} s (io/make-regex-groups fmt-vec) :strict strict))
+
+
+(defn format [t fmt-vec]
+  (str/join (map (partial io/format-el t fmt-vec) fmt-vec)))
 
 
 ;;;;;;;;;; compare

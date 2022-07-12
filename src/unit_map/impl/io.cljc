@@ -1,7 +1,6 @@
-(ns unit-map.io
+(ns unit-map.impl.io
   (:require [unit-map.util :as u]
-            [clojure.string :as str])
-  (:refer-clojure :exclude [format]))
+            [clojure.string :as str]))
 
 
 ;; TODO: move all date time related consts to type definition
@@ -127,23 +126,23 @@
    (concat [#"^"] fmt-vec [#"$"])))
 
 
-(defn parse [s fmt-vec & {:keys [strict], :or {strict false}}]
-  (loop [s               s
-         [el & rest-els] (make-regex-groups fmt-vec)
-         acc             (with-meta {} (meta fmt-vec))]
-    (cond
-      (not (str/blank? s))
-      (let [pat                    (re-pattern (str (:group-regex el) "(.*$)?"))
-            [match-s cur-s rest-s] (re-find pat s)
-            found?                 (not (str/blank? match-s))
-            parsed-value           (when found? (parse-val el cur-s))]
-        (when (or (not strict) found?)
-          (recur rest-s
-                 rest-els
-                 (cond-> acc parsed-value (assoc (:value el) parsed-value)))))
+(defn parse-groups [acc s [el & rest-els] & {:keys [strict]}]
+  (cond
+    (not (str/blank? s))
+    (let [pat                    (re-pattern (str (:group-regex el) "(.*$)?"))
+          [match-s cur-s rest-s] (re-find pat s)
+          found?                 (not (str/blank? match-s))
+          parsed-value           (when found? (parse-val el cur-s))]
+      (when (or (not strict) found?)
+        (recur (cond-> acc
+                 parsed-value
+                 (assoc (:value el) parsed-value))
+               rest-s
+               rest-els
+               {:strict strict})))
 
-      (or (not strict) (empty? el))
-      acc)))
+    (or (not strict) (empty? el))
+    acc))
 
 
 (defn format-el [value fmt-vec fmt-el]
