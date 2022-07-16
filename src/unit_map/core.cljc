@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [format])
   (:require [unit-map.impl.util :as util]
             [unit-map.impl.reader]
-            [unit-map.impl.registry :as registry]
+            [unit-map.impl.registrator :as registrator]
             [unit-map.impl.system :as system]
             [unit-map.impl.ops :as ops]
             [unit-map.impl.io :as io]))
@@ -15,41 +15,32 @@
 - move calendar, mask & crono to scripts"
 
 
-;;;;;;;;;; reg-useq! & reg-system!
+;;;;;;;;;; registrator
 
 
-(defn new-registry
-  ([] (new-registry {}))
-
-  ([init] (atom init)))
+(defn new-registry []
+  (registrator/new-registry))
 
 
-(defn reg-useq! [registry-atom & {:keys [unit useq next-unit eq-unit]}]
-  (swap! registry-atom registry/reg-useq {:unit unit
-                                          :useq useq
-                                          :next-unit next-unit
-                                          :eq-unit eq-unit})
-  useq)
+(defn reg-useq! [registry-ref & {:keys [unit useq next-unit eq-unit]}]
+  (registrator/reg-useq!
+    registry-ref
+    {:unit unit
+     :useq useq
+     :next-unit next-unit
+     :eq-unit eq-unit}))
 
 
-(defn reg-useqs! [registry-atom useqs]
-  (swap! registry-atom registry/reg-useqs useqs))
+(defn reg-useqs! [registry-ref useqs]
+  (registrator/reg-useqs! registry-ref useqs))
 
 
-(defn reg-system! [registry-atom units]
-  (swap! registry-atom
-         (fn [registry]
-           (assert (registry/system-continuous? registry units))
-           (registry/reg-system registry units)))
-  units)
+(defn reg-system! [registry-ref units]
+  (registrator/reg-system! registry-ref units))
 
 
-(defn reg-systems! [registry-atom systems]
-  (swap! registry-atom
-         (fn [registry]
-           (assert (every? #(registry/system-continuous? registry %)
-                           systems))
-           (registry/reg-systems registry systems))))
+(defn reg-systems! [registry-ref systems]
+  (registrator/reg-systems! registry-ref systems))
 
 
 ;;;;;;;;;; parse & format string
