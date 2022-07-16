@@ -61,7 +61,7 @@
 
 
 (defn eq?
-  ([_ _] true)
+  ([_registry _x] true)
 
   ([registry x y]
    (ops/eq? registry x y))
@@ -76,7 +76,7 @@
 
 
 (defn lt?
-  ([_ _] true)
+  ([_registry _x] true)
 
   ([registry x y]
    (ops/lt? registry x y))
@@ -88,7 +88,7 @@
 
 
 (defn gt?
-  ([_ _] true)
+  ([_registry _x] true)
 
   ([registry x y]
    (ops/gt? registry x y))
@@ -100,7 +100,7 @@
 
 
 (defn lte?
-  ([_ _] true)
+  ([_registry _x] true)
 
   ([registry x y]
    (ops/lte? registry x y))
@@ -112,7 +112,7 @@
 
 
 (defn gte?
-  ([_ _] true)
+  ([_registry _x] true)
 
   ([registry x y]
    (ops/gte? registry x y))
