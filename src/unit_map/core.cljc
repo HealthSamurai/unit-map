@@ -57,13 +57,13 @@
 
 
 (defn cmp [registry x y]
-  (or (when-let [system (system/system-intersection registry x y)]
+  (or (when (= x y)
+        0)
+      (when-let [system (system/system-intersection registry x y)]
         (ops/cmp-in-system registry system x y))
       (when-let [system (or (system/guess-system registry x)
                             (system/guess-system registry y))]
-        (ops/cmp-in-system registry system x y))
-      (when (= x y)
-        0)))
+        (ops/cmp-in-system registry system x y))))
 
 
 (defn eq?
