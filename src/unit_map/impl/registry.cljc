@@ -41,13 +41,17 @@
         (conj new-group))))
 
 
-(defn reg-useq [registry unit useq & {:keys [next-unit eq-unit]}]
-  (let [useq-info (cond-> {:unit unit, :useq useq}
-                    (some? next-unit) (assoc :next-unit next-unit)
-                    (some? eq-unit)   (assoc :eq-unit eq-unit))]
-    (-> registry
-        (update :useqs push-to-useq-graph useq-info)
-        (update :eq-units push-to-eq-units useq-info))))
+(defn reg-useq
+  ([registry unit useq & {:keys [next-unit eq-unit]}] #_"TODO: remove this arity, use only kwargs?"
+   (reg-useq registry {:unit unit, :useq useq, :next-unit next-unit, :eq-unit eq-unit}))
+
+  ([registry {:keys [unit useq next-unit eq-unit]}]
+   (let [useq-info (cond-> {:unit unit, :useq useq}
+                     (some? next-unit) (assoc :next-unit next-unit)
+                     (some? eq-unit)   (assoc :eq-unit eq-unit))]
+     (-> registry
+         (update :useqs push-to-useq-graph useq-info)
+         (update :eq-units push-to-eq-units useq-info)))))
 
 
 (defn sys-continuous? [registry units]
