@@ -37,11 +37,11 @@
 
 
 (defn parse [s fmt-vec & {:keys [strict]}]
-  (io/parse-groups {} s (io/make-regex-groups fmt-vec) :strict strict))
+  (io/parse s fmt-vec :strict strict))
 
 
 (defn format [t fmt-vec]
-  (str/join (map (partial io/format-el t fmt-vec) fmt-vec)))
+  (io/format t fmt-vec))
 
 
 ;;;;;;;;;; compare

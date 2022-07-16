@@ -1,4 +1,5 @@
 (ns unit-map.impl.io
+  (:refer-clojure :exclude [format])
   (:require [unit-map.util :as util]
             [clojure.string :as str]))
 
@@ -143,6 +144,10 @@
 
     (or (not strict) (empty? el))
     acc))
+
+
+(defn parse [s fmt-vec & {:keys [strict]}]
+  (parse-groups {} s (make-regex-groups fmt-vec) :strict strict))
 
 
 (defn format-el [value fmt-vec fmt-el]
