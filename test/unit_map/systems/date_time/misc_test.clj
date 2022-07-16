@@ -13,7 +13,7 @@
 (umap/reg-useq! treg_ :unit :month, :useq #unit-map/useq[1 2 .. 12] :next-unit :year)
 (umap/reg-useq! treg_ :unit :year,  :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-(umap/reg-usys! treg_ [:sec :min :hour :day :month :year])
+(umap/reg-system! treg_ [:sec :min :hour :day :month :year])
 
 (t/deftest from-epoch-test
   (t/is (= {:day 22, :month 4, :year 2020, :sec 40, :min 49, :hour 1}

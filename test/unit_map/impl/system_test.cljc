@@ -110,114 +110,114 @@
   (umap/reg-useq! treg_ :unit :epoch,  :useq #unit-map/useq[:BC :AD]))
 
 (do ;;NOTE: systems
-  (def imperial (umap/reg-usys! treg_ [:mil :inch :foot :mile]))
-  (def metric   (umap/reg-usys! treg_ [:mm :cm :m :km]))
+  (def imperial (umap/reg-system! treg_ [:mil :inch :foot :mile]))
+  (def metric   (umap/reg-system! treg_ [:mm :cm :m :km]))
 
-  (def ms-hour    (umap/reg-usys! treg_ [:ms :sec :min :hour]))
-  (def ns-hour    (umap/reg-usys! treg_ [:ns :sec :min :hour]))
-  (def ns-ms-hour (umap/reg-usys! treg_ [:ns :ms :sec :min :hour]))
+  (def ms-hour    (umap/reg-system! treg_ [:ms :sec :min :hour]))
+  (def ns-hour    (umap/reg-system! treg_ [:ns :sec :min :hour]))
+  (def ns-ms-hour (umap/reg-system! treg_ [:ns :ms :sec :min :hour]))
 
-  (def timestamp    (umap/reg-usys! treg_ [:ms]))
-  (def ns-timestamp (umap/reg-usys! treg_ [:ns]))
+  (def timestamp    (umap/reg-system! treg_ [:ms]))
+  (def ns-timestamp (umap/reg-system! treg_ [:ns]))
 
-  (def seconds    (umap/reg-usys! treg_ [:ns :ms :sec]))
-  (def ns-seconds (umap/reg-usys! treg_ [:ns :sec]))
+  (def seconds    (umap/reg-system! treg_ [:ns :ms :sec]))
+  (def ns-seconds (umap/reg-system! treg_ [:ns :sec]))
 
-  (def ms-day    (umap/reg-usys! treg_ [:ms :sec :min :hour :day]))
-  (def ns-day    (umap/reg-usys! treg_ [:ns :sec :min :hour :day]))
-  (def ns-ms-day (umap/reg-usys! treg_ [:ns :ms :sec :min :hour :day]))
+  (def ms-day    (umap/reg-system! treg_ [:ms :sec :min :hour :day]))
+  (def ns-day    (umap/reg-system! treg_ [:ns :sec :min :hour :day]))
+  (def ns-ms-day (umap/reg-system! treg_ [:ns :ms :sec :min :hour :day]))
 
-  (def ms-day-am-pm    (umap/reg-usys! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day]))
-  (def ns-day-am-pm    (umap/reg-usys! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day]))
-  (def ns-ms-day-am-pm (umap/reg-usys! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day]))
+  (def ms-day-am-pm    (umap/reg-system! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day]))
+  (def ns-day-am-pm    (umap/reg-system! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day]))
+  (def ns-ms-day-am-pm (umap/reg-system! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day]))
 
-  (def date       (umap/reg-usys! treg_ [:day :month :year]))
-  (def month-year (umap/reg-usys! treg_ [:month :year]))
+  (def date       (umap/reg-system! treg_ [:day :month :year]))
+  (def month-year (umap/reg-system! treg_ [:month :year]))
 
-  (def ms-year    (umap/reg-usys! treg_ [:ms :sec :min :hour :day :month :year]))
-  (def ns-year    (umap/reg-usys! treg_ [:ns :sec :min :hour :day :month :year]))
-  (def ns-ms-year (umap/reg-usys! treg_ [:ns :ms :sec :min :hour :day :month :year]))
+  (def ms-year    (umap/reg-system! treg_ [:ms :sec :min :hour :day :month :year]))
+  (def ns-year    (umap/reg-system! treg_ [:ns :sec :min :hour :day :month :year]))
+  (def ns-ms-year (umap/reg-system! treg_ [:ns :ms :sec :min :hour :day :month :year]))
 
-  (def ms-year-am-pm    (umap/reg-usys! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
-  (def ns-year-am-pm    (umap/reg-usys! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year]))
-  (def ns-ms-year-am-pm (umap/reg-usys! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
+  (def ms-year-am-pm    (umap/reg-system! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
+  (def ns-year-am-pm    (umap/reg-system! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year]))
+  (def ns-ms-year-am-pm (umap/reg-system! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
 
-  (def weeks (umap/reg-usys! treg_ [:weekday :week]))
+  (def weeks (umap/reg-system! treg_ [:weekday :week]))
 
-  (def ms-year-epoch (umap/reg-usys! treg_ [:ms :sec :min :hour :day :month :epoch-year :epoch]))
-  (def year-epoch    (umap/reg-usys! treg_ [:epoch-year :epoch])))
+  (def ms-year-epoch (umap/reg-system! treg_ [:ms :sec :min :hour :day :month :epoch-year :epoch]))
+  (def year-epoch    (umap/reg-system! treg_ [:epoch-year :epoch])))
 
 
-(t/deftest usys-detection
+(t/deftest system-detection
   (t/is (= ms-hour
-           (sut/guess-usys @treg_ {:min 30, :hour 15})))
+           (sut/guess-system @treg_ {:min 30, :hour 15})))
 
   (t/is (= ms-day-am-pm
-           (sut/guess-usys @treg_ {:min 30, :am-pm/hour 3, :am-pm/period :pm})))
+           (sut/guess-system @treg_ {:min 30, :am-pm/hour 3, :am-pm/period :pm})))
 
   (t/is (= ns-ms-day
-           (sut/guess-usys @treg_ {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})))
+           (sut/guess-system @treg_ {:ns 1, :ms 1, :sec 1, :min 1, :hour 1, :day 1})))
 
   (t/is (= ns-ms-hour
-           (sut/guess-usys @treg_ {:ns 1, :ms 1, :sec 1, :min 1, :hour 25})))
+           (sut/guess-system @treg_ {:ns 1, :ms 1, :sec 1, :min 1, :hour 25})))
 
   (t/is (= ns-ms-hour
-           (sut/guess-usys @treg_ {:ns 1, :ms 1, :sec 1, :min 1501})))
+           (sut/guess-system @treg_ {:ns 1, :ms 1, :sec 1, :min 1501})))
 
   (t/is (= seconds
-           (sut/guess-usys @treg_ {:ns 1, :ms 1, :sec 90061})))
+           (sut/guess-system @treg_ {:ns 1, :ms 1, :sec 90061})))
 
   (t/is (= seconds
-           (sut/guess-usys @treg_ {:ns 1, :ms 90061001})))
+           (sut/guess-system @treg_ {:ns 1, :ms 90061001})))
 
   (t/is (= ns-timestamp
-           (sut/guess-usys @treg_ {:ns 90061001000001})))
+           (sut/guess-system @treg_ {:ns 90061001000001})))
 
 
   (t/is (= ns-day
-           (sut/guess-usys @treg_ {:ns 1000001, :sec 1, :min 1, :hour 1, :day 1})))
+           (sut/guess-system @treg_ {:ns 1000001, :sec 1, :min 1, :hour 1, :day 1})))
 
   (t/is (= ns-hour
-           (sut/guess-usys @treg_ {:ns 1000001, :sec 1, :min 1, :hour 25})))
+           (sut/guess-system @treg_ {:ns 1000001, :sec 1, :min 1, :hour 25})))
 
   (t/is (= ns-hour
-           (sut/guess-usys @treg_ {:ns 1000001, :sec 1, :min 1501})))
+           (sut/guess-system @treg_ {:ns 1000001, :sec 1, :min 1501})))
 
   (t/is (= ns-seconds
-           (sut/guess-usys @treg_ {:ns 1000001, :sec 90061})))
+           (sut/guess-system @treg_ {:ns 1000001, :sec 90061})))
 
   (t/is (= ns-timestamp
-           (sut/guess-usys @treg_ {:ns 90061001000001})))
+           (sut/guess-system @treg_ {:ns 90061001000001})))
 
   (t/is (= ns-day
-           (sut/guess-usys @treg_ {:ns 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ns 1}})))
+           (sut/guess-system @treg_ {:ns 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ns 1}})))
 
 
   (t/is (= ms-day
-           (sut/guess-usys @treg_ {:ms 1, :sec 1, :min 1, :hour 1, :day 1})))
+           (sut/guess-system @treg_ {:ms 1, :sec 1, :min 1, :hour 1, :day 1})))
 
   (t/is (= ms-hour
-           (sut/guess-usys @treg_ {:ms 1, :sec 1, :min 1, :hour 25})))
+           (sut/guess-system @treg_ {:ms 1, :sec 1, :min 1, :hour 25})))
 
   (t/is (= ms-hour
-           (sut/guess-usys @treg_ {:ms 1, :sec 1, :min 1501})))
+           (sut/guess-system @treg_ {:ms 1, :sec 1, :min 1501})))
 
   (t/is (= ms-day
-           (sut/guess-usys @treg_ {:ms 1, :sec 1, :min 1501}
+           (sut/guess-system @treg_ {:ms 1, :sec 1, :min 1501}
                           :day)))
 
   (t/is (= seconds
-           (sut/guess-usys @treg_ {:ms 1, :sec 90061})))
+           (sut/guess-system @treg_ {:ms 1, :sec 90061})))
 
   (t/is (= timestamp
-           (sut/guess-usys @treg_ {:ms 90061001})))
+           (sut/guess-system @treg_ {:ms 90061001})))
 
   (t/is (= ms-day
-           (sut/guess-usys @treg_ {:ms 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ms 1}})))
+           (sut/guess-system @treg_ {:ms 1, :sec 1, :min 1, :hour 1, :day 1 :delta {:ms 1}})))
 
-  (t/is (nil? (sut/guess-usys @treg_ {})))
+  (t/is (nil? (sut/guess-system @treg_ {})))
 
-  (t/is (nil? (sut/guess-usys @treg_ nil))))
+  (t/is (nil? (sut/guess-system @treg_ nil))))
 
 
 (t/deftest find-diff-branches-unit-test
@@ -322,34 +322,34 @@
            (sut/find-diff-branches [1 2 3] [:a :b :c]))))
 
 
-(t/deftest usys-conversion
+(t/deftest system-conversion
   (t/testing "interseciton"
     (t/is (= ms-year
-             (sut/usys-intersection @treg_
+             (sut/system-intersection @treg_
                                    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
                                    {:delta {:hour 3}})))
 
     (t/is (= ms-year
-             (sut/usys-intersection @treg_
+             (sut/system-intersection @treg_
                                    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
                                    {:year 2021, :month :sep, :day 7, :hour 22, :min 30, :tz {:hour 3}})))
 
     (t/is (= ms-year
-             (sut/usys-intersection @treg_
+             (sut/system-intersection @treg_
                                    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
                                    {:year 2021})))
 
-    (t/is (nil? (sut/usys-intersection @treg_
+    (t/is (nil? (sut/system-intersection @treg_
                                       {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
                                       {:cm 49})))
 
     (t/is (= ms-year
-             (sut/usys-intersection @treg_
+             (sut/system-intersection @treg_
                                    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}
                                    {})))
 
     (t/is (= ms-year
-             (sut/usys-intersection @treg_
+             (sut/system-intersection @treg_
                                    {:year 2021, :month :sep, :day 7, :hour 21, :min 30, :tz {:hour 2}}))))
 
   (t/testing "find conversion"
@@ -586,7 +586,7 @@
                                     ##-Inf))))))
 
 
-(t/deftest usys-utils-test
+(t/deftest system-utils-test
   (t/testing "next/prev unit"
     (t/is (= :month
              (sut/get-next-unit @treg_

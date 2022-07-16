@@ -70,7 +70,7 @@
 
 #_(let [reg (unit-map.core/new-registry)]
     (unit-map.core/reg-useqs! reg useqs)
-    (unit-map.core/reg-usyss! reg systems))
+    (unit-map.core/reg-systems! reg systems))
 
 #_"NOTE: not sure if this system is needed by default"
 #_[:ns :ms :sec :min :hour :day :month :year]

@@ -10,13 +10,13 @@
 
 
 #_"TODO:
-- guess-usys-with-useqs
-- refactor repeating guess-usys calls
+- guess-system-with-useqs
+- refactor repeating guess-system calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
 - move calendar, mask & crono to scripts"
 
 
-;;;;;;;;;; reg-useq! & reg-usys!
+;;;;;;;;;; reg-useq! & reg-system!
 
 
 (defn new-registry
@@ -37,19 +37,19 @@
   (swap! registry-atom registry/reg-useqs useqs))
 
 
-(defn reg-usys! [registry-atom units]
+(defn reg-system! [registry-atom units]
   (swap! registry-atom
          (fn [registry]
-           (assert (registry/usys-continuous? registry units))
-           (registry/reg-usys registry units)))
+           (assert (registry/system-continuous? registry units))
+           (registry/reg-system registry units)))
   units)
 
 
-(defn reg-usyss! [registry-atom usyss]
+(defn reg-systems! [registry-atom systems]
   (swap! registry-atom
          (fn [registry]
-           (assert (every? #(registry/usys-continuous? registry %) usyss))
-           (registry/reg-usyss registry usyss))))
+           (assert (every? #(registry/system-continuous? registry %) systems))
+           (registry/reg-systems registry systems))))
 
 
 ;;;;;;;;;; parse & format string
@@ -67,11 +67,11 @@
 
 
 (defn cmp [registry x y]
-  (or (when-let [usys (system/usys-intersection registry x y)]
-        (ops/cmp-in-usys registry usys x y))
-      (when-let [usys (or (system/guess-usys registry x)
-                         (system/guess-usys registry y))]
-        (ops/cmp-in-usys registry usys x y))
+  (or (when-let [system (system/system-intersection registry x y)]
+        (ops/cmp-in-system registry system x y))
+      (when-let [system (or (system/guess-system registry x)
+                            (system/guess-system registry y))]
+        (ops/cmp-in-system registry system x y))
       (when (= x y)
         0)))
 
@@ -121,7 +121,7 @@
    (reduce (fn [result unit]
              (ops/add-to-unit registry result unit (get delta unit 0)))
            x
-           (reverse (system/usys-intersection registry x delta))))
+           (reverse (system/system-intersection registry x delta))))
 
   ([registry x delta & more-deltas]
    (reduce #(add-delta registry %1 %2)
@@ -138,7 +138,7 @@
    (reduce (fn [result unit]
              (ops/subtract-from-unit registry result unit (get delta unit 0)))
            x
-           (reverse (system/usys-intersection registry x delta))))
+           (reverse (system/system-intersection registry x delta))))
 
   ([registry x delta & more-deltas]
    (reduce #(subtract-delta registry %1 %2)
@@ -150,13 +150,13 @@
   (let [[a b] (cond-> [x y] (lt? registry x y) reverse)]
     (:acc (reduce #(ops/units-difference-reduce-fn registry a b %1 %2)
                   {}
-                  (system/usys-useqs registry (system/usys-intersection registry a b))))))
+                  (system/system-useqs registry (system/system-intersection registry a b))))))
 
 
 #_(defn difference-in [registry units x y]
     (let [[a b]    (cond-> [x y] (lt? x y) reverse)
-          usys-useqs (usys-useqs registry (usys-intersection a b))
-          parts    (difference-parts units usys-useqs)]
+          system-useqs (system-useqs registry (system-intersection a b))
+          parts    (difference-parts units system-useqs)]
       (reduce
         (fn [acc {:keys [to-unit useqs]}]
           (reduce

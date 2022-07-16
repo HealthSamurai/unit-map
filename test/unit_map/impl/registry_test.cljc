@@ -3,7 +3,7 @@
             [clojure.test :as t]))
 
 
-(t/deftest reguseq-regusys
+(t/deftest reguseq-regsystem
   (def registry
     (-> {}
         (sut/reg-useq :unit :a, :useq #unit-map/useq[0 1] :next-unit :b)
@@ -78,19 +78,19 @@
              (:eq-units registry))))
 
   (t/testing "valid systems"
-    (t/is (sut/usys-continuous? registry [:a :b :c :d]))
-    (t/is (sut/usys-continuous? registry [:a :b2 :c2 :d]))
-    (t/is (sut/usys-continuous? registry [:a :b2 :c2]))
-    (t/is (sut/usys-continuous? registry [:a :b3 :c3]))
-    (t/is (sut/usys-continuous? registry [:a :b4 :c4]))
-    (t/is (sut/usys-continuous? registry [:b5 :c5]))
-    (t/is (sut/usys-continuous? registry [:a :b6 :c6 :d]))
-    (t/is (sut/usys-continuous? registry [:a :b6 :c6]))
-    (t/is (sut/usys-continuous? registry [:a :b :c6 :d])))
+    (t/is (sut/system-continuous? registry [:a :b :c :d]))
+    (t/is (sut/system-continuous? registry [:a :b2 :c2 :d]))
+    (t/is (sut/system-continuous? registry [:a :b2 :c2]))
+    (t/is (sut/system-continuous? registry [:a :b3 :c3]))
+    (t/is (sut/system-continuous? registry [:a :b4 :c4]))
+    (t/is (sut/system-continuous? registry [:b5 :c5]))
+    (t/is (sut/system-continuous? registry [:a :b6 :c6 :d]))
+    (t/is (sut/system-continuous? registry [:a :b6 :c6]))
+    (t/is (sut/system-continuous? registry [:a :b :c6 :d])))
 
   (t/testing "invalid systems"
-    (t/is (not (sut/usys-continuous? registry [:d :c :b :a])))
-    (t/is (not (sut/usys-continuous? registry [:a :b2 :c])))
-    (t/is (not (sut/usys-continuous? registry [:a :b3 :c3 :d])))
+    (t/is (not (sut/system-continuous? registry [:d :c :b :a])))
+    (t/is (not (sut/system-continuous? registry [:a :b2 :c])))
+    (t/is (not (sut/system-continuous? registry [:a :b3 :c3 :d])))
 
-    (t/is (not (sut/usys-continuous? registry [:a])))))
+    (t/is (not (sut/system-continuous? registry [:a])))))

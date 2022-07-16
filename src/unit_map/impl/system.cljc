@@ -4,7 +4,7 @@
             [clojure.set]))
 
 
-;;;;;;;;;; usys info
+;;;;;;;;;; system info
 
 
 (defn get-units [unit-map]
@@ -23,22 +23,22 @@
        sort))
 
 
-(def guess-usys*
+(def guess-system*
   (memoize
     (fn [registry units]
       (first (supporting-systems registry units)))))
 
 
-(defn guess-usys
+(defn guess-system
   ([registry unit-map unit]
-   (guess-usys registry (assoc unit-map unit nil)))
+   (guess-system registry (assoc unit-map unit nil)))
   ([registry unit-map]
    (when-let [units (not-empty (get-units unit-map))]
-     (guess-usys* registry units))))
+     (guess-system* registry units))))
 
 
-(defn usys-intersection [registry & unit-maps]
-  (guess-usys registry (reduce merge unit-maps)))
+(defn system-intersection [registry & unit-maps]
+  (guess-system registry (reduce merge unit-maps)))
 
 
 (defn find-diff-branches [xs ys]
@@ -66,9 +66,9 @@
 
 
 (defn find-conversion [registry x y]
-  (let [branches-diff (or (usys-intersection registry x y)
-                          (find-diff-branches (guess-usys registry x) #_"TODO: find better usys match algo"
-                                              (guess-usys registry y)))
+  (let [branches-diff (or (system-intersection registry x y)
+                          (find-diff-branches (guess-system registry x) #_"TODO: find better system match algo"
+                                              (guess-system registry y)))
         conv-start (first branches-diff)
         valid? (or (not (::branches (meta conv-start)))
                    (let [[[x :as xs] [y :as ys]] conv-start]
@@ -224,26 +224,26 @@
 (defn get-next-unit
   "next = more significant"
   [registry umap unit]
-  (util/get-next-element (guess-usys registry umap unit) unit))
+  (util/get-next-element (guess-system registry umap unit) unit))
 
 
 (defn get-prev-unit
   "prev = less significant"
   [registry umap unit]
-  (util/get-prev-element (guess-usys registry umap unit) unit))
+  (util/get-prev-element (guess-system registry umap unit) unit))
 
 
 (defn get-useq [registry umap unit]
-  (let [usys      (guess-usys registry umap unit)
-        next-unit (util/get-next-element usys unit)]
+  (let [system      (guess-system registry umap unit)
+        next-unit (util/get-next-element system unit)]
     (registry/useq registry unit next-unit)))
 
 
-(defn usys-useqs [registry usys]
+(defn system-useqs [registry system]
   (map (fn [unit next-unit]
          [unit (registry/useq registry unit next-unit)])
-       usys
-       (rest (conj usys nil))))
+       system
+       (rest (conj system nil))))
 
 
 ;;;;;;;;;; next/prev /first/last min/max
