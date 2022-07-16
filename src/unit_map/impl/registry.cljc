@@ -70,3 +70,15 @@
 
 (defn reg-usyss [registry usyss]
   (reduce reg-usys registry usyss))
+
+
+(defn useq [registry unit next-unit]
+  (get-in registry [:useqs unit next-unit :useq]))
+
+
+(defn systems [registry]
+  (:usyss registry))
+
+
+(defn eq-units [registry]
+  (:eq-units registry))

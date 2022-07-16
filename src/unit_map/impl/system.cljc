@@ -1,5 +1,6 @@
 (ns unit-map.impl.system
   (:require [unit-map.impl.util :as util]
+            [unit-map.impl.registry :as registry]
             [clojure.set]))
 
 
@@ -15,8 +16,8 @@
        set))
 
 
-(defn supporting-systems [all-systems units]
-  (->> all-systems
+(defn supporting-systems [registry units]
+  (->> (registry/systems registry)
        (filter (comp (partial clojure.set/subset? units)
                      set))
        sort))
@@ -25,7 +26,7 @@
 (def guess-usys*
   (memoize
     (fn [registry units]
-      (first (supporting-systems (:usyss registry) units)))))
+      (first (supporting-systems registry units)))))
 
 
 (defn guess-usys
@@ -73,7 +74,7 @@
                    (let [[[x :as xs] [y :as ys]] conv-start]
                      (or (empty? xs)
                          (empty? ys)
-                         (contains? (->> (:eq-units registry)
+                         (contains? (->> (registry/eq-units registry)
                                          (filter #(contains? % x))
                                          first)
                                     y))))]
@@ -232,19 +233,15 @@
   (util/get-prev-element (guess-usys registry umap unit) unit))
 
 
-(defn useq [registry unit next-unit]
-  (get-in registry [:useqs unit next-unit :useq]))
-
-
 (defn get-useq [registry umap unit]
-  (let [usys       (guess-usys registry umap unit)
+  (let [usys      (guess-usys registry umap unit)
         next-unit (util/get-next-element usys unit)]
-    (useq registry unit next-unit)))
+    (registry/useq registry unit next-unit)))
 
 
 (defn usys-useqs [registry usys]
   (map (fn [unit next-unit]
-         [unit (useq registry unit next-unit)])
+         [unit (registry/useq registry unit next-unit)])
        usys
        (rest (conj usys nil))))
 
