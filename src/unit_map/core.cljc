@@ -16,7 +16,7 @@
 - move calendar, mask & crono to scripts"
 
 
-;;;;;;;;;; reg-useq! & regusys!
+;;;;;;;;;; reg-useq! & reg-usys!
 
 
 (defn reg-useq!
@@ -33,7 +33,7 @@
   (swap! registry-atom (fn [registry] (reduce registry/reg-useq registry useqs))))
 
 
-(defn regusys! [registry-atom units]
+(defn reg-usys! [registry-atom units]
   (swap! registry-atom
          (fn [registry]
            (assert (registry/usys-continuous? registry units))

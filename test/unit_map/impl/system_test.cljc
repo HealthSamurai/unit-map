@@ -110,42 +110,42 @@
   (umap/reg-useq! treg_ :epoch  #unit-map/useq[:BC :AD]))
 
 (do ;;NOTE: systems
-  (def imperial (umap/regusys! treg_ [:mil :inch :foot :mile]))
-  (def metric   (umap/regusys! treg_ [:mm :cm :m :km]))
+  (def imperial (umap/reg-usys! treg_ [:mil :inch :foot :mile]))
+  (def metric   (umap/reg-usys! treg_ [:mm :cm :m :km]))
 
-  (def ms-hour    (umap/regusys! treg_ [:ms :sec :min :hour]))
-  (def ns-hour    (umap/regusys! treg_ [:ns :sec :min :hour]))
-  (def ns-ms-hour (umap/regusys! treg_ [:ns :ms :sec :min :hour]))
+  (def ms-hour    (umap/reg-usys! treg_ [:ms :sec :min :hour]))
+  (def ns-hour    (umap/reg-usys! treg_ [:ns :sec :min :hour]))
+  (def ns-ms-hour (umap/reg-usys! treg_ [:ns :ms :sec :min :hour]))
 
-  (def timestamp    (umap/regusys! treg_ [:ms]))
-  (def ns-timestamp (umap/regusys! treg_ [:ns]))
+  (def timestamp    (umap/reg-usys! treg_ [:ms]))
+  (def ns-timestamp (umap/reg-usys! treg_ [:ns]))
 
-  (def seconds    (umap/regusys! treg_ [:ns :ms :sec]))
-  (def ns-seconds (umap/regusys! treg_ [:ns :sec]))
+  (def seconds    (umap/reg-usys! treg_ [:ns :ms :sec]))
+  (def ns-seconds (umap/reg-usys! treg_ [:ns :sec]))
 
-  (def ms-day    (umap/regusys! treg_ [:ms :sec :min :hour :day]))
-  (def ns-day    (umap/regusys! treg_ [:ns :sec :min :hour :day]))
-  (def ns-ms-day (umap/regusys! treg_ [:ns :ms :sec :min :hour :day]))
+  (def ms-day    (umap/reg-usys! treg_ [:ms :sec :min :hour :day]))
+  (def ns-day    (umap/reg-usys! treg_ [:ns :sec :min :hour :day]))
+  (def ns-ms-day (umap/reg-usys! treg_ [:ns :ms :sec :min :hour :day]))
 
-  (def ms-day-am-pm    (umap/regusys! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day]))
-  (def ns-day-am-pm    (umap/regusys! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day]))
-  (def ns-ms-day-am-pm (umap/regusys! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day]))
+  (def ms-day-am-pm    (umap/reg-usys! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day]))
+  (def ns-day-am-pm    (umap/reg-usys! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day]))
+  (def ns-ms-day-am-pm (umap/reg-usys! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day]))
 
-  (def date       (umap/regusys! treg_ [:day :month :year]))
-  (def month-year (umap/regusys! treg_ [:month :year]))
+  (def date       (umap/reg-usys! treg_ [:day :month :year]))
+  (def month-year (umap/reg-usys! treg_ [:month :year]))
 
-  (def ms-year    (umap/regusys! treg_ [:ms :sec :min :hour :day :month :year]))
-  (def ns-year    (umap/regusys! treg_ [:ns :sec :min :hour :day :month :year]))
-  (def ns-ms-year (umap/regusys! treg_ [:ns :ms :sec :min :hour :day :month :year]))
+  (def ms-year    (umap/reg-usys! treg_ [:ms :sec :min :hour :day :month :year]))
+  (def ns-year    (umap/reg-usys! treg_ [:ns :sec :min :hour :day :month :year]))
+  (def ns-ms-year (umap/reg-usys! treg_ [:ns :ms :sec :min :hour :day :month :year]))
 
-  (def ms-year-am-pm    (umap/regusys! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
-  (def ns-year-am-pm    (umap/regusys! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year]))
-  (def ns-ms-year-am-pm (umap/regusys! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
+  (def ms-year-am-pm    (umap/reg-usys! treg_ [:ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
+  (def ns-year-am-pm    (umap/reg-usys! treg_ [:ns :sec :min :am-pm/hour :am-pm/period :day :month :year]))
+  (def ns-ms-year-am-pm (umap/reg-usys! treg_ [:ns :ms :sec :min :am-pm/hour :am-pm/period :day :month :year]))
 
-  (def weeks (umap/regusys! treg_ [:weekday :week]))
+  (def weeks (umap/reg-usys! treg_ [:weekday :week]))
 
-  (def ms-year-epoch (umap/regusys! treg_ [:ms :sec :min :hour :day :month :epoch-year :epoch]))
-  (def year-epoch    (umap/regusys! treg_ [:epoch-year :epoch])))
+  (def ms-year-epoch (umap/reg-usys! treg_ [:ms :sec :min :hour :day :month :epoch-year :epoch]))
+  (def year-epoch    (umap/reg-usys! treg_ [:epoch-year :epoch])))
 
 
 (t/deftest usys-detection
