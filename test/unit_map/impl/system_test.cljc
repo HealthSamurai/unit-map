@@ -442,31 +442,31 @@
   (t/testing "concretize range"
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) (fn [_] 1) .. (fn [_] 9)]
-                                       :sequence
+                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[0 1 .. 9]
-                                       :sequence
+                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) .. (fn [_] 1) (fn [_] 9)]
-                                       :sequence
+                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[0 .. 8 9]
-                                       :sequence
+                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 1, :step 1, :end 28}
              (sut/concretize-range (-> #unit-map/seq[1 2 .. (fn [{:keys [month]}] (if (= :feb month) 28 30))]
-                                       :sequence
+                                       :useq
                                        first)
                                    {:day 1, :month :feb, :year 2022}))))
 
@@ -642,17 +642,17 @@
 
   (t/testing "get-unit-seq"
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (:sequence (sut/get-unit-seq @treg_
+             (:useq (sut/get-unit-seq @treg_
                                           {:year 2022 :month :jun :day 4 :hour 12 :min 30}
                                           :month))))
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (:sequence (sut/get-unit-seq @treg_
+             (:useq (sut/get-unit-seq @treg_
                                           {:min 30}
                                           :month))))
 
-    (t/is (= (:sequence #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
-             (:sequence (sut/get-unit-seq @treg_
+    (t/is (= (:useq #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
+             (:useq (sut/get-unit-seq @treg_
                                           {:year 2022 :month :jun :day 4 :hour 12 :min 30}
                                           :year)))))
 

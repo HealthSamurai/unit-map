@@ -47,4 +47,4 @@
 
 
 (defn read-sequence [form]
-  {:sequence (process-sequence form)})
+  {:useq (process-sequence form)})

@@ -42,7 +42,7 @@
 
 
 (defn reg-seq [registry unit useq & {:keys [next-unit eq-unit]}]
-  (let [useq-info (cond-> {:unit unit, :sequence (:sequence useq)}
+  (let [useq-info (cond-> {:unit unit, :useq (:useq useq)}
                     (some? next-unit) (assoc :next-unit next-unit)
                     (some? eq-unit)   (assoc :eq-unit eq-unit))]
     (-> registry

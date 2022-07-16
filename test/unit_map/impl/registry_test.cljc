@@ -33,41 +33,41 @@
 
   (t/testing "seqs graph"
     (def graph-assert
-      {:a {:b  {:sequence [0 1], :unit :a, :next-unit :b}
-           :b2 {:sequence [0 1], :unit :a, :next-unit :b2}
-           :b3 {:sequence [0 1], :unit :a, :next-unit :b3}
-           :b4 {:sequence [0 1], :unit :a, :next-unit :b4}
-           :b6 {:sequence [0 1], :unit :a, :next-unit :b6}
-           :c  {:sequence [0 1 2 3], :unit :a, :next-unit :c}
-           :c6 {:sequence [0 1 2 3], :unit :a, :next-unit :c6}}
-       :b {:c  {:sequence [0 1], :unit :b, :next-unit :c}
-           :c6 {:sequence [0 1], :unit :b, :next-unit :c6}}
-       :c {:d  {:sequence [0 1], :unit :c, :next-unit :d}}
-       :d {nil {:sequence [0 1], :unit :d}}
+      {:a {:b  {:useq [0 1], :unit :a, :next-unit :b}
+           :b2 {:useq [0 1], :unit :a, :next-unit :b2}
+           :b3 {:useq [0 1], :unit :a, :next-unit :b3}
+           :b4 {:useq [0 1], :unit :a, :next-unit :b4}
+           :b6 {:useq [0 1], :unit :a, :next-unit :b6}
+           :c  {:useq [0 1 2 3], :unit :a, :next-unit :c}
+           :c6 {:useq [0 1 2 3], :unit :a, :next-unit :c6}}
+       :b {:c  {:useq [0 1], :unit :b, :next-unit :c}
+           :c6 {:useq [0 1], :unit :b, :next-unit :c6}}
+       :c {:d  {:useq [0 1], :unit :c, :next-unit :d}}
+       :d {nil {:useq [0 1], :unit :d}}
 
-       :aa {:b  {:sequence [0 2], :unit :aa, :next-unit :b}
-            :b2 {:sequence [0 2], :unit :aa, :next-unit :b2}
-            :b3 {:sequence [0 2], :unit :aa, :next-unit :b3}
-            :b4 {:sequence [0 2], :unit :aa, :next-unit :b4}
-            :b6 {:sequence [0 2], :unit :aa, :next-unit :b6}}
+       :aa {:b  {:useq [0 2], :unit :aa, :next-unit :b}
+            :b2 {:useq [0 2], :unit :aa, :next-unit :b2}
+            :b3 {:useq [0 2], :unit :aa, :next-unit :b3}
+            :b4 {:useq [0 2], :unit :aa, :next-unit :b4}
+            :b6 {:useq [0 2], :unit :aa, :next-unit :b6}}
 
-       :b2 {:c2 {:sequence [-2 -1 0], :unit :b2, :next-unit :c2}}
-       :c2 {:d {:sequence [-2 -1 0], :unit :c2, :next-unit :d}
-            nil {:sequence [{:start -2, :step 1, :end ##-Inf}], :unit :c2}}
+       :b2 {:c2 {:useq [-2 -1 0], :unit :b2, :next-unit :c2}}
+       :c2 {:d {:useq [-2 -1 0], :unit :c2, :next-unit :d}
+            nil {:useq [{:start -2, :step 1, :end ##-Inf}], :unit :c2}}
 
-       :b3 {:c3 {:sequence [2 1 0], :unit :b3, :next-unit :c3}}
-       :c3 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c3}}
+       :b3 {:c3 {:useq [2 1 0], :unit :b3, :next-unit :c3}}
+       :c3 {nil {:useq [{:start 2, :step -1, :end ##-Inf}], :unit :c3}}
 
-       :b4 {:c4 {:sequence [2 1 0], :unit :b4, :next-unit :c4}}
-       :c4 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c4}}
+       :b4 {:c4 {:useq [2 1 0], :unit :b4, :next-unit :c4}}
+       :c4 {nil {:useq [{:start 2, :step -1, :end ##-Inf}], :unit :c4}}
 
-       :b5 {:c5 {:sequence [2 1 0], :unit :b5, :next-unit :c5}}
-       :c5 {nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c5}}
+       :b5 {:c5 {:useq [2 1 0], :unit :b5, :next-unit :c5}}
+       :c5 {nil {:useq [{:start 2, :step -1, :end ##-Inf}], :unit :c5}}
 
-       :b6 {:c6 {:sequence [2 1 0], :unit :b6, :next-unit :c6}
-            :c  {:sequence [2 1 0], :unit :b6, :next-unit :c}}
-       :c6 {:d {:sequence [2 1 0], :unit :c6, :next-unit :d}
-            nil {:sequence [{:start 2, :step -1, :end ##-Inf}], :unit :c6}}})
+       :b6 {:c6 {:useq [2 1 0], :unit :b6, :next-unit :c6}
+            :c  {:useq [2 1 0], :unit :b6, :next-unit :c}}
+       :c6 {:d {:useq [2 1 0], :unit :c6, :next-unit :d}
+            nil {:useq [{:start 2, :step -1, :end ##-Inf}], :unit :c6}}})
 
     (t/is (= graph-assert (:seqs registry)))
 
