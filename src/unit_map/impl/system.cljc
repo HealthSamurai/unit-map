@@ -232,14 +232,14 @@
   (util/get-prev-element (guess-usys registry umap unit) unit))
 
 
-(defn useq [useqs unit next-unit]
-  (get-in useqs [unit next-unit :useq]))
+(defn useq [registry unit next-unit]
+  (get-in registry [:useqs unit next-unit :useq]))
 
 
 (def get-useq*
   (memoize
     (fn [registry unit next-unit]
-      (useq (:useqs registry) unit next-unit))))
+      (useq registry unit next-unit))))
 
 
 (defn get-useq [registry umap unit]
