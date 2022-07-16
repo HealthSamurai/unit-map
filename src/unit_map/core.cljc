@@ -19,14 +19,12 @@
 ;;;;;;;;;; reg-useq! & reg-usys!
 
 
-(defn reg-useq!
-  ([registry-atom {:as args, :keys [unit useq]}]
-   (reg-useq! registry-atom unit useq args))
-
-  ([registry-atom unit useq & {next-unit :next, eq-unit :eq}] #_"TODO: remove this arity, use only kwargs?"
-   (swap! registry-atom registry/reg-useq
-          unit useq :next-unit next-unit :eq-unit eq-unit)
-   useq))
+(defn reg-useq! [registry-atom & {:keys [unit useq next-unit eq-unit]}]
+  (swap! registry-atom registry/reg-useq {:unit unit
+                                          :useq useq
+                                          :next-unit next-unit
+                                          :eq-unit eq-unit})
+  useq)
 
 
 (defn reg-useqs! [registry-atom useqs]

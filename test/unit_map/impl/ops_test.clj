@@ -21,28 +21,28 @@
       #{:feb}                               (if (leap-year? date) 29 28)
       ##Inf))
 
-  (umap/reg-useq! treg_ :hour   #unit-map/useq[0 1 .. 23] :next :day)
+  (umap/reg-useq! treg_ :unit :hour,   :useq #unit-map/useq[0 1 .. 23] :next-unit :day)
 
-  (umap/reg-useq! treg_ :am-pm/hour   #unit-map/useq[12 1 2 .. 11] :next :am-pm/period, :eq :hour)
-  (umap/reg-useq! treg_ :am-pm/period #unit-map/useq[:am :pm])
+  (umap/reg-useq! treg_ :unit :am-pm/hour,   :useq #unit-map/useq[12 1 2 .. 11] :next-unit :am-pm/period, :eq-unit :hour)
+  (umap/reg-useq! treg_ :unit :am-pm/period, :useq #unit-map/useq[:am :pm])
 
-  (umap/reg-useq! treg_ :day   #unit-map/useq[1 2 .. days-in-month] :next :month)
-  (umap/reg-useq! treg_ :month #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
-  (umap/reg-useq! treg_ :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :day,   :useq #unit-map/useq[1 2 .. days-in-month] :next-unit :month)
+  (umap/reg-useq! treg_ :unit :month, :useq #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next-unit :year)
+  (umap/reg-useq! treg_ :unit :year,  :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (umap/reg-useq! treg_
-                 :epoch-year
-                 #unit-map/useq[(fn [{:keys [epoch]}]
-                                  (if (= :BC epoch) ##Inf 1))
-                                (fn [{:keys [epoch]}]
-                                  (if (= :BC epoch) -1 1))
-                                ..
-                                (fn [{:keys [epoch]}]
-                                  (if (= :BC epoch) 1 ##Inf))]
-                 :next :epoch
-                 :eq :year)
+                 :unit :epoch-year
+                 :useq #unit-map/useq[(fn [{:keys [epoch]}]
+                                        (if (= :BC epoch) ##Inf 1))
+                                      (fn [{:keys [epoch]}]
+                                        (if (= :BC epoch) -1 1))
+                                      ..
+                                      (fn [{:keys [epoch]}]
+                                        (if (= :BC epoch) 1 ##Inf))]
+                 :next-unit :epoch
+                 :eq-unit :year)
 
-  (umap/reg-useq! treg_ :epoch  #unit-map/useq[:BC :AD])
+  (umap/reg-useq! treg_ :unit :epoch,  :useq #unit-map/useq[:BC :AD])
 
   (def datetime   (umap/reg-usys! treg_ [:hour :day :month :year]))
   (def date       (umap/reg-usys! treg_ [:day :month :year]))

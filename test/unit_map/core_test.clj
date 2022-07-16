@@ -20,19 +20,19 @@
       #{:feb}                               (if (leap-year? date) 29 28)
       ##Inf))
 
-  (sut/reg-useq! treg_ :ms   #unit-map/useq[0 1 .. 999] :next :sec)
-  (sut/reg-useq! treg_ :sec  #unit-map/useq[0 1 .. 59] :next :min)
-  (sut/reg-useq! treg_ :min  #unit-map/useq[0 1 .. 59] :next :hour)
-  (sut/reg-useq! treg_ :hour #unit-map/useq[0 1 .. 23] :next :day)
+  (sut/reg-useq! treg_ :unit :ms,   :useq #unit-map/useq[0 1 .. 999] :next-unit :sec)
+  (sut/reg-useq! treg_ :unit :sec,  :useq #unit-map/useq[0 1 .. 59] :next-unit :min)
+  (sut/reg-useq! treg_ :unit :min,  :useq #unit-map/useq[0 1 .. 59] :next-unit :hour)
+  (sut/reg-useq! treg_ :unit :hour, :useq #unit-map/useq[0 1 .. 23] :next-unit :day)
 
-  (sut/reg-useq! treg_ :day   #unit-map/useq[1 2 .. days-in-month] :next :month)
-  (sut/reg-useq! treg_ :month #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
-  (sut/reg-useq! treg_ :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (sut/reg-useq! treg_ :unit :day,   :useq #unit-map/useq[1 2 .. days-in-month] :next-unit :month)
+  (sut/reg-useq! treg_ :unit :month, :useq #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next-unit :year)
+  (sut/reg-useq! treg_ :unit :year,  :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (sut/reg-useq! treg_ :ms   #unit-map/useq[0 1 .. ##Inf])
-  (sut/reg-useq! treg_ :sec  #unit-map/useq[0 1 .. ##Inf])
-  (sut/reg-useq! treg_ :hour #unit-map/useq[0 1 .. ##Inf])
-  (sut/reg-useq! treg_ :day  #unit-map/useq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
+  (sut/reg-useq! treg_ :unit :ms,   :useq #unit-map/useq[0 1 .. ##Inf])
+  (sut/reg-useq! treg_ :unit :sec,  :useq #unit-map/useq[0 1 .. ##Inf])
+  (sut/reg-useq! treg_ :unit :hour, :useq #unit-map/useq[0 1 .. ##Inf])
+  (sut/reg-useq! treg_ :unit :day,  :useq #unit-map/useq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
   (def timestamp  (sut/reg-usys! treg_ [:ms]))
   (def ms-hour    (sut/reg-usys! treg_ [:ms :sec :min :hour]))
@@ -374,14 +374,14 @@
 
 
 (t/deftest ^:kaocha/pending demo-test
-  (sut/reg-useq! treg_ :ms   #unit-map/useq[0 1 .. 999] :next :sec)
-  (sut/reg-useq! treg_ :sec  #unit-map/useq[0 1 .. 59] :next :min)
-  (sut/reg-useq! treg_ :min  #unit-map/useq[0 1 .. 59] :next :hour)
-  (sut/reg-useq! treg_ :hour #unit-map/useq[0 1 .. 23] :next :day)
+  (sut/reg-useq! treg_ :unit :ms,   :useq #unit-map/useq[0 1 .. 999] :next-unit :sec)
+  (sut/reg-useq! treg_ :unit :sec,  :useq #unit-map/useq[0 1 .. 59] :next-unit :min)
+  (sut/reg-useq! treg_ :unit :min,  :useq #unit-map/useq[0 1 .. 59] :next-unit :hour)
+  (sut/reg-useq! treg_ :unit :hour, :useq #unit-map/useq[0 1 .. 23] :next-unit :day)
 
-  (sut/reg-useq! treg_ :day   #unit-map/useq[1 2 .. days-in-month] :next :month)
-  (sut/reg-useq! treg_ :month #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
-  (sut/reg-useq! treg_ :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (sut/reg-useq! treg_ :unit :day,   :useq #unit-map/useq[1 2 .. days-in-month] :next-unit :month)
+  (sut/reg-useq! treg_ :unit :month, :useq #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next-unit :year)
+  (sut/reg-useq! treg_ :unit :year,  :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (sut/reg-usys! treg_ [:ms :sec :min :hour :day :month :year])
 

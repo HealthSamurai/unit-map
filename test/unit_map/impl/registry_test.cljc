@@ -6,30 +6,30 @@
 (t/deftest reguseq-regusys
   (def registry
     (-> {}
-        (sut/reg-useq :a #unit-map/useq[0 1] :next-unit :b)
-        (sut/reg-useq :b #unit-map/useq[0 1] :next-unit :c)
-        (sut/reg-useq :c #unit-map/useq[0 1] :next-unit :d)
-        (sut/reg-useq :d #unit-map/useq[0 1])
+        (sut/reg-useq :unit :a, :useq #unit-map/useq[0 1] :next-unit :b)
+        (sut/reg-useq :unit :b, :useq #unit-map/useq[0 1] :next-unit :c)
+        (sut/reg-useq :unit :c, :useq #unit-map/useq[0 1] :next-unit :d)
+        (sut/reg-useq :unit :d, :useq #unit-map/useq[0 1])
 
-        (sut/reg-useq :aa #unit-map/useq[0 2] :next-unit :b)
-        (sut/reg-useq :a #unit-map/useq[0 1 2 3] :next-unit :c)
+        (sut/reg-useq :unit :aa, :useq #unit-map/useq[0 2] :next-unit :b)
+        (sut/reg-useq :unit :a, :useq #unit-map/useq[0 1 2 3] :next-unit :c)
 
-        (sut/reg-useq :b2 #unit-map/useq[-2 -1 0] :next-unit :c2, :eq-unit :b)
-        (sut/reg-useq :c2 #unit-map/useq[-2 -1 0] :next-unit :d)
-        (sut/reg-useq :c2 #unit-map/useq[-2 -1 .. ##-Inf])
+        (sut/reg-useq :unit :b2, :useq #unit-map/useq[-2 -1 0] :next-unit :c2, :eq-unit :b)
+        (sut/reg-useq :unit :c2, :useq #unit-map/useq[-2 -1 0] :next-unit :d)
+        (sut/reg-useq :unit :c2, :useq #unit-map/useq[-2 -1 .. ##-Inf])
 
-        (sut/reg-useq :b3 #unit-map/useq[2 1 0] :next-unit :c3, :eq-unit :b2)
-        (sut/reg-useq :c3 #unit-map/useq[2 1 .. ##-Inf])
+        (sut/reg-useq :unit :b3, :useq #unit-map/useq[2 1 0] :next-unit :c3, :eq-unit :b2)
+        (sut/reg-useq :unit :c3, :useq #unit-map/useq[2 1 .. ##-Inf])
 
-        (sut/reg-useq :b4 #unit-map/useq[2 1 0] :next-unit :c4, :eq-unit :b)
-        (sut/reg-useq :c4 #unit-map/useq[2 1 .. ##-Inf])
+        (sut/reg-useq :unit :b4, :useq #unit-map/useq[2 1 0] :next-unit :c4, :eq-unit :b)
+        (sut/reg-useq :unit :c4, :useq #unit-map/useq[2 1 .. ##-Inf])
 
-        (sut/reg-useq :b5 #unit-map/useq[2 1 0] :next-unit :c5)
-        (sut/reg-useq :c5 #unit-map/useq[2 1 .. ##-Inf])
+        (sut/reg-useq :unit :b5, :useq #unit-map/useq[2 1 0] :next-unit :c5)
+        (sut/reg-useq :unit :c5, :useq #unit-map/useq[2 1 .. ##-Inf])
 
-        (sut/reg-useq :b6 #unit-map/useq[2 1 0] :next-unit :c6, :eq-unit :b)
-        (sut/reg-useq :c6 #unit-map/useq[2 1 0] :next-unit :d, :eq-unit :c)
-        (sut/reg-useq :c6 #unit-map/useq[2 1 .. ##-Inf])))
+        (sut/reg-useq :unit :b6, :useq #unit-map/useq[2 1 0] :next-unit :c6, :eq-unit :b)
+        (sut/reg-useq :unit :c6, :useq #unit-map/useq[2 1 0] :next-unit :d, :eq-unit :c)
+        (sut/reg-useq :unit :c6, :useq #unit-map/useq[2 1 .. ##-Inf])))
 
   (t/testing "useqs graph"
     (def graph-assert

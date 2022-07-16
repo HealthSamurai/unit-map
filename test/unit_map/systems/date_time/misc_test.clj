@@ -5,13 +5,13 @@
 
 (def registry-atom (atom nil))
 
-(umap/reg-useq! registry-atom :sec  #unit-map/useq[0 1 .. 59] :next :min)
-(umap/reg-useq! registry-atom :min  #unit-map/useq[0 1 .. 59] :next :hour)
-(umap/reg-useq! registry-atom :hour #unit-map/useq[0 1 .. 23] :next :day)
+(umap/reg-useq! registry-atom :unit :sec,  :useq #unit-map/useq[0 1 .. 59] :next-unit :min)
+(umap/reg-useq! registry-atom :unit :min,  :useq #unit-map/useq[0 1 .. 59] :next-unit :hour)
+(umap/reg-useq! registry-atom :unit :hour, :useq #unit-map/useq[0 1 .. 23] :next-unit :day)
 
-(umap/reg-useq! registry-atom :day   #unit-map/useq[1 2 .. sut/days-in-month] :next :month)
-(umap/reg-useq! registry-atom :month #unit-map/useq[1 2 .. 12] :next :year)
-(umap/reg-useq! registry-atom :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
+(umap/reg-useq! registry-atom :unit :day,   :useq #unit-map/useq[1 2 .. sut/days-in-month] :next-unit :month)
+(umap/reg-useq! registry-atom :unit :month, :useq #unit-map/useq[1 2 .. 12] :next-unit :year)
+(umap/reg-useq! registry-atom :unit :year,  :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
 (umap/reg-usys! registry-atom [:sec :min :hour :day :month :year])
 

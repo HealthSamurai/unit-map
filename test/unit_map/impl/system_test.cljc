@@ -59,55 +59,55 @@
       #{:jun :jul :aug} :summer
       #{:sep :oct :nov} :autumn))
 
-  (umap/reg-useq! treg_ :ns   #unit-map/useq[0 1 .. 999999999] :next :sec)
+  (umap/reg-useq! treg_ :unit :ns,   :useq #unit-map/useq[0 1 .. 999999999] :next-unit :sec)
 
-  (umap/reg-useq! treg_ :ns   #unit-map/useq[0 1 .. 999999] :next :ms)
-  (umap/reg-useq! treg_ :ms   #unit-map/useq[0 1 .. 999] :next :sec)
-  (umap/reg-useq! treg_ :sec  #unit-map/useq[0 1 .. 59] :next :min)
-  (umap/reg-useq! treg_ :min  #unit-map/useq[0 1 .. 59] :next :hour)
-  (umap/reg-useq! treg_ :hour #unit-map/useq[0 1 .. 23] :next :day)
+  (umap/reg-useq! treg_ :unit :ns,   :useq #unit-map/useq[0 1 .. 999999] :next-unit :ms)
+  (umap/reg-useq! treg_ :unit :ms,   :useq #unit-map/useq[0 1 .. 999] :next-unit :sec)
+  (umap/reg-useq! treg_ :unit :sec,  :useq #unit-map/useq[0 1 .. 59] :next-unit :min)
+  (umap/reg-useq! treg_ :unit :min,  :useq #unit-map/useq[0 1 .. 59] :next-unit :hour)
+  (umap/reg-useq! treg_ :unit :hour, :useq #unit-map/useq[0 1 .. 23] :next-unit :day)
 
-  (umap/reg-useq! treg_ :ms   #unit-map/useq[0 1 .. ##Inf])
-  (umap/reg-useq! treg_ :ns   #unit-map/useq[0 1 .. ##Inf])
-  (umap/reg-useq! treg_ :sec  #unit-map/useq[0 1 .. ##Inf])
-  (umap/reg-useq! treg_ :hour #unit-map/useq[0 1 .. ##Inf])
-  (umap/reg-useq! treg_ :day  #unit-map/useq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
+  (umap/reg-useq! treg_ :unit :ms,   :useq #unit-map/useq[0 1 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :ns,   :useq #unit-map/useq[0 1 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :sec,  :useq #unit-map/useq[0 1 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :hour, :useq #unit-map/useq[0 1 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :day,  :useq #unit-map/useq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
-  (umap/reg-useq! treg_ :am-pm/hour   #unit-map/useq[12 1 2 .. 11] :next :am-pm/period, :eq :hour)
-  (umap/reg-useq! treg_ :am-pm/period #unit-map/useq[:am :pm] :next :day)
+  (umap/reg-useq! treg_ :unit :am-pm/hour,   :useq #unit-map/useq[12 1 2 .. 11] :next-unit :am-pm/period, :eq-unit :hour)
+  (umap/reg-useq! treg_ :unit :am-pm/period, :useq #unit-map/useq[:am :pm] :next-unit :day)
 
-  (umap/reg-useq! treg_ :day   #unit-map/useq[1 2 .. days-in-month] :next :month)
-  (umap/reg-useq! treg_ :month #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
-  (umap/reg-useq! treg_ :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :day,   :useq #unit-map/useq[1 2 .. days-in-month] :next-unit :month)
+  (umap/reg-useq! treg_ :unit :month, :useq #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next-unit :year)
+  (umap/reg-useq! treg_ :unit :year,  :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (umap/reg-useq! treg_ :weekday  #unit-map/useq[:mon :tue :wed :thu :fri :sat :sun] :next :week, :eq :day)
-  (umap/reg-useq! treg_ :week     #unit-map/useq[1 2 .. 52])
-  (umap/reg-useq! treg_ :weekpart #unit-map/useq[weekday] :eq :weekday)
-  (umap/reg-useq! treg_ :season   #unit-map/useq[season] :eq :month)
+  (umap/reg-useq! treg_ :unit :weekday,  :useq #unit-map/useq[:mon :tue :wed :thu :fri :sat :sun] :next-unit :week, :eq-unit :day)
+  (umap/reg-useq! treg_ :unit :week,     :useq #unit-map/useq[1 2 .. 52])
+  (umap/reg-useq! treg_ :unit :weekpart, :useq #unit-map/useq[weekday] :eq-unit :weekday)
+  (umap/reg-useq! treg_ :unit :season,   :useq #unit-map/useq[season] :eq-unit :month)
 
-  (umap/reg-useq! treg_ :mil  #unit-map/useq[0 1 .. 999 ] :next :inch)
-  (umap/reg-useq! treg_ :inch #unit-map/useq[0 1 .. 11  ] :next :foot)
-  (umap/reg-useq! treg_ :foot #unit-map/useq[0 1 .. 5279] :next :mile)
-  (umap/reg-useq! treg_ :mile #unit-map/useq[0 1 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :mil,  :useq #unit-map/useq[0 1 .. 999 ] :next-unit :inch)
+  (umap/reg-useq! treg_ :unit :inch, :useq #unit-map/useq[0 1 .. 11  ] :next-unit :foot)
+  (umap/reg-useq! treg_ :unit :foot, :useq #unit-map/useq[0 1 .. 5279] :next-unit :mile)
+  (umap/reg-useq! treg_ :unit :mile, :useq #unit-map/useq[0 1 .. ##Inf])
 
-  (umap/reg-useq! treg_ :mm #unit-map/useq[0 1 .. 9  ] :next :cm)
-  (umap/reg-useq! treg_ :cm #unit-map/useq[0 1 .. 99 ] :next :m)
-  (umap/reg-useq! treg_ :m  #unit-map/useq[0 1 .. 999] :next :km)
-  (umap/reg-useq! treg_ :km #unit-map/useq[0 1 .. ##Inf])
+  (umap/reg-useq! treg_ :unit :mm, :useq #unit-map/useq[0 1 .. 9  ] :next-unit :cm)
+  (umap/reg-useq! treg_ :unit :cm, :useq #unit-map/useq[0 1 .. 99 ] :next-unit :m)
+  (umap/reg-useq! treg_ :unit :m,  :useq #unit-map/useq[0 1 .. 999] :next-unit :km)
+  (umap/reg-useq! treg_ :unit :km, :useq #unit-map/useq[0 1 .. ##Inf])
 
   (umap/reg-useq! treg_
-                 :epoch-year
-                 #unit-map/useq[(fn [{:keys [epoch]}]
-                                  (if (= :BC epoch) ##Inf 1))
-                                (fn [{:keys [epoch]}]
-                                  (if (= :BC epoch) -1 1))
-                                ..
-                                (fn [{:keys [epoch]}]
-                                  (if (= :BC epoch) 1 ##Inf))]
-                 :next :epoch
-                 :eq :year)
+                 :unit :epoch-year
+                 :useq #unit-map/useq[(fn [{:keys [epoch]}]
+                                        (if (= :BC epoch) ##Inf 1))
+                                      (fn [{:keys [epoch]}]
+                                        (if (= :BC epoch) -1 1))
+                                      ..
+                                      (fn [{:keys [epoch]}]
+                                        (if (= :BC epoch) 1 ##Inf))]
+                 :next-unit :epoch
+                 :eq-unit :year)
 
-  (umap/reg-useq! treg_ :epoch  #unit-map/useq[:BC :AD]))
+  (umap/reg-useq! treg_ :unit :epoch,  :useq #unit-map/useq[:BC :AD]))
 
 (do ;;NOTE: systems
   (def imperial (umap/reg-usys! treg_ [:mil :inch :foot :mile]))
