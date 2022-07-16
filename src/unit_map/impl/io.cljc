@@ -83,7 +83,8 @@
     :else               (util/sanitize value)))
 
 
-(defn read-fmt-el [fmt-vec fmt-el] ;; TODO: maybe make this as date-reader for fmt-vec?
+#_"TODO: maybe make this as date-reader for fmt-vec?"
+(defn read-fmt-el [fmt-vec fmt-el]
   (let [[value & rest-fmt] (flatten (vector fmt-el))
         lang               (get-lang fmt-vec fmt-el)
         width              (util/ffilter integer? rest-fmt)]
@@ -101,36 +102,37 @@
 
 (defn mk-group-regex [cur-group next-group]
   (let [{el-regex :regex, :as el} (last cur-group)
+
         cur-group-border  (map :regex (butlast cur-group))
         next-group-border (:regex (first next-group))
-        group-regex       (str \("?:"
-                               (str/join cur-group-border)
-                               \( el-regex \)
-                               \( "?=" \( "?:" next-group-border \| "$" \) \) \))]
+        group-regex       (str "(?:" (str/join cur-group-border)
+                               "(" el-regex ")"
+                               "(?=(?:" next-group-border "|$)))")]
+
     (assoc el :group-regex group-regex)))
 
 
 (defn make-regex-groups [fmt-vec]
-  (transduce
-    (map (partial read-fmt-el fmt-vec))
-    (fn
-      ([acc el]
-       (if (keyword? (:value el))
-         {:group []
-          :result (conj (:result acc) (conj (:group acc) el))}
-         (update acc :group conj el)))
-      ([acc]
-       (let [result (conj (:result acc) (:group acc))]
-         (mapv mk-group-regex result (rest result)))))
-    {:group []
-     :result []}
-    (concat [#"^"] fmt-vec [#"$"])))
+  (let [acc (reduce (fn [acc fmt-el]
+                      (let [el (read-fmt-el fmt-vec fmt-el)]
+                        (if (keyword? (:value el))
+                          {:group []
+                           :result (-> (:result acc)
+                                       (conj (conj (:group acc) el)))}
+                          (update acc :group conj el))))
+                    {:group [], :result []}
+                    (concat [#"^"] fmt-vec [#"$"]))
+
+        result (conj (:result acc) (:group acc))]
+
+    (mapv mk-group-regex result (rest result))))
 
 
 (defn parse-groups [acc s [el & rest-els] & {:keys [strict]}]
   (cond
     (not (str/blank? s))
-    (let [pat                    (re-pattern (str (:group-regex el) "(.*$)?"))
+    (let [pat (re-pattern (str (:group-regex el) "(.*$)?"))
+
           [match-s cur-s rest-s] (re-find pat s)
           found?                 (not (str/blank? match-s))
           parsed-value           (when found? (parse-val el cur-s))]
@@ -151,24 +153,35 @@
 
 
 (defn format-el [value fmt-vec fmt-el]
-  (let [{:keys [lang function name-fmt pad-width pad-str], fmt :value :as fmt-el} (read-fmt-el fmt-vec fmt-el)
+  (let [{:as   fmt-el
+         :keys [lang function name-fmt pad-width pad-str]
+         fmt   :value}
+        (read-fmt-el fmt-vec fmt-el)
 
-        v          (get value fmt)
+        v (get value fmt)
+
         unit-value (or (when function (function value fmt-el))
                        (when lang (get-in (locale lang) [fmt v name-fmt]))
                        v
                        fmt)
-        pad-width  (or pad-width (max (format-patterns fmt 0) (count (str unit-value))))
-        pad-str    (or pad-str
+
+        pad-width (or pad-width
+                       (max (format-patterns fmt 0)
+                            (count (str unit-value))))
+
+        pad-str (or pad-str
                        (when (number? unit-value) 0)
                        " ")]
+
     (cond->> (str unit-value)
       (not (zero? pad-width))
       (util/pad-str pad-str pad-width))))
 
 
 (defn format [t fmt-vec]
-  (str/join (map (partial format-el t fmt-vec) fmt-vec)))
+  (->> fmt-vec
+       (map #(format-el t fmt-vec %))
+       str/join))
 
 
 #_(defn convertable? [value in out]

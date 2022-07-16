@@ -38,7 +38,8 @@
 #_"TODO: handle when get-next-unit returns nil"
 (defn inc-unit [registry unit {:as umap, unit-value unit}]
   (or (some->> (or unit-value (system/get-min-value registry umap unit))
-               (system/get-next-unit-value (system/get-useq registry umap unit) umap)
+               (system/get-next-unit-value (system/get-useq registry umap unit)
+                                           umap)
                (assoc umap unit))
       (as-> umap $
         (inc-unit registry (system/get-next-unit registry $ unit) $)
@@ -47,7 +48,8 @@
 
 (defn dec-unit [registry unit {:as umap, unit-value unit}]
   (or (some->> (or unit-value (system/get-min-value registry umap unit))
-               (system/get-prev-unit-value (system/get-useq registry umap unit) umap)
+               (system/get-prev-unit-value (system/get-useq registry umap unit)
+                                           umap)
                (assoc umap unit))
       (as-> umap $
         (dissoc $ unit)
@@ -55,7 +57,8 @@
         (assoc $ unit (system/get-max-value registry $ unit)))))
 
 
-(defn add-to-unit [registry umap unit x] #_"TODO: handle unnormalized values"
+#_"TODO: handle unnormalized values"
+(defn add-to-unit [registry umap unit x]
   (cond
     (zero? x)
     umap
@@ -69,7 +72,9 @@
           sum         (+ idx x)
           modulo      (system/useq-length useq umap)
           result-idx  (cond-> sum (util/finite? modulo) (mod modulo))
-          carry-delta (if (util/infinite? modulo) 0 (util/floor (/ sum modulo)))
+          carry-delta (if (util/infinite? modulo)
+                        0
+                        (util/floor (/ sum modulo)))
           result      (system/useq-nth useq umap result-idx)
           result-umap (assoc umap unit result)]
       (if (zero? carry-delta)
@@ -102,7 +107,9 @@
                diff)}))
 
 
-(defn units-difference-reduce-fn [registry a b {:keys [acc borrow?]} [unit useq]]
+(defn units-difference-reduce-fn [registry a b
+                                  {:keys [acc borrow?]}
+                                  [unit useq]]
   (let [{borrow-next? :borrowed, unit-res :result}
         (unit-difference a
                          (cond->> b borrow? (inc-unit registry unit))

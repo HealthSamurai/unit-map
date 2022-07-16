@@ -11,7 +11,7 @@
 #_"TODO:
 - guess-system-with-useqs
 - refactor repeating guess-system calls
-- use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
+- maybe use plural for deltas e.g.: {:month :jul} and {:months 7}
 - move calendar, mask & crono to scripts"
 
 
@@ -47,7 +47,8 @@
 (defn reg-systems! [registry-atom systems]
   (swap! registry-atom
          (fn [registry]
-           (assert (every? #(registry/system-continuous? registry %) systems))
+           (assert (every? #(registry/system-continuous? registry %)
+                           systems))
            (registry/reg-systems registry systems))))
 
 
@@ -77,8 +78,14 @@
 
 (defn eq?
   ([_ _] true)
-  ([registry x y]        (= 0 (cmp registry x y)))
-  ([registry x y & more] (apply util/apply-binary-pred #(eq? registry  %1 %2) x y more)))
+
+  ([registry x y]
+   (= 0 (cmp registry x y)))
+
+  ([registry x y & more]
+   (apply util/apply-binary-pred
+          #(eq? registry  %1 %2)
+          x y more)))
 
 
 (def not-eq? (complement eq?))
@@ -86,26 +93,50 @@
 
 (defn lt?
   ([_ _] true)
-  ([registry x y]        (neg? (cmp registry x y)))
-  ([registry x y & more] (apply util/apply-binary-pred #(lt? registry  %1 %2) x y more)))
+
+  ([registry x y]
+   (neg? (cmp registry x y)))
+
+  ([registry x y & more]
+   (apply util/apply-binary-pred
+          #(lt? registry  %1 %2)
+          x y more)))
 
 
 (defn gt?
   ([_ _] true)
-  ([registry x y]        (pos? (cmp registry x y)))
-  ([registry x y & more] (apply util/apply-binary-pred #(gt? registry  %1 %2) x y more)))
+
+  ([registry x y]
+   (pos? (cmp registry x y)))
+
+  ([registry x y & more]
+   (apply util/apply-binary-pred
+          #(gt? registry  %1 %2)
+          x y more)))
 
 
 (defn lte?
   ([_ _] true)
-  ([registry x y]        (>= 0 (cmp registry x y)))
-  ([registry x y & more] (apply util/apply-binary-pred #(lte? registry  %1 %2) x y more)))
+
+  ([registry x y]
+   (>= 0 (cmp registry x y)))
+
+  ([registry x y & more]
+   (apply util/apply-binary-pred
+          #(lte? registry  %1 %2)
+          x y more)))
 
 
 (defn gte?
   ([_ _] true)
-  ([registry x y]        (<= 0 (cmp registry x y)))
-  ([registry x y & more] (apply util/apply-binary-pred #(gte? registry  %1 %2) x y more)))
+
+  ([registry x y]
+   (<= 0 (cmp registry x y)))
+
+  ([registry x y & more]
+   (apply util/apply-binary-pred
+          #(gte? registry  %1 %2)
+          x y more)))
 
 
 ;;;;;;;;;; arithmetic
@@ -135,7 +166,8 @@
 
   ([registry x delta]
    (reduce (fn [result unit]
-             (ops/subtract-from-unit registry result unit (get delta unit 0)))
+             (ops/subtract-from-unit
+               registry result unit (get delta unit 0)))
            x
            (reverse (system/system-intersection registry x delta))))
 
@@ -149,7 +181,8 @@
   (let [[a b] (cond-> [x y] (lt? registry x y) reverse)]
     (:acc (reduce #(ops/units-difference-reduce-fn registry a b %1 %2)
                   {}
-                  (system/system-useqs registry (system/system-intersection registry a b))))))
+                  (->> (system/system-intersection registry a b)
+                       (system/system-useqs registry))))))
 
 
 #_(defn difference-in [registry units x y]

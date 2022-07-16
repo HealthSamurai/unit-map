@@ -18,8 +18,7 @@
 
 (defn supporting-systems [registry units]
   (->> (registry/systems registry)
-       (filter (comp (partial clojure.set/subset? units)
-                     set))
+       (filter #(clojure.set/subset? units (set %)))
        sort))
 
 
@@ -32,6 +31,7 @@
 (defn guess-system
   ([registry unit-map unit]
    (guess-system registry (assoc unit-map unit nil)))
+
   ([registry unit-map]
    (when-let [units (not-empty (get-units unit-map))]
      (guess-system* registry units))))
@@ -53,10 +53,12 @@
             [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
             rest-ys             (drop equal-pairs-len cur-ys)
 
-            [x-branch rest-xs'] (split-with (complement (set rest-ys)) rest-xs)
+            [x-branch rest-xs'] (split-with (complement (set rest-ys))
+                                            rest-xs)
             branch-end          (first rest-xs')
             [y-branch rest-ys'] (if (some? branch-end)
-                                  (split-with #(not= branch-end %) rest-ys)
+                                  (split-with #(not= branch-end %)
+                                              rest-ys)
                                   [rest-ys])]
         (recur rest-xs'
                rest-ys'
@@ -67,8 +69,9 @@
 
 (defn find-conversion [registry x y]
   (let [branches-diff (or (system-intersection registry x y)
-                          (find-diff-branches (guess-system registry x) #_"TODO: find better system match algo"
-                                              (guess-system registry y)))
+                          (find-diff-branches (guess-system registry x)
+                                              (guess-system registry y))
+                          #_"TODO: find better system match algo")
         conv-start (first branches-diff)
         valid? (or (not (::branches (meta conv-start)))
                    (let [[[x :as xs] [y :as ys]] conv-start]
@@ -154,7 +157,7 @@
 
 (defn urange-contains-some [rng umap & xs]
   (->> (sort xs)
-       (filter (partial urange-contains? rng umap))
+       (filter #(urange-contains? rng umap %))
        first))
 
 
