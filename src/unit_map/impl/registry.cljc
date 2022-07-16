@@ -72,8 +72,12 @@
   (reduce reg-system registry systems))
 
 
-(defn useq [registry unit next-unit]
-  (get-in registry [:useqs unit next-unit :useq]))
+(defn useq
+  ([registry unit]
+   (useq registry unit nil))
+
+  ([registry unit next-unit]
+   (get-in registry [:useqs unit next-unit :useq])))
 
 
 (defn systems [registry]

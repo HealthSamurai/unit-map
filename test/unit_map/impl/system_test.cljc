@@ -1,5 +1,6 @@
 (ns unit-map.impl.system-test
   (:require [unit-map.impl.system :as sut]
+            [unit-map.impl.registry :as registry]
             [unit-map.core :as umap]
             [clojure.test :as t]))
 
@@ -647,7 +648,7 @@
   (t/testing "get-next-unit-value"
     (t/is (= (range 60)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:useqs :sec :min :useq])
+                              (registry/useq @treg_ :sec :min)
                               nil
                               %)
                            0)
@@ -655,7 +656,7 @@
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:useqs :month :year :useq])
+                              (registry/useq @treg_ :month :year)
                               nil
                               %)
                            :jan)
@@ -663,7 +664,7 @@
 
     (t/is (= (range 1970 2021)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:useqs :year nil :useq])
+                              (registry/useq @treg_ :year)
                               nil
                               %)
                            1970)
@@ -671,7 +672,7 @@
 
     (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:useqs :am-pm/hour :am-pm/period :useq])
+                              (registry/useq @treg_ :am-pm/hour :am-pm/period)
                               nil
                               %)
                            12)
@@ -688,7 +689,7 @@
   (t/testing "get-prev-unit-value"
     (t/is (= (reverse (range 60))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:useqs :sec :min :useq])
+                              (registry/useq @treg_ :sec :min)
                               nil
                               %)
                            59)
@@ -696,7 +697,7 @@
 
     (t/is (= (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:useqs :month :year :useq])
+                              (registry/useq @treg_ :month :year)
                               nil
                               %)
                            :dec)
@@ -704,7 +705,7 @@
 
     (t/is (= (reverse (range 1970 2021))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:useqs :year nil :useq])
+                              (registry/useq @treg_ :year)
                               nil
                               %)
                            2020)
@@ -712,7 +713,7 @@
 
     (t/is (= (reverse [12 1 2 3 4 5 6 7 8 9 10 11])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:useqs :am-pm/hour :am-pm/period :useq])
+                              (registry/useq @treg_ :am-pm/hour :am-pm/period)
                               nil
                               %)
                            11)
