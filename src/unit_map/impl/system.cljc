@@ -22,14 +22,10 @@
        sort))
 
 
-(def a (atom #{}))
-
 (def guess-sys*
   (memoize
     (fn [registry units]
-      (doto (first (supporting-systems (vals (:systems registry)) units))
-        (->> (map name) (swap! a conj ) )
-        ))))
+      (first (supporting-systems (vals (:systems registry)) units)))))
 
 
 (defn guess-sys
