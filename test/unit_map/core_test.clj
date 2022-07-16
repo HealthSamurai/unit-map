@@ -20,13 +20,13 @@
       #{:feb}                               (if (leap-year? date) 29 28)
       ##Inf))
 
-  (sut/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999 -> :sec])
-  (sut/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59 -> :min])
-  (sut/regseq! treg_ :min  #unit-map/seq[0 1 .. 59 -> :hour])
-  (sut/regseq! treg_ :hour #unit-map/seq[0 1 .. 23 -> :day])
+  (sut/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999] :next :sec)
+  (sut/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59] :next :min)
+  (sut/regseq! treg_ :min  #unit-map/seq[0 1 .. 59] :next :hour)
+  (sut/regseq! treg_ :hour #unit-map/seq[0 1 .. 23] :next :day)
 
-  (sut/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (sut/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (sut/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month] :next :month)
+  (sut/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
   (sut/regseq! treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (sut/regseq! treg_ :ms   #unit-map/seq[0 1 .. ##Inf])
@@ -546,13 +546,13 @@
 
 
 (t/deftest ^:kaocha/pending demo-test
-  (sut/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999 -> :sec])
-  (sut/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59 -> :min])
-  (sut/regseq! treg_ :min  #unit-map/seq[0 1 .. 59 -> :hour])
-  (sut/regseq! treg_ :hour #unit-map/seq[0 1 .. 23 -> :day])
+  (sut/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999] :next :sec)
+  (sut/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59] :next :min)
+  (sut/regseq! treg_ :min  #unit-map/seq[0 1 .. 59] :next :hour)
+  (sut/regseq! treg_ :hour #unit-map/seq[0 1 .. 23] :next :day)
 
-  (sut/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (sut/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (sut/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month] :next :month)
+  (sut/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
   (sut/regseq! treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (sut/regsys! treg_ 'ms-year    [:ms :sec :min :hour :day :month :year])

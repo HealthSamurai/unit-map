@@ -21,24 +21,26 @@
       #{:feb}                               (if (leap-year? date) 29 28)
       ##Inf))
 
-  (umap/regseq! treg_ :hour   #unit-map/seq[0 1 .. 23 -> :day])
+  (umap/regseq! treg_ :hour   #unit-map/seq[0 1 .. 23] :next :day)
 
-  (umap/regseq! treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
+  (umap/regseq! treg_ :am-pm/hour   #unit-map/seq[12 1 2 .. 11] :next :am-pm/period, :eq :hour)
   (umap/regseq! treg_ :am-pm/period #unit-map/seq[:am :pm])
 
-  (umap/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (umap/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (umap/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month] :next :month)
+  (umap/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
   (umap/regseq! treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (umap/regseq! treg_ :epoch-year  #unit-map/seq[:year <=>
-                                                (fn [{:keys [epoch]}]
-                                                  (if (= :BC epoch) ##Inf 1))
-                                                (fn [{:keys [epoch]}]
-                                                  (if (= :BC epoch) -1 1))
-                                                ..
-                                                (fn [{:keys [epoch]}]
-                                                  (if (= :BC epoch) 1 ##Inf))
-                                                -> :epoch])
+  (umap/regseq! treg_
+                :epoch-year
+                #unit-map/seq[(fn [{:keys [epoch]}]
+                                (if (= :BC epoch) ##Inf 1))
+                              (fn [{:keys [epoch]}]
+                                (if (= :BC epoch) -1 1))
+                              ..
+                              (fn [{:keys [epoch]}]
+                                (if (= :BC epoch) 1 ##Inf))]
+                :next :epoch
+                :eq :year)
 
   (umap/regseq! treg_ :epoch  #unit-map/seq[:BC :AD])
 

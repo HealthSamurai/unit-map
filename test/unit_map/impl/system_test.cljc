@@ -59,13 +59,13 @@
       #{:jun :jul :aug} :summer
       #{:sep :oct :nov} :autumn))
 
-  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. 999999999 -> :sec])
+  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. 999999999] :next :sec)
 
-  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. 999999 -> :ms])
-  (umap/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999 -> :sec])
-  (umap/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59 -> :min])
-  (umap/regseq! treg_ :min  #unit-map/seq[0 1 .. 59 -> :hour])
-  (umap/regseq! treg_ :hour #unit-map/seq[0 1 .. 23 -> :day])
+  (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. 999999] :next :ms)
+  (umap/regseq! treg_ :ms   #unit-map/seq[0 1 .. 999] :next :sec)
+  (umap/regseq! treg_ :sec  #unit-map/seq[0 1 .. 59] :next :min)
+  (umap/regseq! treg_ :min  #unit-map/seq[0 1 .. 59] :next :hour)
+  (umap/regseq! treg_ :hour #unit-map/seq[0 1 .. 23] :next :day)
 
   (umap/regseq! treg_ :ms   #unit-map/seq[0 1 .. ##Inf])
   (umap/regseq! treg_ :ns   #unit-map/seq[0 1 .. ##Inf])
@@ -73,37 +73,39 @@
   (umap/regseq! treg_ :hour #unit-map/seq[0 1 .. ##Inf])
   (umap/regseq! treg_ :day  #unit-map/seq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
-  (umap/regseq! treg_ :am-pm/hour   #unit-map/seq[:hour <=> 12 1 2 .. 11 -> :am-pm/period])
-  (umap/regseq! treg_ :am-pm/period #unit-map/seq[:am :pm -> :day])
+  (umap/regseq! treg_ :am-pm/hour   #unit-map/seq[12 1 2 .. 11] :next :am-pm/period, :eq :hour)
+  (umap/regseq! treg_ :am-pm/period #unit-map/seq[:am :pm] :next :day)
 
-  (umap/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month -> :month])
-  (umap/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec -> :year])
+  (umap/regseq! treg_ :day   #unit-map/seq[1 2 .. days-in-month] :next :month)
+  (umap/regseq! treg_ :month #unit-map/seq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
   (umap/regseq! treg_ :year  #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (umap/regseq! treg_ :weekday  #unit-map/seq[:day <=> :mon :tue :wed :thu :fri :sat :sun -> :week])
+  (umap/regseq! treg_ :weekday  #unit-map/seq[:mon :tue :wed :thu :fri :sat :sun] :next :week, :eq :day)
   (umap/regseq! treg_ :week     #unit-map/seq[1 2 .. 52])
-  (umap/regseq! treg_ :weekpart #unit-map/seq[:weekday <=> weekday])
-  (umap/regseq! treg_ :season   #unit-map/seq[:month <=> season])
+  (umap/regseq! treg_ :weekpart #unit-map/seq[weekday] :eq :weekday)
+  (umap/regseq! treg_ :season   #unit-map/seq[season] :eq :month)
 
-  (umap/regseq! treg_ :mil  #unit-map/seq[0 1 .. 999  -> :inch])
-  (umap/regseq! treg_ :inch #unit-map/seq[0 1 .. 11   -> :foot])
-  (umap/regseq! treg_ :foot #unit-map/seq[0 1 .. 5279 -> :mile])
+  (umap/regseq! treg_ :mil  #unit-map/seq[0 1 .. 999 ] :next :inch)
+  (umap/regseq! treg_ :inch #unit-map/seq[0 1 .. 11  ] :next :foot)
+  (umap/regseq! treg_ :foot #unit-map/seq[0 1 .. 5279] :next :mile)
   (umap/regseq! treg_ :mile #unit-map/seq[0 1 .. ##Inf])
 
-  (umap/regseq! treg_ :mm #unit-map/seq[0 1 .. 9   -> :cm])
-  (umap/regseq! treg_ :cm #unit-map/seq[0 1 .. 99  -> :m])
-  (umap/regseq! treg_ :m  #unit-map/seq[0 1 .. 999 -> :km])
+  (umap/regseq! treg_ :mm #unit-map/seq[0 1 .. 9  ] :next :cm)
+  (umap/regseq! treg_ :cm #unit-map/seq[0 1 .. 99 ] :next :m)
+  (umap/regseq! treg_ :m  #unit-map/seq[0 1 .. 999] :next :km)
   (umap/regseq! treg_ :km #unit-map/seq[0 1 .. ##Inf])
 
-  (umap/regseq! treg_ :epoch-year  #unit-map/seq[:year <=>
-                                                (fn [{:keys [epoch]}]
-                                                  (if (= :BC epoch) ##Inf 1))
-                                                (fn [{:keys [epoch]}]
-                                                  (if (= :BC epoch) -1 1))
-                                                ..
-                                                (fn [{:keys [epoch]}]
-                                                  (if (= :BC epoch) 1 ##Inf))
-                                                -> :epoch])
+  (umap/regseq! treg_
+                :epoch-year
+                #unit-map/seq[(fn [{:keys [epoch]}]
+                                (if (= :BC epoch) ##Inf 1))
+                              (fn [{:keys [epoch]}]
+                                (if (= :BC epoch) -1 1))
+                              ..
+                              (fn [{:keys [epoch]}]
+                                (if (= :BC epoch) 1 ##Inf))]
+                :next :epoch
+                :eq :year)
 
   (umap/regseq! treg_ :epoch  #unit-map/seq[:BC :AD]))
 

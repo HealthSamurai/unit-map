@@ -6,29 +6,29 @@
 (t/deftest regseq-regsys
   (def registry
     (-> {}
-        (sut/reg-seq :a #unit-map/seq[0 1 -> :b])
-        (sut/reg-seq :b #unit-map/seq[0 1 -> :c])
-        (sut/reg-seq :c #unit-map/seq[0 1 -> :d])
+        (sut/reg-seq :a #unit-map/seq[0 1] :next-unit :b)
+        (sut/reg-seq :b #unit-map/seq[0 1] :next-unit :c)
+        (sut/reg-seq :c #unit-map/seq[0 1] :next-unit :d)
         (sut/reg-seq :d #unit-map/seq[0 1])
 
-        (sut/reg-seq :aa #unit-map/seq[0 2 -> :b])
-        (sut/reg-seq :a #unit-map/seq[0 1 2 3 -> :c])
+        (sut/reg-seq :aa #unit-map/seq[0 2] :next-unit :b)
+        (sut/reg-seq :a #unit-map/seq[0 1 2 3] :next-unit :c)
 
-        (sut/reg-seq :b2 #unit-map/seq[:b <=> -2 -1 0 -> :c2])
-        (sut/reg-seq :c2 #unit-map/seq[-2 -1 0 -> :d])
+        (sut/reg-seq :b2 #unit-map/seq[-2 -1 0] :next-unit :c2, :eq-unit :b)
+        (sut/reg-seq :c2 #unit-map/seq[-2 -1 0] :next-unit :d)
         (sut/reg-seq :c2 #unit-map/seq[-2 -1 .. ##-Inf])
 
-        (sut/reg-seq :b3 #unit-map/seq[:b2 <=> 2 1 0 -> :c3])
+        (sut/reg-seq :b3 #unit-map/seq[2 1 0] :next-unit :c3, :eq-unit :b2)
         (sut/reg-seq :c3 #unit-map/seq[2 1 .. ##-Inf])
 
-        (sut/reg-seq :b4 #unit-map/seq[:b <=> 2 1 0 -> :c4])
+        (sut/reg-seq :b4 #unit-map/seq[2 1 0] :next-unit :c4, :eq-unit :b)
         (sut/reg-seq :c4 #unit-map/seq[2 1 .. ##-Inf])
 
-        (sut/reg-seq :b5 #unit-map/seq[2 1 0 -> :c5])
+        (sut/reg-seq :b5 #unit-map/seq[2 1 0] :next-unit :c5)
         (sut/reg-seq :c5 #unit-map/seq[2 1 .. ##-Inf])
 
-        (sut/reg-seq :b6 #unit-map/seq[:b <=> 2 1 0 -> :c6])
-        (sut/reg-seq :c6 #unit-map/seq[:c <=> 2 1 0 -> :d])
+        (sut/reg-seq :b6 #unit-map/seq[2 1 0] :next-unit :c6, :eq-unit :b)
+        (sut/reg-seq :c6 #unit-map/seq[2 1 0] :next-unit :d, :eq-unit :c)
         (sut/reg-seq :c6 #unit-map/seq[2 1 .. ##-Inf])))
 
   (t/testing "seqs graph"
