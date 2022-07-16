@@ -101,7 +101,7 @@
 (defn dynamic-sequence? [useq]
   (boolean (some #(and (range? %)
                        (some fn? (vals %)))
-                 (:useq useq))))
+                 useq)))
 
 
 (defn static-sequence? [useq]
@@ -120,13 +120,13 @@
 
 
 (defn sequence-length [useq umap]
-  (->> (:useq useq)
+  (->> useq
        (map #(if (range? %) (range-length % umap) 1))
        (reduce + 0)))
 
 
 (defn sequence-first-index [useq umap]
-  (let [e (first (:useq useq))
+  (let [e (first useq)
         r (when (range? e) (concretize-range e umap))]
     (cond
       (nil? e)                 nil
@@ -135,7 +135,7 @@
 
 
 (defn sequence-last-index [useq umap]
-  (let [e (last (:useq useq))
+  (let [e (last useq)
         r (when (range? e) (concretize-range e umap))]
     (cond
       (nil? e)               nil
@@ -167,7 +167,7 @@
   (let [xs (cons x xs)]
     (some (some-fn (set xs)
                    #(when (range? %) (apply range-contains-some % umap xs)))
-          (:useq useq))))
+          useq)))
 
 
 (defn range-index-of
@@ -183,7 +183,7 @@
 
 
 (defn sequence-index-of [useq umap x]
-  (loop [i 0, [el & rest-s] (:useq useq)]
+  (loop [i 0, [el & rest-s] useq]
     (when (some? el)
       (or (some-> (cond
                     (= x el)    0
@@ -203,7 +203,7 @@
 
 
 (defn sequence-nth [useq umap index]
-  (loop [i 0, [el & rest-s] (:useq useq)]
+  (loop [i 0, [el & rest-s] useq]
     (when (some? el)
       (let [increment (if (and (range? el) (util/finite? (:start el)))
                         (range-length el umap)
@@ -237,7 +237,7 @@
 
 
 (defn unit-seq [useqs unit next-unit]
-  (get-in useqs [unit next-unit]))
+  (get-in useqs [unit next-unit :useq]))
 
 
 (def get-unit-seq*
@@ -263,7 +263,7 @@
 
 
 (defn get-next-unit-value [useq umap x]
-  (loop [[el next & rest] (:useq useq)]
+  (loop [[el next & rest] useq]
     (let [{:keys [step end]} (if (range? el)
                                (concretize-range el umap)
                                {})]
@@ -284,7 +284,7 @@
 
 
 (defn get-prev-unit-value [useq umap x]
-  (loop [[prev el & rest] (cons nil (:useq useq))]
+  (loop [[prev el & rest] (cons nil useq)]
     (let [{:keys [start step]} (if (range? el) (concretize-range el umap) {})]
       (cond
         (nil? el)
@@ -303,14 +303,14 @@
 
 
 (defn get-first-el [useq umap]
-  (let [start (first (:useq useq))]
+  (let [start (first useq)]
     (if (range? start)
       (util/try-call (:start start) umap)
       start)))
 
 
 (defn get-last-el [useq umap]
-  (let [end (last (:useq useq))]
+  (let [end (last useq)]
     (if (range? end)
       (util/try-call (:end end) umap)
       end)))

@@ -442,31 +442,26 @@
   (t/testing "concretize range"
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) (fn [_] 1) .. (fn [_] 9)]
-                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[0 1 .. 9]
-                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) .. (fn [_] 1) (fn [_] 9)]
-                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-range (-> #unit-map/seq[0 .. 8 9]
-                                       :useq
                                        first)
                                    nil)))
 
     (t/is (= {:start 1, :step 1, :end 28}
              (sut/concretize-range (-> #unit-map/seq[1 2 .. (fn [{:keys [month]}] (if (= :feb month) 28 30))]
-                                       :useq
                                        first)
                                    {:day 1, :month :feb, :year 2022}))))
 
@@ -642,24 +637,24 @@
 
   (t/testing "get-unit-seq"
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (:useq (sut/get-unit-seq @treg_
-                                          {:year 2022 :month :jun :day 4 :hour 12 :min 30}
-                                          :month))))
+             (sut/get-unit-seq @treg_
+                               {:year 2022 :month :jun :day 4 :hour 12 :min 30}
+                               :month)))
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (:useq (sut/get-unit-seq @treg_
-                                          {:min 30}
-                                          :month))))
+             (sut/get-unit-seq @treg_
+                               {:min 30}
+                               :month)))
 
-    (t/is (= (:useq #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf])
-             (:useq (sut/get-unit-seq @treg_
-                                          {:year 2022 :month :jun :day 4 :hour 12 :min 30}
-                                          :year)))))
+    (t/is (= #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
+             (sut/get-unit-seq @treg_
+                               {:year 2022 :month :jun :day 4 :hour 12 :min 30}
+                               :year))))
 
   (t/testing "get-next-unit-value"
     (t/is (= (range 60)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:seqs :sec :min])
+                              (get-in @treg_ [:seqs :sec :min :useq])
                               nil
                               %)
                            0)
@@ -667,7 +662,7 @@
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:seqs :month :year])
+                              (get-in @treg_ [:seqs :month :year :useq])
                               nil
                               %)
                            :jan)
@@ -675,7 +670,7 @@
 
     (t/is (= (range 1970 2021)
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:seqs :year nil])
+                              (get-in @treg_ [:seqs :year nil :useq])
                               nil
                               %)
                            1970)
@@ -683,7 +678,7 @@
 
     (t/is (= [12 1 2 3 4 5 6 7 8 9 10 11]
              (->> (iterate #(sut/get-next-unit-value
-                              (get-in @treg_ [:seqs :am-pm/hour :am-pm/period])
+                              (get-in @treg_ [:seqs :am-pm/hour :am-pm/period :useq])
                               nil
                               %)
                            12)
@@ -700,7 +695,7 @@
   (t/testing "get-prev-unit-value"
     (t/is (= (reverse (range 60))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:seqs :sec :min])
+                              (get-in @treg_ [:seqs :sec :min :useq])
                               nil
                               %)
                            59)
@@ -708,7 +703,7 @@
 
     (t/is (= (reverse [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:seqs :month :year])
+                              (get-in @treg_ [:seqs :month :year :useq])
                               nil
                               %)
                            :dec)
@@ -716,7 +711,7 @@
 
     (t/is (= (reverse (range 1970 2021))
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:seqs :year nil])
+                              (get-in @treg_ [:seqs :year nil :useq])
                               nil
                               %)
                            2020)
@@ -724,7 +719,7 @@
 
     (t/is (= (reverse [12 1 2 3 4 5 6 7 8 9 10 11])
              (->> (iterate #(sut/get-prev-unit-value
-                              (get-in @treg_ [:seqs :am-pm/hour :am-pm/period])
+                              (get-in @treg_ [:seqs :am-pm/hour :am-pm/period :useq])
                               nil
                               %)
                            11)
