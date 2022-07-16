@@ -28,11 +28,12 @@
           unit useq :next-unit next-unit :eq-unit eq-unit)
    useq))
 
-(defn regsys! [registry-atom sys-name units]
+
+(defn regsys! [registry-atom units]
   (swap! registry-atom
          (fn [registry]
            (assert (registry/sys-continuous? registry units))
-           (registry/reg-sys registry sys-name units)))
+           (registry/reg-sys registry units)))
   units)
 
 

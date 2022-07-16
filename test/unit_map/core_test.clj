@@ -34,18 +34,12 @@
   (sut/reguseq! treg_ :hour #unit-map/useq[0 1 .. ##Inf])
   (sut/reguseq! treg_ :day  #unit-map/useq[0 1 .. ##Inf]) #_"NOTE: should start with 0 or with 1?"
 
-  (sut/regsys! treg_ 'timestamp  [:ms])
-  (sut/regsys! treg_ 'ms-hour    [:ms :sec :min :hour])
-  (sut/regsys! treg_ 'ms-day     [:ms :sec :min :hour :day])
-  (sut/regsys! treg_ 'ms-year    [:ms :sec :min :hour :day :month :year])
-  (sut/regsys! treg_ 'month-year [:month :year])
-  (sut/regsys! treg_ 'date       [:day :month :year])
-
-  (->> (for [[sys sys-def] (:systems @treg_)
-             :when (symbol? sys)]
-         (list 'def sys sys-def))
-       (cons 'do)
-       eval #_"TODO: refactor this"))
+  (def timestamp  (sut/regsys! treg_ [:ms]))
+  (def ms-hour    (sut/regsys! treg_ [:ms :sec :min :hour]))
+  (def ms-day     (sut/regsys! treg_ [:ms :sec :min :hour :day]))
+  (def ms-year    (sut/regsys! treg_ [:ms :sec :min :hour :day :month :year]))
+  (def month-year (sut/regsys! treg_ [:month :year]))
+  (def date       (sut/regsys! treg_ [:day :month :year])))
 
 
 (t/deftest cmp
@@ -389,7 +383,7 @@
   (sut/reguseq! treg_ :month #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec] :next :year)
   (sut/reguseq! treg_ :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-  (sut/regsys! treg_ 'ms-year    [:ms :sec :min :hour :day :month :year])
+  (sut/regsys! treg_ [:ms :sec :min :hour :day :month :year])
 
   #_(sut/deffmt :iso/month [:month (fn [v fmt-el] '???)])
   #_(sut/deffmt :iso/day [:day 2 "0"])

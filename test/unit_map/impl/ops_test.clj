@@ -44,17 +44,11 @@
 
   (umap/reguseq! treg_ :epoch  #unit-map/useq[:BC :AD])
 
-  (umap/regsys! treg_ 'datetime   [:hour :day :month :year])
-  (umap/regsys! treg_ 'date       [:day :month :year])
-  (umap/regsys! treg_ 'month-year [:month :year])
-  (umap/regsys! treg_ 'year-epoch [:epoch-year :epoch])
-  (umap/regsys! treg_ 'am-pm-time [:am-pm/hour :am-pm/period])
-
-  (->> (for [[sys sys-def] (:systems @treg_)
-             :when (symbol? sys)]
-         (list 'def sys sys-def))
-       (cons 'do)
-       eval #_"TODO: refactor this"))
+  (def datetime   (umap/regsys! treg_ [:hour :day :month :year]))
+  (def date       (umap/regsys! treg_ [:day :month :year]))
+  (def month-year (umap/regsys! treg_ [:month :year]))
+  (def year-epoch (umap/regsys! treg_ [:epoch-year :epoch]))
+  (def am-pm-time (umap/regsys! treg_ [:am-pm/hour :am-pm/period])))
 
 
 (t/deftest arithmetic-test

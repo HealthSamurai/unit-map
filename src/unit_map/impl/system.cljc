@@ -25,7 +25,7 @@
 (def guess-sys*
   (memoize
     (fn [registry units]
-      (first (supporting-systems (vals (:systems registry)) units)))))
+      (first (supporting-systems (:systems registry) units)))))
 
 
 (defn guess-sys

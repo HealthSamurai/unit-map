@@ -60,5 +60,5 @@
              (get-in registry [:useqs prev-unit cur-unit]))))))
 
 
-(defn reg-sys [registry sys-name units]
-  (assoc-in registry [:systems sys-name] units))
+(defn reg-sys [registry units]
+  (update registry :systems (fnil conj #{}) units))
