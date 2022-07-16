@@ -57,24 +57,18 @@
 
 
 (defn cmp [registry x y]
-  (or (when (= x y)
-        0)
-      (when-let [system (system/system-intersection registry x y)]
-        (ops/cmp-in-system registry system x y))
-      (when-let [system (or (system/guess-system registry x)
-                            (system/guess-system registry y))]
-        (ops/cmp-in-system registry system x y))))
+  (ops/cmp registry x y))
 
 
 (defn eq?
   ([_ _] true)
 
   ([registry x y]
-   (= 0 (cmp registry x y)))
+   (ops/eq? registry x y))
 
   ([registry x y & more]
    (apply util/apply-binary-pred
-          #(eq? registry  %1 %2)
+          #(ops/eq? registry  %1 %2)
           x y more)))
 
 
@@ -85,11 +79,11 @@
   ([_ _] true)
 
   ([registry x y]
-   (neg? (cmp registry x y)))
+   (ops/lt? registry x y))
 
   ([registry x y & more]
    (apply util/apply-binary-pred
-          #(lt? registry  %1 %2)
+          #(ops/lt? registry  %1 %2)
           x y more)))
 
 
@@ -97,11 +91,11 @@
   ([_ _] true)
 
   ([registry x y]
-   (pos? (cmp registry x y)))
+   (ops/gt? registry x y))
 
   ([registry x y & more]
    (apply util/apply-binary-pred
-          #(gt? registry  %1 %2)
+          #(ops/gt? registry  %1 %2)
           x y more)))
 
 
@@ -109,11 +103,11 @@
   ([_ _] true)
 
   ([registry x y]
-   (>= 0 (cmp registry x y)))
+   (ops/lte? registry x y))
 
   ([registry x y & more]
    (apply util/apply-binary-pred
-          #(lte? registry  %1 %2)
+          #(ops/lte? registry  %1 %2)
           x y more)))
 
 
@@ -121,11 +115,11 @@
   ([_ _] true)
 
   ([registry x y]
-   (<= 0 (cmp registry x y)))
+   (ops/gte? registry x y))
 
   ([registry x y & more]
    (apply util/apply-binary-pred
-          #(gte? registry  %1 %2)
+          #(ops/gte? registry  %1 %2)
           x y more)))
 
 

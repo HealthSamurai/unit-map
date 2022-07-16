@@ -32,6 +32,36 @@
       0))
 
 
+(defn cmp [registry x y]
+  (or (when (= x y)
+        0)
+      (when-let [system (system/system-intersection registry x y)]
+        (cmp-in-system registry system x y))
+      (when-let [system (or (system/guess-system registry x)
+                            (system/guess-system registry y))]
+        (cmp-in-system registry system x y))))
+
+
+(defn eq? [registry x y]
+  (= 0 (cmp registry x y)))
+
+
+(defn lt? [registry x y]
+  (neg? (cmp registry x y)))
+
+
+(defn gt? [registry x y]
+  (pos? (cmp registry x y)))
+
+
+(defn lte? [registry x y]
+  (>= 0 (cmp registry x y)))
+
+
+(defn gte? [registry x y]
+  (<= 0 (cmp registry x y)))
+
+
 ;;;;;;;;;; arithmetic
 
 
