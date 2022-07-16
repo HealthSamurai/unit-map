@@ -1,5 +1,5 @@
 (ns unit-map.impl.ops
-  (:require [unit-map.util :as u]
+  (:require [unit-map.util :as util]
             [unit-map.impl.reader]
             [unit-map.impl.registry :as registry]
             [unit-map.impl.system :as system]
@@ -68,8 +68,8 @@
                         (system/useq-first-index useq umap))
           sum         (+ idx x)
           modulo      (system/useq-length useq umap)
-          result-idx  (cond-> sum (u/finite? modulo) (mod modulo))
-          carry-delta (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
+          result-idx  (cond-> sum (util/finite? modulo) (mod modulo))
+          carry-delta (if (util/infinite? modulo) 0 (util/floor (/ sum modulo)))
           result      (system/useq-nth useq umap result-idx)
           result-umap (assoc umap unit result)]
       (if (zero? carry-delta)
@@ -80,10 +80,10 @@
                carry-delta)))
 
     (neg? x)
-    (u/n-times (- x) (partial dec-unit registry unit) umap)
+    (util/n-times (- x) (partial dec-unit registry unit) umap)
 
     :else
-    (u/n-times x (partial inc-unit registry unit) umap)))
+    (util/n-times x (partial inc-unit registry unit) umap)))
 
 
 (defn subtract-from-unit [registry umap unit x]

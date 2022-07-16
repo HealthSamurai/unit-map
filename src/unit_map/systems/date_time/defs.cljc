@@ -1,5 +1,4 @@
-(ns unit-map.systems.date-time.defs
-  (:require [unit-map.core :as u]))
+(ns unit-map.systems.date-time.defs)
 
 
 (defn leap-year? [{:keys [year]}]

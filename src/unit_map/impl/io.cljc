@@ -1,5 +1,5 @@
 (ns unit-map.impl.io
-  (:require [unit-map.util :as u]
+  (:require [unit-map.util :as util]
             [clojure.string :as str]))
 
 
@@ -66,7 +66,7 @@
 
 
 (defn parse-val [fmt-el x]
-  (or (u/try-parse-long x)
+  (or (util/try-parse-long x)
       (parse-name x (:value fmt-el) (:lang fmt-el))))
 
 
@@ -76,25 +76,25 @@
 
 (defn el->regex [{:keys [value width]}]
   (cond
-    (u/regex? value) value
-    (some? width)    (apply str (repeat width \.))
-    (keyword? value) ".+?"
-    :else            (u/sanitize value)))
+    (util/regex? value) value
+    (some? width)       (apply str (repeat width \.))
+    (keyword? value)    ".+?"
+    :else               (util/sanitize value)))
 
 
 (defn read-fmt-el [fmt-vec fmt-el] ;; TODO: maybe make this as date-reader for fmt-vec?
   (let [[value & rest-fmt] (flatten (vector fmt-el))
         lang               (get-lang fmt-vec fmt-el)
-        width              (u/ffilter integer? rest-fmt)]
+        width              (util/ffilter integer? rest-fmt)]
     {:value     value
      :lang      lang
-     :name-fmt  (or (u/ffilter keyword? rest-fmt)
+     :name-fmt  (or (util/ffilter keyword? rest-fmt)
                     (when lang :full))
-     :function  (u/ffilter fn? rest-fmt)
+     :function  (util/ffilter fn? rest-fmt)
      :pad-width width
-     :pad-str   (u/ffilter (some-fn string? char?) rest-fmt)
+     :pad-str   (util/ffilter (some-fn string? char?) rest-fmt)
      :regex     (or (and (keyword? value)
-                         (u/ffilter u/regex? rest-fmt))
+                         (util/ffilter util/regex? rest-fmt))
                     (el->regex {:value value, :width width}))}))
 
 
@@ -159,7 +159,7 @@
                        " ")]
     (cond->> (str unit-value)
       (not (zero? pad-width))
-      (u/pad-str pad-str pad-width))))
+      (util/pad-str pad-str pad-width))))
 
 
 (defn format [t fmt-vec]

@@ -1,5 +1,5 @@
 (ns unit-map.systems.date-time.now
-  (:require [unit-map.core :as u]
+  (:require [unit-map.core :as umap]
             [unit-map.systems.date-time.defs]))
 
 ;; TODO:
@@ -13,7 +13,7 @@
                            :cljs (js/Date.))
                         .getTimezoneOffset -)}))
   ([offset]
-   (u/add-delta {} offset) #_"TODO: replace with normalize"))
+   (umap/add-delta {} offset) #_"TODO: replace with normalize"))
 
 
 (defn local []
@@ -22,9 +22,9 @@
     (assoc {}
            :year  (-> (.getYear now)
                       (+ 1900))
-           :month (u/useq-nth (get-in @u/registry-atom [:useqs :month :year])
-                              {}
-                              (.getMonth now))
+           :month (umap/useq-nth (get-in @umap/registry-atom [:useqs :month :year])
+                                 {}
+                                 (.getMonth now))
            :day   (.getDate now)
            :hour  (.getHours now)
            :min   (.getMinutes now)
@@ -36,7 +36,7 @@
 
 (defn utc []
   (let [now (local)]
-    (assoc (u/subtract-delta now (:tz now)) #_"TODO: replace with remove deltas"
+    (assoc (umap/subtract-delta now (:tz now)) #_"TODO: replace with remove deltas"
            :tz {:hour 0})))
 
 
