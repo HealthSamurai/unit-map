@@ -1,6 +1,6 @@
-(ns unit-map.util-test
+(ns unit-map.impl.util-test
   (:require [clojure.test :as t]
-            [unit-map.util :as sut]))
+            [unit-map.impl.util :as sut]))
 
 
 (t/deftest pad-zero-test

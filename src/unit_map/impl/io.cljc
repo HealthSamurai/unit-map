@@ -1,6 +1,6 @@
 (ns unit-map.impl.io
   (:refer-clojure :exclude [format])
-  (:require [unit-map.util :as util]
+  (:require [unit-map.impl.util :as util]
             [clojure.string :as str]))
 
 

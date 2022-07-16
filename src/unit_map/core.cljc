@@ -1,6 +1,6 @@
 (ns unit-map.core
   (:refer-clojure :exclude [format])
-  (:require [unit-map.util :as util]
+  (:require [unit-map.impl.util :as util]
             [unit-map.impl.reader]
             [unit-map.impl.registry :as registry]
             [unit-map.impl.system :as system]

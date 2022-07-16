@@ -1,4 +1,4 @@
-(ns unit-map.util
+(ns unit-map.impl.util
   (:refer-clojure :exclude [infinite?])
   (:require [clojure.string :as str]
             [clojure.math :as math]))
