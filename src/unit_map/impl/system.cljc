@@ -236,21 +236,15 @@
   (get-in registry [:useqs unit next-unit :useq]))
 
 
-(def get-useq*
-  (memoize
-    (fn [registry unit next-unit]
-      (useq registry unit next-unit))))
-
-
 (defn get-useq [registry umap unit]
   (let [usys       (guess-usys registry umap unit)
         next-unit (util/get-next-element usys unit)]
-    (get-useq* registry unit next-unit)))
+    (useq registry unit next-unit)))
 
 
 (defn usys-useqs [registry usys]
   (map (fn [unit next-unit]
-         [unit (get-useq* registry unit next-unit)])
+         [unit (useq registry unit next-unit)])
        usys
        (rest (conj usys nil))))
 
