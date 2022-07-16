@@ -1,6 +1,5 @@
 (ns unit-map.impl.ops
   (:require [unit-map.impl.util :as util]
-            [unit-map.impl.reader]
             [unit-map.impl.registry :as registry]
             [unit-map.impl.system :as system]
             [clojure.set]
