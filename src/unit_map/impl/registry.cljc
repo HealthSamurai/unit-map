@@ -1,8 +1,8 @@
 (ns unit-map.impl.registry)
 
 
-(defn push-to-seq-graph [seqs-map unit useq]
-  (let [eq-seqs (when-let [eq-unit (:eq-unit useq)]
+(defn push-to-seq-graph [seqs-map {:as seq-info, :keys [unit eq-unit]}]
+  (let [eq-seqs (when (some? eq-unit)
                   (->> (vals seqs-map)
                        (keep #(get % eq-unit))))
 
@@ -13,14 +13,12 @@
         to-this-unit (->> (vals seqs-map)
                           (keep #(get % unit)))
 
-        to-eq-new (when-let [eq-unit (:eq-unit useq)]
+        to-eq-new (when (some? eq-unit)
                     (->> to-this-unit
                          (map #(assoc % :next-unit eq-unit))
                          distinct))
 
-        this-seq (assoc useq :unit unit)
-
-        to-save (concat [this-seq]
+        to-save (concat [seq-info]
                         to-this-unit-new
                         to-eq-new)]
     (reduce (fn [acc s]
@@ -31,7 +29,7 @@
             to-save)))
 
 
-(defn push-to-eq-units [eq-units-sets unit {:keys [eq-unit]}]
+(defn push-to-eq-units [eq-units-sets {:keys [unit eq-unit]}]
   (let [group (->> eq-units-sets
                    (filter #(or (get % unit) (get % eq-unit)))
                    first)
@@ -43,10 +41,13 @@
         (conj new-group))))
 
 
-(defn reg-seq [registry unit useq]
-  (-> registry
-      (update :seqs push-to-seq-graph unit useq)
-      (update :eq-units push-to-eq-units unit useq)))
+(defn reg-seq [registry unit useq & {:keys [next-unit eq-unit]}]
+  (let [useq-info (cond-> {:unit unit, :sequence (:sequence useq)}
+                    (some? next-unit) (assoc :next-unit next-unit)
+                    (some? eq-unit)   (assoc :eq-unit eq-unit))]
+    (-> registry
+        (update :seqs push-to-seq-graph useq-info)
+        (update :eq-units push-to-eq-units useq-info))))
 
 
 (defn sys-continuous? [registry units]

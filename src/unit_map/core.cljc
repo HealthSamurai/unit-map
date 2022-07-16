@@ -19,8 +19,9 @@
 ;;;;;;;;;; regseq! & regsys!
 
 
-(defn regseq! [registry-atom unit useq]
-  (swap! registry-atom registry/reg-seq unit useq)
+(defn regseq! [registry-atom unit useq & {next-unit :next, eq-unit :eq}]
+  (swap! registry-atom registry/reg-seq
+         unit useq :next-unit next-unit :eq-unit eq-unit)
   useq)
 
 

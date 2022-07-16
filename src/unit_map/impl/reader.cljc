@@ -22,47 +22,29 @@
     (create-range start end step)))
 
 
-(defn process-equivalent [s]
-  (if (= '<=> (second s))
-    {:eq-unit (first s)
-     :sequence (vec (drop 2 s))}
-    {:sequence s}))
-
-
-(defn process-next-unit [s]
-  (if (= '-> (get s (- (count s) 2)))
-    {:sequence (vec (drop-last 2 s))
-     :next-unit (last s)}
-    {:sequence s}))
-
-
 (defn process-enumeration [s]
-  {:sequence
-   (loop [[pprev prev x next-seq nnext & rest] (concat [nil nil] s [nil nil])
+  (loop [[pprev prev x next-seq nnext & rest] (concat [nil nil] s [nil nil])
 
-          result []
-          buffer []]
-     (cond
-       (nil? x)  (vec (concat result buffer))
-       (= '.. x) (recur (concat [nil nil] rest)
-                        (concat result
-                                (drop-last 2 buffer)
-                                [(process-range pprev prev next-seq nnext)])
-                        [])
-       :else     (recur (concat [prev x next-seq nnext] rest)
-                        result
-                        (conj buffer x))))})
+         result []
+         buffer []]
+    (cond
+      (nil? x)  (vec (concat result buffer))
+      (= '.. x) (recur (concat [nil nil] rest)
+                       (concat result
+                               (drop-last 2 buffer)
+                               [(process-range pprev prev next-seq nnext)])
+                       [])
+      :else     (recur (concat [prev x next-seq nnext] rest)
+                       result
+                       (conj buffer x)))))
 
 
 (defn process-sequence* [s]
-  (as-> s $
-    (process-equivalent $)
-    (merge $ (process-next-unit (:sequence $)))
-    (merge $ (process-enumeration (:sequence $)))))
+  (process-enumeration s))
 
 
 (def process-sequence (memoize process-sequence*))
 
 
 (defn read-sequence [form]
-  (process-sequence form))
+  {:sequence (process-sequence form)})
