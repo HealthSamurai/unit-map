@@ -125,6 +125,21 @@
   (add-to-unit registry umap unit (- x)))
 
 
+(defn add-delta [registry umap delta]
+  (reduce (fn [result unit]
+            (add-to-unit registry result unit (get delta unit 0)))
+          umap
+          (reverse (system/system-intersection registry umap delta))))
+
+
+(defn subtract-delta [registry umap delta]
+  (reduce (fn [result unit]
+            (subtract-from-unit
+              registry result unit (get delta unit 0)))
+          umap
+          (reverse (system/system-intersection registry umap delta))))
+
+
 (defn unit-difference [a b unit useq]
   (let [a-val   (some->> (get a unit) (system/useq-index-of useq a))
         b-val   (some->> (get b unit) (system/useq-index-of useq b))
@@ -151,6 +166,14 @@
             (assoc unit unit-res))}))
 
 
+(defn difference [registry x y]
+  (let [[a b] (cond-> [x y] (lt? registry x y) reverse)]
+    (:acc (reduce #(units-difference-reduce-fn registry a b %1 %2)
+                  {}
+                  (->> (system/system-intersection registry a b)
+                       (system/system-useqs registry))))))
+
+
 #_(defn difference-parts [units system-useqs]
     (:acc (reduce
             (fn [acc unit]
@@ -166,3 +189,40 @@
             {:acc []
              :rest-useqs (reverse system-useqs)}
             (reverse units))))
+
+
+#_(defn difference-in [registry units x y]
+    (let [[a b]    (cond-> [x y] (lt? x y) reverse)
+          system-useqs (system-useqs registry (system-intersection a b))
+          parts    (difference-parts units system-useqs)]
+      (reduce
+        (fn [acc {:keys [to-unit useqs]}]
+          (reduce
+            (fn [{:keys [a b acc]} [unit useq]]
+              (let [{:keys [borrowed result]}
+                    (unit-difference a b unit useq)]
+                {:acc (assoc acc unit result)
+                 :a (dissoc a unit)
+                 :b (dissoc b unit)}))
+            acc
+            useqs))
+        {:a a
+         :b b
+         :acc {}}
+        parts)))
+
+
+; 2022-05-03 2019-07-28
+;
+; 31-28=3
+; 2022-05-03 2019-08 3
+; 3+31+30+31+30+31=156
+; 2022-05-03 2020
+;
+; 156+366+365=887
+; 2022-05-03 2022
+;
+; 887+3=890
+; 2022-05 2022 890
+;
+; 890+31+28+31+30=1010
