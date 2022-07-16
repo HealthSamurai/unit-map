@@ -431,13 +431,13 @@
 
 (t/deftest seq-range-utils-test
   (t/testing "static? dynamic?"
-    (t/is (true? (sut/static-sequence? #unit-map/seq[0 1 .. 9])))
+    (t/is (true? (sut/static-useq? #unit-map/seq[0 1 .. 9])))
 
-    (t/is (false? (sut/static-sequence? #unit-map/seq[0 1 .. (fn [_] 9)])))
+    (t/is (false? (sut/static-useq? #unit-map/seq[0 1 .. (fn [_] 9)])))
 
-    (t/is (true? (sut/dynamic-sequence? #unit-map/seq[0 1 .. (fn [_] 9)])))
+    (t/is (true? (sut/dynamic-useq? #unit-map/seq[0 1 .. (fn [_] 9)])))
 
-    (t/is (false? (sut/dynamic-sequence? #unit-map/seq[0 1 .. 9]))))
+    (t/is (false? (sut/dynamic-useq? #unit-map/seq[0 1 .. 9]))))
 
   (t/testing "concretize range"
     (t/is (= {:start 0, :step 1, :end 9}
@@ -466,129 +466,129 @@
                                    {:day 1, :month :feb, :year 2022}))))
 
   (t/testing "seq length"
-    (t/is (= 10 (sut/sequence-length #unit-map/seq[0 1 .. 9]
+    (t/is (= 10 (sut/useq-length #unit-map/seq[0 1 .. 9]
                                      nil)))
 
-    (t/is (= ##Inf (sut/sequence-length #unit-map/seq[0 1 .. ##Inf]
+    (t/is (= ##Inf (sut/useq-length #unit-map/seq[0 1 .. ##Inf]
                                         nil)))
 
-    (t/is (= 10 (sut/sequence-length #unit-map/seq[-9 -8 .. 0]
+    (t/is (= 10 (sut/useq-length #unit-map/seq[-9 -8 .. 0]
                                      nil)))
 
-    (t/is (= 10 (sut/sequence-length #unit-map/seq[-9 .. -1 0]
+    (t/is (= 10 (sut/useq-length #unit-map/seq[-9 .. -1 0]
                                      nil)))
 
-    (t/is (= ##Inf (sut/sequence-length #unit-map/seq[##-Inf .. -1 0]
+    (t/is (= ##Inf (sut/useq-length #unit-map/seq[##-Inf .. -1 0]
                                         nil)))
 
-    (t/is (= ##Inf (sut/sequence-length #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
+    (t/is (= ##Inf (sut/useq-length #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
                                         nil))))
 
   (t/testing "first index"
-    (t/is (= 0 (sut/sequence-first-index #unit-map/seq[0 1 .. 9]
+    (t/is (= 0 (sut/useq-first-index #unit-map/seq[0 1 .. 9]
                                          nil)))
 
-    (t/is (= 0 (sut/sequence-first-index #unit-map/seq[0 1 .. ##Inf]
+    (t/is (= 0 (sut/useq-first-index #unit-map/seq[0 1 .. ##Inf]
                                          nil)))
 
-    (t/is (= ##-Inf (sut/sequence-first-index #unit-map/seq[##-Inf .. -1 0]
+    (t/is (= ##-Inf (sut/useq-first-index #unit-map/seq[##-Inf .. -1 0]
                                               nil)))
 
-    (t/is (= ##-Inf (sut/sequence-first-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
+    (t/is (= ##-Inf (sut/useq-first-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
                                               nil))))
 
   (t/testing "last index"
-    (t/is (= 9 (sut/sequence-last-index #unit-map/seq[0 1 .. 9]
+    (t/is (= 9 (sut/useq-last-index #unit-map/seq[0 1 .. 9]
                                         nil)))
 
-    (t/is (= 11 (sut/sequence-last-index #unit-map/seq[0 1 .. 9 10 11]
+    (t/is (= 11 (sut/useq-last-index #unit-map/seq[0 1 .. 9 10 11]
                                          nil)))
 
-    (t/is (= 11 (sut/sequence-last-index #unit-map/seq[-2 -1 0 1 .. 9]
+    (t/is (= 11 (sut/useq-last-index #unit-map/seq[-2 -1 0 1 .. 9]
                                          nil)))
 
-    (t/is (= ##Inf (sut/sequence-last-index #unit-map/seq[-1 0 1 .. ##Inf]
+    (t/is (= ##Inf (sut/useq-last-index #unit-map/seq[-1 0 1 .. ##Inf]
                                             nil)))
 
     (t/is (= ##Inf #_"TODO: probably should be 1"
-             (sut/sequence-last-index
+             (sut/useq-last-index
                #unit-map/seq[##-Inf .. -1 0 1]
                nil)))
 
-    (t/is (= ##Inf (sut/sequence-last-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
+    (t/is (= ##Inf (sut/useq-last-index #unit-map/seq[##-Inf .. -1 0 1 2 .. ##Inf]
                                             nil))))
 
   (t/testing "contains"
-    (t/is (some? (sut/sequence-contains-some
+    (t/is (some? (sut/useq-contains-some
                    #unit-map/seq[##-Inf .. -2 -1 1 2 3 .. ##Inf]
                    nil
                    10)))
 
-    (t/is (some? (sut/sequence-contains-some
+    (t/is (some? (sut/useq-contains-some
                    #unit-map/seq[##-Inf .. -2 -1 1 2 3 .. ##Inf]
                    nil
                    -10)))
 
-    (t/is (some? (sut/sequence-contains-some
+    (t/is (some? (sut/useq-contains-some
                    #unit-map/seq[##-Inf .. -2 -1 1 2 3 .. ##Inf]
                    nil
                    1)))
 
-    (t/is (some? (sut/sequence-contains-some
+    (t/is (some? (sut/useq-contains-some
                    #unit-map/seq[##-Inf .. -2 -1 1 2 3 .. ##Inf]
                    nil
                    ##Inf)))
 
-    (t/is (some? (sut/sequence-contains-some
+    (t/is (some? (sut/useq-contains-some
                    #unit-map/seq[##-Inf .. -2 -1 1 2 3 .. ##Inf]
                    nil
                    ##-Inf)))
 
-    (t/is (nil? (sut/sequence-contains-some
+    (t/is (nil? (sut/useq-contains-some
                   #unit-map/seq[##-Inf .. -2 -1 1 2 3 .. ##Inf]
                   nil
                   0))))
 
   (t/testing "index-of"
-    (t/is (= 11 (sut/sequence-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+    (t/is (= 11 (sut/useq-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                        nil
                                        10)))
 
-    (t/is (= -8 (sut/sequence-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+    (t/is (= -8 (sut/useq-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                        nil
                                        -10)))
 
-    (t/is (= 2 (sut/sequence-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+    (t/is (= 2 (sut/useq-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                       nil
                                       1)))
 
-    (t/is (= ##Inf (sut/sequence-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+    (t/is (= ##Inf (sut/useq-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                           nil
                                           ##Inf)))
 
-    (t/is (= ##-Inf (sut/sequence-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+    (t/is (= ##-Inf (sut/useq-index-of #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                            nil
                                            ##-Inf))))
 
   (t/testing "nth"
     (t/testing "index-of"
-      (t/is (= 10 (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+      (t/is (= 10 (sut/useq-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                     nil
                                     11)))
 
-      (t/is (= -10 (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+      (t/is (= -10 (sut/useq-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                      nil
                                      -8)))
 
-      (t/is (= 1 (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+      (t/is (= 1 (sut/useq-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                    nil
                                    2)))
 
-      (t/is (= ##Inf (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+      (t/is (= ##Inf (sut/useq-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                        nil
                                        ##Inf)))
 
-      (t/is (= ##-Inf (sut/sequence-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
+      (t/is (= ##-Inf (sut/useq-nth #unit-map/seq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
                                         nil
                                         ##-Inf))))))
 
@@ -635,19 +635,19 @@
                                 {:min 30}
                                 :month))))
 
-  (t/testing "get-unit-seq"
+  (t/testing "get-useq"
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (sut/get-unit-seq @treg_
+             (sut/get-useq @treg_
                                {:year 2022 :month :jun :day 4 :hour 12 :min 30}
                                :month)))
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
-             (sut/get-unit-seq @treg_
+             (sut/get-useq @treg_
                                {:min 30}
                                :month)))
 
     (t/is (= #unit-map/seq[##-Inf .. -2 -1 1 2 .. ##Inf]
-             (sut/get-unit-seq @treg_
+             (sut/get-useq @treg_
                                {:year 2022 :month :jun :day 4 :hour 12 :min 30}
                                :year))))
 

@@ -131,12 +131,12 @@
   (let [[a b] (cond-> [x y] (lt? registry x y) reverse)]
     (:acc (reduce #(ops/units-difference-reduce-fn registry a b %1 %2)
                   {}
-                  (system/sys-unit-seqs registry (system/sys-intersection registry a b))))))
+                  (system/sys-useqs registry (system/sys-intersection registry a b))))))
 
 
 #_(defn difference-in [registry units x y]
     (let [[a b]    (cond-> [x y] (lt? x y) reverse)
-          sys-seqs (sys-unit-seqs registry (sys-intersection a b))
+          sys-seqs (sys-useqs registry (sys-intersection a b))
           parts    (difference-parts units sys-seqs)]
       (reduce
         (fn [acc {:keys [to-unit seqs]}]

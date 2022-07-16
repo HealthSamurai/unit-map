@@ -39,12 +39,12 @@
                        (conj buffer x)))))
 
 
-(defn process-sequence* [s]
+(defn process-useq* [s]
   (process-enumeration s))
 
 
-(def process-sequence (memoize process-sequence*))
+(def process-useq (memoize process-useq*))
 
 
-(defn read-sequence [form]
-  (process-sequence form))
+(defn read-useq [form]
+  (process-useq form))

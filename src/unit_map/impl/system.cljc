@@ -98,14 +98,14 @@
                [:start :end :step])))
 
 
-(defn dynamic-sequence? [useq]
+(defn dynamic-useq? [useq]
   (boolean (some #(and (range? %)
                        (some fn? (vals %)))
                  useq)))
 
 
-(defn static-sequence? [useq]
-  (not (dynamic-sequence? useq)))
+(defn static-useq? [useq]
+  (not (dynamic-useq? useq)))
 
 
 (defn concretize-range [rng umap]
@@ -119,13 +119,13 @@
       (-> (- end start) (quot step) inc))))
 
 
-(defn sequence-length [useq umap]
+(defn useq-length [useq umap]
   (->> useq
        (map #(if (range? %) (range-length % umap) 1))
        (reduce + 0)))
 
 
-(defn sequence-first-index [useq umap]
+(defn useq-first-index [useq umap]
   (let [e (first useq)
         r (when (range? e) (concretize-range e umap))]
     (cond
@@ -134,13 +134,13 @@
       :else                    0)))
 
 
-(defn sequence-last-index [useq umap]
+(defn useq-last-index [useq umap]
   (let [e (last useq)
         r (when (range? e) (concretize-range e umap))]
     (cond
       (nil? e)               nil
       (util/infinite? (:end r)) ##Inf
-      :else                  (dec (sequence-length useq umap)))))
+      :else                  (dec (useq-length useq umap)))))
 
 
 (defn range-contains? [rng umap x]
@@ -161,7 +161,7 @@
        first))
 
 
-(defn sequence-contains-some
+(defn useq-contains-some
   "Returns first (i.e. min) x found in the s"
   [useq umap x & xs]
   (let [xs (cons x xs)]
@@ -182,7 +182,7 @@
       :else                                     (quot (- x start) step))))
 
 
-(defn sequence-index-of [useq umap x]
+(defn useq-index-of [useq umap x]
   (loop [i 0, [el & rest-s] useq]
     (when (some? el)
       (or (some-> (cond
@@ -202,7 +202,7 @@
       (+ start (* step index)))))
 
 
-(defn sequence-nth [useq umap index]
+(defn useq-nth [useq umap index]
   (loop [i 0, [el & rest-s] useq]
     (when (some? el)
       (let [increment (if (and (range? el) (util/finite? (:start el)))
@@ -236,25 +236,25 @@
   (util/get-prev-element (guess-sys registry umap unit) unit))
 
 
-(defn unit-seq [useqs unit next-unit]
+(defn useq [useqs unit next-unit]
   (get-in useqs [unit next-unit :useq]))
 
 
-(def get-unit-seq*
+(def get-useq*
   (memoize
     (fn [registry unit next-unit]
-      (unit-seq (:seqs registry) unit next-unit))))
+      (useq (:seqs registry) unit next-unit))))
 
 
-(defn get-unit-seq [registry umap unit]
+(defn get-useq [registry umap unit]
   (let [sys       (guess-sys registry umap unit)
         next-unit (util/get-next-element sys unit)]
-    (get-unit-seq* registry unit next-unit)))
+    (get-useq* registry unit next-unit)))
 
 
-(defn sys-unit-seqs [registry sys]
+(defn sys-useqs [registry sys]
   (map (fn [unit next-unit]
-         [unit (get-unit-seq* registry unit next-unit)])
+         [unit (get-useq* registry unit next-unit)])
        sys
        (rest (conj sys nil))))
 
@@ -317,9 +317,9 @@
 
 
 (defn get-min-value [registry umap unit]
-  (get-first-el (get-unit-seq registry umap unit) umap))
+  (get-first-el (get-useq registry umap unit) umap))
 
 
 (defn get-max-value [registry umap unit]
-  (get-last-el (get-unit-seq registry umap unit) umap))
+  (get-last-el (get-useq registry umap unit) umap))
 

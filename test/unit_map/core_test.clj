@@ -562,7 +562,7 @@
 
   #_"NOTE: arithmetics for now can be stubbed with simple update/inc etc"
   #_"NOTE: need some configs to map months enum to numbers"
-  #_"NOTE: for sequences consisting of only static ranges calculate leading 0 padding automatically"
+  #_"NOTE: for useqs consisting of only static ranges calculate leading 0 padding automatically"
 
   (defn job-status-at [job {:keys [current-time in-fmt out-fmt]}]
     #_"TODO")

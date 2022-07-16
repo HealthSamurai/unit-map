@@ -10,20 +10,20 @@
 #_"TODO: add zero?"
 
 
-(defn sequence-cmp [useq umap x y]
+(defn useq-cmp [useq umap x y]
   (cond
     (= x y) 0
     (nil? x) -1
     (nil? y) 1
-    (= x (system/sequence-contains-some useq umap x y)) -1
+    (= x (system/useq-contains-some useq umap x y)) -1
     :else 1))
 
 
 (defn cmp-in-sys [registry sys x y]
-  (or (->> (system/sys-unit-seqs registry sys)
+  (or (->> (system/sys-useqs registry sys)
            reverse
-           (map (fn [[unit processed-sequence]]
-                  (sequence-cmp processed-sequence
+           (map (fn [[unit processed-useq]]
+                  (useq-cmp processed-useq
                                 x
                                 (get x unit)
                                 (get y unit))))
@@ -38,7 +38,7 @@
 #_"TODO: handle when get-next-unit returns nil"
 (defn inc-unit [registry unit {:as umap, unit-value unit}]
   (or (some->> (or unit-value (system/get-min-value registry umap unit))
-               (system/get-next-unit-value (system/get-unit-seq registry umap unit) umap)
+               (system/get-next-unit-value (system/get-useq registry umap unit) umap)
                (assoc umap unit))
       (as-> umap $
         (inc-unit registry (system/get-next-unit registry $ unit) $)
@@ -47,7 +47,7 @@
 
 (defn dec-unit [registry unit {:as umap, unit-value unit}]
   (or (some->> (or unit-value (system/get-min-value registry umap unit))
-               (system/get-prev-unit-value (system/get-unit-seq registry umap unit) umap)
+               (system/get-prev-unit-value (system/get-useq registry umap unit) umap)
                (assoc umap unit))
       (as-> umap $
         (dissoc $ unit)
@@ -61,16 +61,16 @@
     umap
 
     (and (< 1 (abs x))
-         (system/static-sequence? (system/get-unit-seq registry umap unit)))
-    (let [useq        (system/get-unit-seq registry umap unit)
+         (system/static-useq? (system/get-useq registry umap unit)))
+    (let [useq        (system/get-useq registry umap unit)
           idx         (if-let [v (get umap unit)]
-                        (system/sequence-index-of useq umap v)
-                        (system/sequence-first-index useq umap))
+                        (system/useq-index-of useq umap v)
+                        (system/useq-first-index useq umap))
           sum         (+ idx x)
-          modulo      (system/sequence-length useq umap)
+          modulo      (system/useq-length useq umap)
           result-idx  (cond-> sum (u/finite? modulo) (mod modulo))
           carry-delta (if (u/infinite? modulo) 0 (u/floor (/ sum modulo)))
-          result      (system/sequence-nth useq umap result-idx)
+          result      (system/useq-nth useq umap result-idx)
           result-umap (assoc umap unit result)]
       (if (zero? carry-delta)
         result-umap
@@ -91,13 +91,13 @@
 
 
 (defn unit-difference [a b unit useq]
-  (let [a-val   (some->> (get a unit) (system/sequence-index-of useq a))
-        b-val   (some->> (get b unit) (system/sequence-index-of useq b))
+  (let [a-val   (some->> (get a unit) (system/useq-index-of useq a))
+        b-val   (some->> (get b unit) (system/useq-index-of useq b))
         diff    (- (or a-val 0) (or b-val 0))
         borrow? (neg? diff)]
     {:borrowed borrow?
      :result (if borrow?
-               (let [borrow (system/sequence-length useq b)]
+               (let [borrow (system/useq-length useq b)]
                  (+ diff borrow))
                diff)}))
 
