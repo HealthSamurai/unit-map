@@ -54,7 +54,7 @@
          (update :eq-units push-to-eq-units useq-info)))))
 
 
-(defn sys-continuous? [registry units]
+(defn usys-continuous? [registry units]
   (let [reverse-units (reverse units)]
     (->> (map vector
               (cons nil reverse-units)
@@ -64,5 +64,5 @@
              (get-in registry [:useqs prev-unit cur-unit]))))))
 
 
-(defn reg-sys [registry units]
-  (update registry :systems (fnil conj #{}) units))
+(defn reg-usys [registry units]
+  (update registry :usyss (fnil conj #{}) units))

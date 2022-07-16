@@ -13,7 +13,7 @@
 (umap/reguseq! registry-atom :month #unit-map/useq[1 2 .. 12] :next :year)
 (umap/reguseq! registry-atom :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
-(umap/regsys! registry-atom [:sec :min :hour :day :month :year])
+(umap/regusys! registry-atom [:sec :min :hour :day :month :year])
 
 (t/deftest from-epoch-test
   (t/is (= {:day 22, :month 4, :year 2020, :sec 40, :min 49, :hour 1}

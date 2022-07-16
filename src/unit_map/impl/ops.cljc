@@ -19,8 +19,8 @@
     :else 1))
 
 
-(defn cmp-in-sys [registry sys x y]
-  (or (->> (system/sys-useqs registry sys)
+(defn cmp-in-usys [registry usys x y]
+  (or (->> (system/usys-useqs registry usys)
            reverse
            (map (fn [[unit processed-useq]]
                   (useq-cmp processed-useq
@@ -114,7 +114,7 @@
             (assoc unit unit-res))}))
 
 
-#_(defn difference-parts [units sys-useqs]
+#_(defn difference-parts [units usys-useqs]
     (:acc (reduce
             (fn [acc unit]
               (let [[useqs [this-unit & rest-useqs]]
@@ -127,5 +127,5 @@
                                          :useqs (conj useqs this-unit)}))
                   acc)))
             {:acc []
-             :rest-useqs (reverse sys-useqs)}
+             :rest-useqs (reverse usys-useqs)}
             (reverse units))))
