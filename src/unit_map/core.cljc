@@ -107,9 +107,9 @@
 
 
 (defn add-delta
-  ([_registry-atom] {})
+  ([_registry] {})
 
-  ([_registry-atom x] x)
+  ([_registry x] x)
 
   ([registry x delta]
    (reduce (fn [result unit]
@@ -124,9 +124,9 @@
 
 
 (defn subtract-delta
-  ([_registry-atom] {})
+  ([_registry] {})
 
-  ([_registry-atom x] x)
+  ([_registry x] x)
 
   ([registry x delta]
    (reduce (fn [result unit]
