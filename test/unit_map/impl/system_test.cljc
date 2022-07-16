@@ -429,7 +429,7 @@
                  {:year 2022, :month :jan, :day 1}))))))
 
 
-(t/deftest seq-range-utils-test
+(t/deftest seq-urange-utils-test
   (t/testing "static? dynamic?"
     (t/is (true? (sut/static-useq? #unit-map/seq[0 1 .. 9])))
 
@@ -439,29 +439,29 @@
 
     (t/is (false? (sut/dynamic-useq? #unit-map/seq[0 1 .. 9]))))
 
-  (t/testing "concretize range"
+  (t/testing "concretize urange"
     (t/is (= {:start 0, :step 1, :end 9}
-             (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) (fn [_] 1) .. (fn [_] 9)]
+             (sut/concretize-urange (-> #unit-map/seq[(fn [_] 0) (fn [_] 1) .. (fn [_] 9)]
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
-             (sut/concretize-range (-> #unit-map/seq[0 1 .. 9]
+             (sut/concretize-urange (-> #unit-map/seq[0 1 .. 9]
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
-             (sut/concretize-range (-> #unit-map/seq[(fn [_] 0) .. (fn [_] 1) (fn [_] 9)]
+             (sut/concretize-urange (-> #unit-map/seq[(fn [_] 0) .. (fn [_] 1) (fn [_] 9)]
                                        first)
                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
-             (sut/concretize-range (-> #unit-map/seq[0 .. 8 9]
+             (sut/concretize-urange (-> #unit-map/seq[0 .. 8 9]
                                        first)
                                    nil)))
 
     (t/is (= {:start 1, :step 1, :end 28}
-             (sut/concretize-range (-> #unit-map/seq[1 2 .. (fn [{:keys [month]}] (if (= :feb month) 28 30))]
+             (sut/concretize-urange (-> #unit-map/seq[1 2 .. (fn [{:keys [month]}] (if (= :feb month) 28 30))]
                                        first)
                                    {:day 1, :month :feb, :year 2022}))))
 

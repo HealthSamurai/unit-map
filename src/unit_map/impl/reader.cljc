@@ -1,13 +1,13 @@
 (ns unit-map.impl.reader)
 
 
-(defn create-range [start end step]
+(defn create-urange [start end step]
   {:start start
    :end   end
    :step  step})
 
 
-(defn process-range [pprev prev next-seq nnext]
+(defn process-urange [pprev prev next-seq nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
               (every? some? [prev next-seq]))]}
   (let [start (or pprev prev)
@@ -19,7 +19,7 @@
                 (if (integer? prev)
                   (- prev pprev)
                   prev))]
-    (create-range start end step)))
+    (create-urange start end step)))
 
 
 (defn process-enumeration [s]
@@ -32,7 +32,7 @@
       (= '.. x) (recur (concat [nil nil] rest)
                        (concat result
                                (drop-last 2 buffer)
-                               [(process-range pprev prev next-seq nnext)])
+                               [(process-urange pprev prev next-seq nnext)])
                        [])
       :else     (recur (concat [prev x next-seq nnext] rest)
                        result
