@@ -29,12 +29,26 @@
    useq))
 
 
+(defn reg-useqs! [registry-atom useqs]
+  (swap! registry-atom (fn [registry] (reduce registry/reg-useq registry useqs))))
+
+
 (defn regsys! [registry-atom units]
   (swap! registry-atom
          (fn [registry]
            (assert (registry/sys-continuous? registry units))
            (registry/reg-sys registry units)))
   units)
+
+
+(defn reg-syss! [registry-atom syss]
+  (swap! registry-atom
+         (fn [registry]
+           (reduce (fn [reg units]
+                     (assert (registry/sys-continuous? reg units))
+                     (registry/reg-sys reg units))
+                   registry
+                   syss))))
 
 
 ;;;;;;;;;; parse & format string
