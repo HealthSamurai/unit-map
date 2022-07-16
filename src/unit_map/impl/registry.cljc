@@ -3,8 +3,8 @@
 
 (defn push-to-useq-graph [useqs-map {:as useq-info, :keys [unit eq-unit]}]
   (let [eq-useqs (when (some? eq-unit)
-                  (->> (vals useqs-map)
-                       (keep #(get % eq-unit))))
+                   (->> (vals useqs-map)
+                        (keep #(get % eq-unit))))
 
         to-this-unit-new (->> eq-useqs
                               (map #(assoc % :next-unit unit))

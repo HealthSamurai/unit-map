@@ -23,8 +23,8 @@
            :year  (-> (.getYear now)
                       (+ 1900))
            :month (u/useq-nth (get-in @u/registry-atom [:useqs :month :year])
-                                  {}
-                                  (.getMonth now))
+                              {}
+                              (.getMonth now))
            :day   (.getDate now)
            :hour  (.getHours now)
            :min   (.getMinutes now)

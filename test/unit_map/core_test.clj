@@ -417,19 +417,19 @@
 
   (t/testing "format with specified width"
     (t/is (= "06.03.20"
-           (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
+             (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. [:year 2]])))
     (t/is (= "06.03.2020"
-           (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
+             (sut/format {:year 2020 :month 3 :day 6} [:day \. :month \. :year])))
     (t/is (= "2020.03.06"
-           (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
+             (sut/format {:year 2020 :month 3 :day 6} [:year \. :month \. :day])))
     (t/is (= "20.03.06"
-           (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day])))
+             (sut/format {:year 2020 :month 3 :day 6} [[:year 2] \. :month \. :day])))
     (t/is (= "--1+ baz"
-           (sut/format {:foo 1, :bar "baz"} [[:foo 3 \-] \+ [:bar 4]]))))
+             (sut/format {:foo 1, :bar "baz"} [[:foo 3 \-] \+ [:bar 4]]))))
 
   (t/testing "parse should return parsed value even if format not strictly cosistent"
     (t/is (= {:year 2011}
-           (sut/parse "2011-01-01" [:year "-" :month])))
+             (sut/parse "2011-01-01" [:year "-" :month])))
 
     (t/is (= {:year 2011 :month 1 :day 1}
              (sut/parse "2011-01-01" [:year "-" :month "-" :day "T" :hour]))))

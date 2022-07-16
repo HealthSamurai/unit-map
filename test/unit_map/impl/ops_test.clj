@@ -31,16 +31,16 @@
   (umap/reguseq! treg_ :year  #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf])
 
   (umap/reguseq! treg_
-                :epoch-year
-                #unit-map/useq[(fn [{:keys [epoch]}]
-                                (if (= :BC epoch) ##Inf 1))
-                              (fn [{:keys [epoch]}]
-                                (if (= :BC epoch) -1 1))
-                              ..
-                              (fn [{:keys [epoch]}]
-                                (if (= :BC epoch) 1 ##Inf))]
-                :next :epoch
-                :eq :year)
+                 :epoch-year
+                 #unit-map/useq[(fn [{:keys [epoch]}]
+                                  (if (= :BC epoch) ##Inf 1))
+                                (fn [{:keys [epoch]}]
+                                  (if (= :BC epoch) -1 1))
+                                ..
+                                (fn [{:keys [epoch]}]
+                                  (if (= :BC epoch) 1 ##Inf))]
+                 :next :epoch
+                 :eq :year)
 
   (umap/reguseq! treg_ :epoch  #unit-map/useq[:BC :AD])
 

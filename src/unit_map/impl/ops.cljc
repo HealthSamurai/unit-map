@@ -24,9 +24,9 @@
            reverse
            (map (fn [[unit processed-useq]]
                   (useq-cmp processed-useq
-                                x
-                                (get x unit)
-                                (get y unit))))
+                            x
+                            (get x unit)
+                            (get y unit))))
            (drop-while zero?)
            first)
       0))
@@ -115,17 +115,17 @@
 
 
 #_(defn difference-parts [units sys-useqs]
-  (:acc (reduce
-          (fn [acc unit]
-            (let [[useqs [this-unit & rest-useqs]]
-                  (split-with (fn [[u _]] (not= unit u))
-                              (:rest-useqs acc))]
-              (if (some? this-unit)
-                (-> acc
-                    (assoc :rest-useqs rest-useqs)
-                    (update :acc conj {:to-unit unit
-                                       :useqs (conj useqs this-unit)}))
-                acc)))
-          {:acc []
-           :rest-useqs (reverse sys-useqs)}
-          (reverse units))))
+    (:acc (reduce
+            (fn [acc unit]
+              (let [[useqs [this-unit & rest-useqs]]
+                    (split-with (fn [[u _]] (not= unit u))
+                                (:rest-useqs acc))]
+                (if (some? this-unit)
+                  (-> acc
+                      (assoc :rest-useqs rest-useqs)
+                      (update :acc conj {:to-unit unit
+                                         :useqs (conj useqs this-unit)}))
+                  acc)))
+            {:acc []
+             :rest-useqs (reverse sys-useqs)}
+            (reverse units))))

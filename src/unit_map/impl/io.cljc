@@ -111,19 +111,19 @@
 
 (defn make-regex-groups [fmt-vec]
   (transduce
-   (map (partial read-fmt-el fmt-vec))
-   (fn
-     ([acc el]
-      (if (keyword? (:value el))
-        {:group []
-         :result (conj (:result acc) (conj (:group acc) el))}
-        (update acc :group conj el)))
-     ([acc]
-      (let [result (conj (:result acc) (:group acc))]
-        (mapv mk-group-regex result (rest result)))))
-   {:group []
-    :result []}
-   (concat [#"^"] fmt-vec [#"$"])))
+    (map (partial read-fmt-el fmt-vec))
+    (fn
+      ([acc el]
+       (if (keyword? (:value el))
+         {:group []
+          :result (conj (:result acc) (conj (:group acc) el))}
+         (update acc :group conj el)))
+      ([acc]
+       (let [result (conj (:result acc) (:group acc))]
+         (mapv mk-group-regex result (rest result)))))
+    {:group []
+     :result []}
+    (concat [#"^"] fmt-vec [#"$"])))
 
 
 (defn parse-groups [acc s [el & rest-els] & {:keys [strict]}]
@@ -167,10 +167,10 @@
 
 
 #_(defn convertable? [value in out]
-  (let [v (parse value in)]
-    (ops/eq? v (-> v  (format out) (parse out)))))
+    (let [v (parse value in)]
+      (ops/eq? v (-> v  (format out) (parse out)))))
 
 
 #_(defn valid? [s fmt]
-  (let [d (parse s fmt)]
-    (ops/eq? d (ops/ensure-less-significant-units d))))
+    (let [d (parse s fmt)]
+      (ops/eq? d (ops/ensure-less-significant-units d))))

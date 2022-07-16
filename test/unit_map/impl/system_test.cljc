@@ -96,16 +96,16 @@
   (umap/reguseq! treg_ :km #unit-map/useq[0 1 .. ##Inf])
 
   (umap/reguseq! treg_
-                :epoch-year
-                #unit-map/useq[(fn [{:keys [epoch]}]
-                                (if (= :BC epoch) ##Inf 1))
-                              (fn [{:keys [epoch]}]
-                                (if (= :BC epoch) -1 1))
-                              ..
-                              (fn [{:keys [epoch]}]
-                                (if (= :BC epoch) 1 ##Inf))]
-                :next :epoch
-                :eq :year)
+                 :epoch-year
+                 #unit-map/useq[(fn [{:keys [epoch]}]
+                                  (if (= :BC epoch) ##Inf 1))
+                                (fn [{:keys [epoch]}]
+                                  (if (= :BC epoch) -1 1))
+                                ..
+                                (fn [{:keys [epoch]}]
+                                  (if (= :BC epoch) 1 ##Inf))]
+                 :next :epoch
+                 :eq :year)
 
   (umap/reguseq! treg_ :epoch  #unit-map/useq[:BC :AD]))
 
@@ -442,73 +442,73 @@
   (t/testing "concretize urange"
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-urange (-> #unit-map/useq[(fn [_] 0) (fn [_] 1) .. (fn [_] 9)]
-                                       first)
-                                   nil)))
+                                        first)
+                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-urange (-> #unit-map/useq[0 1 .. 9]
-                                       first)
-                                   nil)))
+                                        first)
+                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-urange (-> #unit-map/useq[(fn [_] 0) .. (fn [_] 1) (fn [_] 9)]
-                                       first)
-                                   nil)))
+                                        first)
+                                    nil)))
 
     (t/is (= {:start 0, :step 1, :end 9}
              (sut/concretize-urange (-> #unit-map/useq[0 .. 8 9]
-                                       first)
-                                   nil)))
+                                        first)
+                                    nil)))
 
     (t/is (= {:start 1, :step 1, :end 28}
              (sut/concretize-urange (-> #unit-map/useq[1 2 .. (fn [{:keys [month]}] (if (= :feb month) 28 30))]
-                                       first)
-                                   {:day 1, :month :feb, :year 2022}))))
+                                        first)
+                                    {:day 1, :month :feb, :year 2022}))))
 
   (t/testing "useq length"
     (t/is (= 10 (sut/useq-length #unit-map/useq[0 1 .. 9]
-                                     nil)))
+                                 nil)))
 
     (t/is (= ##Inf (sut/useq-length #unit-map/useq[0 1 .. ##Inf]
-                                        nil)))
+                                    nil)))
 
     (t/is (= 10 (sut/useq-length #unit-map/useq[-9 -8 .. 0]
-                                     nil)))
+                                 nil)))
 
     (t/is (= 10 (sut/useq-length #unit-map/useq[-9 .. -1 0]
-                                     nil)))
+                                 nil)))
 
     (t/is (= ##Inf (sut/useq-length #unit-map/useq[##-Inf .. -1 0]
-                                        nil)))
+                                    nil)))
 
     (t/is (= ##Inf (sut/useq-length #unit-map/useq[##-Inf .. -1 0 1 2 .. ##Inf]
-                                        nil))))
+                                    nil))))
 
   (t/testing "first index"
     (t/is (= 0 (sut/useq-first-index #unit-map/useq[0 1 .. 9]
-                                         nil)))
+                                     nil)))
 
     (t/is (= 0 (sut/useq-first-index #unit-map/useq[0 1 .. ##Inf]
-                                         nil)))
+                                     nil)))
 
     (t/is (= ##-Inf (sut/useq-first-index #unit-map/useq[##-Inf .. -1 0]
-                                              nil)))
+                                          nil)))
 
     (t/is (= ##-Inf (sut/useq-first-index #unit-map/useq[##-Inf .. -1 0 1 2 .. ##Inf]
-                                              nil))))
+                                          nil))))
 
   (t/testing "last index"
     (t/is (= 9 (sut/useq-last-index #unit-map/useq[0 1 .. 9]
-                                        nil)))
+                                    nil)))
 
     (t/is (= 11 (sut/useq-last-index #unit-map/useq[0 1 .. 9 10 11]
-                                         nil)))
+                                     nil)))
 
     (t/is (= 11 (sut/useq-last-index #unit-map/useq[-2 -1 0 1 .. 9]
-                                         nil)))
+                                     nil)))
 
     (t/is (= ##Inf (sut/useq-last-index #unit-map/useq[-1 0 1 .. ##Inf]
-                                            nil)))
+                                        nil)))
 
     (t/is (= ##Inf #_"TODO: probably should be 1"
              (sut/useq-last-index
@@ -516,7 +516,7 @@
                nil)))
 
     (t/is (= ##Inf (sut/useq-last-index #unit-map/useq[##-Inf .. -1 0 1 2 .. ##Inf]
-                                            nil))))
+                                        nil))))
 
   (t/testing "contains"
     (t/is (some? (sut/useq-contains-some
@@ -551,46 +551,46 @@
 
   (t/testing "index-of"
     (t/is (= 11 (sut/useq-index-of #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                       nil
-                                       10)))
+                                   nil
+                                   10)))
 
     (t/is (= -8 (sut/useq-index-of #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                       nil
-                                       -10)))
+                                   nil
+                                   -10)))
 
     (t/is (= 2 (sut/useq-index-of #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                      nil
-                                      1)))
+                                  nil
+                                  1)))
 
     (t/is (= ##Inf (sut/useq-index-of #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                          nil
-                                          ##Inf)))
+                                      nil
+                                      ##Inf)))
 
     (t/is (= ##-Inf (sut/useq-index-of #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                           nil
-                                           ##-Inf))))
+                                       nil
+                                       ##-Inf))))
 
   (t/testing "nth"
     (t/testing "index-of"
       (t/is (= 10 (sut/useq-nth #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                    nil
-                                    11)))
+                                nil
+                                11)))
 
       (t/is (= -10 (sut/useq-nth #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                     nil
-                                     -8)))
+                                 nil
+                                 -8)))
 
       (t/is (= 1 (sut/useq-nth #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                   nil
-                                   2)))
+                               nil
+                               2)))
 
       (t/is (= ##Inf (sut/useq-nth #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                       nil
-                                       ##Inf)))
+                                   nil
+                                   ##Inf)))
 
       (t/is (= ##-Inf (sut/useq-nth #unit-map/useq[##-Inf .. -3 -2 -1 1 2 3 .. ##Inf]
-                                        nil
-                                        ##-Inf))))))
+                                    nil
+                                    ##-Inf))))))
 
 
 (t/deftest sys-utils-test
@@ -638,18 +638,18 @@
   (t/testing "get-useq"
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (sut/get-useq @treg_
-                               {:year 2022 :month :jun :day 4 :hour 12 :min 30}
-                               :month)))
+                           {:year 2022 :month :jun :day 4 :hour 12 :min 30}
+                           :month)))
 
     (t/is (= [:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]
              (sut/get-useq @treg_
-                               {:min 30}
-                               :month)))
+                           {:min 30}
+                           :month)))
 
     (t/is (= #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf]
              (sut/get-useq @treg_
-                               {:year 2022 :month :jun :day 4 :hour 12 :min 30}
-                               :year))))
+                           {:year 2022 :month :jun :day 4 :hour 12 :min 30}
+                           :year))))
 
   (t/testing "get-next-unit-value"
     (t/is (= (range 60)
