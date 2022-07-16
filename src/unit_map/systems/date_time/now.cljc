@@ -1,6 +1,6 @@
 (ns unit-map.systems.date-time.now
   (:require [unit-map.core :as umap]
-            [unit-map.systems.date-time.defs]))
+            [unit-map.impl.system :as system]))
 
 ;; TODO:
 ;; - What if someone wants to use :second & :nanosecond?
@@ -8,49 +8,51 @@
 
 
 (defn tz-offset
-  ([]
-   (tz-offset {:min (-> #?(:clj  (java.util.Date.)
+  ([registry]
+   (tz-offset registry
+              {:min (-> #?(:clj  (java.util.Date.)
                            :cljs (js/Date.))
                         .getTimezoneOffset -)}))
-  ([offset]
-   (umap/add-delta {} offset) #_"TODO: replace with normalize"))
+  ([registry offset]
+   (umap/add-delta registry {} offset) #_"TODO: replace with normalize"))
 
 
-(defn local []
+(defn local [registry]
   (let [now #?(:clj  (java.util.Date.)
                :cljs (js/Date.))]
     (assoc {}
            :year  (-> (.getYear now)
                       (+ 1900))
-           :month (umap/useq-nth (get-in @umap/registry-atom [:useqs :month :year])
-                                 {}
-                                 (.getMonth now))
+
+           :month (system/useq-nth (system/useq registry :month :year)
+                                   {}
+                                   (.getMonth now))
            :day   (.getDate now)
            :hour  (.getHours now)
            :min   (.getMinutes now)
            :sec   (.getSeconds now)
            :ms    (-> (.getTime now)
                       (rem 1000))
-           :tz    (tz-offset {:min (- (.getTimezoneOffset now))}))))
+           :tz    (tz-offset registry {:min (- (.getTimezoneOffset now))}))))
 
 
-(defn utc []
-  (let [now (local)]
-    (assoc (umap/subtract-delta now (:tz now)) #_"TODO: replace with remove deltas"
+(defn utc [registry]
+  (let [now (local registry)]
+    (assoc (umap/subtract-delta registry now (:tz now)) #_"TODO: replace with remove deltas"
            :tz {:hour 0})))
 
 
-(defn today []
-  (select-keys (local) [:year :month :day :tz]))
+(defn today [registry]
+  (select-keys (local registry) [:year :month :day :tz]))
 
 
-(defn utc-today []
-  (select-keys (utc) [:year :month :day :tz]))
+(defn utc-today [registry]
+  (select-keys (utc registry) [:year :month :day :tz]))
 
 
-(defn time []
-  (select-keys (local) [:hour :min :sec :ms :tz]))
+(defn time [registry]
+  (select-keys (local registry) [:hour :min :sec :ms :tz]))
 
 
-(defn utc-time []
-  (select-keys (utc) [:hour :min :sec :ms :tz]))
+(defn utc-time [registry]
+  (select-keys (utc registry) [:hour :min :sec :ms :tz]))
