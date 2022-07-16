@@ -5,8 +5,7 @@
             [unit-map.impl.registry :as registry]
             [unit-map.impl.system :as system]
             [unit-map.impl.ops :as ops]
-            [unit-map.impl.io :as io]
-            [clojure.string :as str]))
+            [unit-map.impl.io :as io]))
 
 
 #_"TODO:
