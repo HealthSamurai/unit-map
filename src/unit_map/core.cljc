@@ -16,12 +16,12 @@
 - move calendar, mask & crono to scripts"
 
 
-;;;;;;;;;; reguseq! & regusys!
+;;;;;;;;;; reg-useq! & regusys!
 
 
-(defn reguseq!
+(defn reg-useq!
   ([registry-atom {:as args, :keys [unit useq]}]
-   (reguseq! registry-atom unit useq args))
+   (reg-useq! registry-atom unit useq args))
 
   ([registry-atom unit useq & {next-unit :next, eq-unit :eq}] #_"TODO: remove this arity, use only kwargs?"
    (swap! registry-atom registry/reg-useq
