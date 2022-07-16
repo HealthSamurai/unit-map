@@ -3,35 +3,35 @@
             [clojure.test :as t]))
 
 
-(t/deftest regseq-regsys
+(t/deftest reguseq-regsys
   (def registry
     (-> {}
-        (sut/reg-seq :a #unit-map/seq[0 1] :next-unit :b)
-        (sut/reg-seq :b #unit-map/seq[0 1] :next-unit :c)
-        (sut/reg-seq :c #unit-map/seq[0 1] :next-unit :d)
-        (sut/reg-seq :d #unit-map/seq[0 1])
+        (sut/reg-useq :a #unit-map/useq[0 1] :next-unit :b)
+        (sut/reg-useq :b #unit-map/useq[0 1] :next-unit :c)
+        (sut/reg-useq :c #unit-map/useq[0 1] :next-unit :d)
+        (sut/reg-useq :d #unit-map/useq[0 1])
 
-        (sut/reg-seq :aa #unit-map/seq[0 2] :next-unit :b)
-        (sut/reg-seq :a #unit-map/seq[0 1 2 3] :next-unit :c)
+        (sut/reg-useq :aa #unit-map/useq[0 2] :next-unit :b)
+        (sut/reg-useq :a #unit-map/useq[0 1 2 3] :next-unit :c)
 
-        (sut/reg-seq :b2 #unit-map/seq[-2 -1 0] :next-unit :c2, :eq-unit :b)
-        (sut/reg-seq :c2 #unit-map/seq[-2 -1 0] :next-unit :d)
-        (sut/reg-seq :c2 #unit-map/seq[-2 -1 .. ##-Inf])
+        (sut/reg-useq :b2 #unit-map/useq[-2 -1 0] :next-unit :c2, :eq-unit :b)
+        (sut/reg-useq :c2 #unit-map/useq[-2 -1 0] :next-unit :d)
+        (sut/reg-useq :c2 #unit-map/useq[-2 -1 .. ##-Inf])
 
-        (sut/reg-seq :b3 #unit-map/seq[2 1 0] :next-unit :c3, :eq-unit :b2)
-        (sut/reg-seq :c3 #unit-map/seq[2 1 .. ##-Inf])
+        (sut/reg-useq :b3 #unit-map/useq[2 1 0] :next-unit :c3, :eq-unit :b2)
+        (sut/reg-useq :c3 #unit-map/useq[2 1 .. ##-Inf])
 
-        (sut/reg-seq :b4 #unit-map/seq[2 1 0] :next-unit :c4, :eq-unit :b)
-        (sut/reg-seq :c4 #unit-map/seq[2 1 .. ##-Inf])
+        (sut/reg-useq :b4 #unit-map/useq[2 1 0] :next-unit :c4, :eq-unit :b)
+        (sut/reg-useq :c4 #unit-map/useq[2 1 .. ##-Inf])
 
-        (sut/reg-seq :b5 #unit-map/seq[2 1 0] :next-unit :c5)
-        (sut/reg-seq :c5 #unit-map/seq[2 1 .. ##-Inf])
+        (sut/reg-useq :b5 #unit-map/useq[2 1 0] :next-unit :c5)
+        (sut/reg-useq :c5 #unit-map/useq[2 1 .. ##-Inf])
 
-        (sut/reg-seq :b6 #unit-map/seq[2 1 0] :next-unit :c6, :eq-unit :b)
-        (sut/reg-seq :c6 #unit-map/seq[2 1 0] :next-unit :d, :eq-unit :c)
-        (sut/reg-seq :c6 #unit-map/seq[2 1 .. ##-Inf])))
+        (sut/reg-useq :b6 #unit-map/useq[2 1 0] :next-unit :c6, :eq-unit :b)
+        (sut/reg-useq :c6 #unit-map/useq[2 1 0] :next-unit :d, :eq-unit :c)
+        (sut/reg-useq :c6 #unit-map/useq[2 1 .. ##-Inf])))
 
-  (t/testing "seqs graph"
+  (t/testing "useqs graph"
     (def graph-assert
       {:a {:b  {:useq [0 1], :unit :a, :next-unit :b}
            :b2 {:useq [0 1], :unit :a, :next-unit :b2}
@@ -69,7 +69,7 @@
        :c6 {:d {:useq [2 1 0], :unit :c6, :next-unit :d}
             nil {:useq [{:start 2, :step -1, :end ##-Inf}], :unit :c6}}})
 
-    (t/is (= graph-assert (:seqs registry)))
+    (t/is (= graph-assert (:useqs registry)))
 
     (t/is (= #{#{:a} #{:aa}
                #{:b :b2 :b3 :b4 :b6} #{:b5}

@@ -1,16 +1,16 @@
 (ns unit-map.impl.registry)
 
 
-(defn push-to-seq-graph [seqs-map {:as seq-info, :keys [unit eq-unit]}]
-  (let [eq-seqs (when (some? eq-unit)
-                  (->> (vals seqs-map)
+(defn push-to-useq-graph [useqs-map {:as useq-info, :keys [unit eq-unit]}]
+  (let [eq-useqs (when (some? eq-unit)
+                  (->> (vals useqs-map)
                        (keep #(get % eq-unit))))
 
-        to-this-unit-new (->> eq-seqs
+        to-this-unit-new (->> eq-useqs
                               (map #(assoc % :next-unit unit))
                               distinct)
 
-        to-this-unit (->> (vals seqs-map)
+        to-this-unit (->> (vals useqs-map)
                           (keep #(get % unit)))
 
         to-eq-new (when (some? eq-unit)
@@ -18,14 +18,14 @@
                          (map #(assoc % :next-unit eq-unit))
                          distinct))
 
-        to-save (concat [seq-info]
+        to-save (concat [useq-info]
                         to-this-unit-new
                         to-eq-new)]
     (reduce (fn [acc s]
               (assoc-in acc
                         [(:unit s) (:next-unit s)]
                         (dissoc s :eq-unit)))
-            seqs-map
+            useqs-map
             to-save)))
 
 
@@ -41,12 +41,12 @@
         (conj new-group))))
 
 
-(defn reg-seq [registry unit useq & {:keys [next-unit eq-unit]}]
+(defn reg-useq [registry unit useq & {:keys [next-unit eq-unit]}]
   (let [useq-info (cond-> {:unit unit, :useq useq}
                     (some? next-unit) (assoc :next-unit next-unit)
                     (some? eq-unit)   (assoc :eq-unit eq-unit))]
     (-> registry
-        (update :seqs push-to-seq-graph useq-info)
+        (update :useqs push-to-useq-graph useq-info)
         (update :eq-units push-to-eq-units useq-info))))
 
 
@@ -57,7 +57,7 @@
               reverse-units)
          (every?
            (fn [[cur-unit prev-unit]]
-             (get-in registry [:seqs prev-unit cur-unit]))))))
+             (get-in registry [:useqs prev-unit cur-unit]))))))
 
 
 (defn reg-sys [registry sys-name units]

@@ -89,7 +89,7 @@
             branches-diff))))
 
 
-;;;;;;;;;; seq & urange utils
+;;;;;;;;;; useq & urange utils
 
 
 (defn urange? [x]
@@ -243,7 +243,7 @@
 (def get-useq*
   (memoize
     (fn [registry unit next-unit]
-      (useq (:seqs registry) unit next-unit))))
+      (useq (:useqs registry) unit next-unit))))
 
 
 (defn get-useq [registry umap unit]

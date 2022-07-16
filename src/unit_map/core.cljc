@@ -10,17 +10,17 @@
 
 
 #_"TODO:
-- guess-sys-with-seqs
+- guess-sys-with-useqs
 - refactor repeating guess-sys calls
 - use plural of unit for deltas (intervals)? e.g.: {:month :jul} and {:months 7}
 - move calendar, mask & crono to scripts"
 
 
-;;;;;;;;;; regseq! & regsys!
+;;;;;;;;;; reguseq! & regsys!
 
 
-(defn regseq! [registry-atom unit useq & {next-unit :next, eq-unit :eq}]
-  (swap! registry-atom registry/reg-seq
+(defn reguseq! [registry-atom unit useq & {next-unit :next, eq-unit :eq}]
+  (swap! registry-atom registry/reg-useq
          unit useq :next-unit next-unit :eq-unit eq-unit)
   useq)
 
@@ -136,10 +136,10 @@
 
 #_(defn difference-in [registry units x y]
     (let [[a b]    (cond-> [x y] (lt? x y) reverse)
-          sys-seqs (sys-useqs registry (sys-intersection a b))
-          parts    (difference-parts units sys-seqs)]
+          sys-useqs (sys-useqs registry (sys-intersection a b))
+          parts    (difference-parts units sys-useqs)]
       (reduce
-        (fn [acc {:keys [to-unit seqs]}]
+        (fn [acc {:keys [to-unit useqs]}]
           (reduce
             (fn [{:keys [a b acc]} [unit useq]]
               (let [{:keys [borrowed result]}
@@ -148,7 +148,7 @@
                  :a (dissoc a unit)
                  :b (dissoc b unit)}))
             acc
-            seqs))
+            useqs))
         {:a a
          :b b
          :acc {}}

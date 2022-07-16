@@ -114,18 +114,18 @@
             (assoc unit unit-res))}))
 
 
-#_(defn difference-parts [units sys-seqs]
+#_(defn difference-parts [units sys-useqs]
   (:acc (reduce
           (fn [acc unit]
-            (let [[seqs [this-unit & rest-seqs]]
+            (let [[useqs [this-unit & rest-useqs]]
                   (split-with (fn [[u _]] (not= unit u))
-                              (:rest-seqs acc))]
+                              (:rest-useqs acc))]
               (if (some? this-unit)
                 (-> acc
-                    (assoc :rest-seqs rest-seqs)
+                    (assoc :rest-useqs rest-useqs)
                     (update :acc conj {:to-unit unit
-                                       :seqs (conj seqs this-unit)}))
+                                       :useqs (conj useqs this-unit)}))
                 acc)))
           {:acc []
-           :rest-seqs (reverse sys-seqs)}
+           :rest-useqs (reverse sys-useqs)}
           (reverse units))))

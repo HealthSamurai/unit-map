@@ -22,7 +22,7 @@
     (assoc {}
            :year  (-> (.getYear now)
                       (+ 1900))
-           :month (u/useq-nth (get-in @u/registry-atom [:seqs :month :year])
+           :month (u/useq-nth (get-in @u/registry-atom [:useqs :month :year])
                                   {}
                                   (.getMonth now))
            :day   (.getDate now)

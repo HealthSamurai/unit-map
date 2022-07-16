@@ -7,15 +7,15 @@
    :step  step})
 
 
-(defn process-urange [pprev prev next-seq nnext]
+(defn process-urange [pprev prev next-useq nnext]
   {:pre [(and (not-every? nil? [pprev nnext])
-              (every? some? [prev next-seq]))]}
+              (every? some? [prev next-useq]))]}
   (let [start (or pprev prev)
-        end   (or nnext next-seq)
+        end   (or nnext next-useq)
         step  (if (nil? pprev)
-                (if (integer? next-seq)
-                  (- nnext next-seq)
-                  next-seq)
+                (if (integer? next-useq)
+                  (- nnext next-useq)
+                  next-useq)
                 (if (integer? prev)
                   (- prev pprev)
                   prev))]
@@ -23,7 +23,7 @@
 
 
 (defn process-enumeration [s]
-  (loop [[pprev prev x next-seq nnext & rest] (concat [nil nil] s [nil nil])
+  (loop [[pprev prev x next-useq nnext & rest] (concat [nil nil] s [nil nil])
 
          result []
          buffer []]
@@ -32,9 +32,9 @@
       (= '.. x) (recur (concat [nil nil] rest)
                        (concat result
                                (drop-last 2 buffer)
-                               [(process-urange pprev prev next-seq nnext)])
+                               [(process-urange pprev prev next-useq nnext)])
                        [])
-      :else     (recur (concat [prev x next-seq nnext] rest)
+      :else     (recur (concat [prev x next-useq nnext] rest)
                        result
                        (conj buffer x)))))
 
