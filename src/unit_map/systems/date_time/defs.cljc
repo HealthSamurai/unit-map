@@ -68,7 +68,7 @@
     am-pm-ms-year am-pm-ns-year})
 
 
-#_(let [reg (atom {})]
+#_(let [reg (unit-map.core/new-registry)]
     (unit-map.core/reg-useqs! reg useqs)
     (unit-map.core/reg-usyss! reg systems))
 

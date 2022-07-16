@@ -3,7 +3,7 @@
             [clojure.test :as t]))
 
 
-(def treg_ (atom nil))
+(def treg_ (sut/new-registry))
 
 
 (do

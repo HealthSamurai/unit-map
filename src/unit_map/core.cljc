@@ -19,6 +19,12 @@
 ;;;;;;;;;; reg-useq! & reg-usys!
 
 
+(defn new-registry
+  ([] (new-registry {}))
+
+  ([init] (atom init)))
+
+
 (defn reg-useq! [registry-atom & {:keys [unit useq next-unit eq-unit]}]
   (swap! registry-atom registry/reg-useq {:unit unit
                                           :useq useq

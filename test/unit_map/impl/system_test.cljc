@@ -4,7 +4,7 @@
             [clojure.test :as t]))
 
 
-(def treg_ (atom nil))
+(def treg_ (umap/new-registry))
 
 
 (do ;;NOTE: useqs
