@@ -3,9 +3,9 @@
 
 
 (defn new-registry
-  ([] (new-registry {}))
+  ([] (new-registry registry/init-value))
 
-  ([init] (atom init)))
+  ([init-value] (atom init-value)))
 
 
 (defn reg-useq! [registry-atom & {:keys [unit useq next-unit eq-unit]}]

@@ -1,6 +1,10 @@
 (ns unit-map.impl.registry)
 
 
+(def init-value
+  {})
+
+
 (defn push-to-useq-graph [useqs-map {:as useq-info, :keys [unit eq-unit]}]
   (let [eq-useqs (when (some? eq-unit)
                    (->> (vals useqs-map)
