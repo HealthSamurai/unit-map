@@ -1,10 +1,5 @@
-(ns unit-map.impl.reader)
-
-
-(defn create-urange [start end step]
-  {:start start
-   :end   end
-   :step  step})
+(ns unit-map.impl.reader
+  (:require [unit-map.impl.system :as system]))
 
 
 (defn process-urange [pprev prev next-useq nnext]
@@ -19,7 +14,7 @@
                 (if (integer? prev)
                   (- prev pprev)
                   prev))]
-    (create-urange start end step)))
+    (system/create-urange start end step)))
 
 
 (defn process-enumeration [s]

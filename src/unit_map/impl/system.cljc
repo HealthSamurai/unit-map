@@ -4,92 +4,13 @@
             [clojure.set]))
 
 
-;;;;;;;;;; system info
-
-
-(defn get-units [unit-map]
-  (->> unit-map
-       (mapcat (fn [[k v]]
-                 (if (map? v)
-                   (get-units v)
-                   [k])))
-       set))
-
-
-(defn supporting-systems [registry units]
-  (->> (registry/systems registry)
-       (filter #(clojure.set/subset? units (set %)))
-       sort))
-
-
-(def guess-system*
-  (memoize
-    (fn [registry units]
-      (first (supporting-systems registry units)))))
-
-
-(defn guess-system
-  ([registry unit-map unit]
-   (guess-system registry (assoc unit-map unit nil)))
-
-  ([registry unit-map]
-   (when-let [units (not-empty (get-units unit-map))]
-     (guess-system* registry units))))
-
-
-(defn system-intersection [registry & unit-maps]
-  (guess-system registry (reduce merge unit-maps)))
-
-
-(defn find-diff-branches [xs ys]
-  (loop [cur-xs xs
-         cur-ys ys
-         result []]
-    (if (and (empty? cur-xs) (empty? cur-ys))
-      (not-empty result)
-      (let [equal-pairs-len     (->> (map vector cur-xs cur-ys)
-                                     (take-while (fn [[x y]] (= x y)))
-                                     count)
-            [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
-            rest-ys             (drop equal-pairs-len cur-ys)
-
-            [x-branch rest-xs'] (split-with (complement (set rest-ys))
-                                            rest-xs)
-            branch-end          (first rest-xs')
-            [y-branch rest-ys'] (if (some? branch-end)
-                                  (split-with #(not= branch-end %)
-                                              rest-ys)
-                                  [rest-ys])]
-        (recur rest-xs'
-               rest-ys'
-               (cond-> (into result equal-xys)
-                 (or (seq x-branch) (seq y-branch))
-                 (conj ^::branches[(vec x-branch) (vec y-branch)])))))))
-
-
-(defn find-conversion [registry x y]
-  (let [branches-diff (or (system-intersection registry x y)
-                          (find-diff-branches (guess-system registry x)
-                                              (guess-system registry y))
-                          #_"TODO: find better system match algo")
-        conv-start (first branches-diff)
-        valid? (or (not (::branches (meta conv-start)))
-                   (let [[[x :as xs] [y :as ys]] conv-start]
-                     (or (empty? xs)
-                         (empty? ys)
-                         (contains? (->> (registry/eq-units registry)
-                                         (filter #(contains? % x))
-                                         first)
-                                    y))))]
-    (when valid?
-      (mapv (fn [p]
-              (if (::branches (meta p))
-                {(first p) (second p)}
-                {[p] [p]}))
-            branches-diff))))
-
-
 ;;;;;;;;;; useq & urange utils
+
+
+(defn create-urange [start end step]
+  {:start start
+   :end   end
+   :step  step})
 
 
 (defn urange? [x]
@@ -220,6 +141,90 @@
           result
           (recur (+ i increment) rest-s))))))
 
+;;;;;;;;;; system info
+
+
+(defn get-units [unit-map]
+  (->> unit-map
+       (mapcat (fn [[k v]]
+                 (if (map? v)
+                   (get-units v)
+                   [k])))
+       set))
+
+
+(defn supporting-systems [registry units]
+  (->> (registry/systems registry)
+       (filter #(clojure.set/subset? units (set %)))
+       sort))
+
+
+(def guess-system*
+  (memoize
+    (fn [registry units]
+      (first (supporting-systems registry units)))))
+
+
+(defn guess-system
+  ([registry unit-map unit]
+   (guess-system registry (assoc unit-map unit nil)))
+
+  ([registry unit-map]
+   (when-let [units (not-empty (get-units unit-map))]
+     (guess-system* registry units))))
+
+
+(defn system-intersection [registry & unit-maps]
+  (guess-system registry (reduce merge unit-maps)))
+
+
+(defn find-diff-branches [xs ys]
+  (loop [cur-xs xs
+         cur-ys ys
+         result []]
+    (if (and (empty? cur-xs) (empty? cur-ys))
+      (not-empty result)
+      (let [equal-pairs-len     (->> (map vector cur-xs cur-ys)
+                                     (take-while (fn [[x y]] (= x y)))
+                                     count)
+            [equal-xys rest-xs] (split-at equal-pairs-len cur-xs)
+            rest-ys             (drop equal-pairs-len cur-ys)
+
+            [x-branch rest-xs'] (split-with (complement (set rest-ys))
+                                            rest-xs)
+            branch-end          (first rest-xs')
+            [y-branch rest-ys'] (if (some? branch-end)
+                                  (split-with #(not= branch-end %)
+                                              rest-ys)
+                                  [rest-ys])]
+        (recur rest-xs'
+               rest-ys'
+               (cond-> (into result equal-xys)
+                 (or (seq x-branch) (seq y-branch))
+                 (conj ^::branches[(vec x-branch) (vec y-branch)])))))))
+
+
+(defn find-conversion [registry x y]
+  (let [branches-diff (or (system-intersection registry x y)
+                          (find-diff-branches (guess-system registry x)
+                                              (guess-system registry y))
+                          #_"TODO: find better system match algo")
+        conv-start (first branches-diff)
+        valid? (or (not (::branches (meta conv-start)))
+                   (let [[[x :as xs] [y :as ys]] conv-start]
+                     (or (empty? xs)
+                         (empty? ys)
+                         (contains? (->> (registry/eq-units registry)
+                                         (filter #(contains? % x))
+                                         first)
+                                    y))))]
+    (when valid?
+      (mapv (fn [p]
+              (if (::branches (meta p))
+                {(first p) (second p)}
+                {[p] [p]}))
+            branches-diff))))
+
 
 ;;;;;;;;;; system utils
 
@@ -249,7 +254,7 @@
        (rest (conj system nil))))
 
 
-;;;;;;;;;; next/prev /first/last min/max
+;;;;;;;;;; value next/prev min/max
 
 
 (defn get-next-unit-value [useq umap x]
