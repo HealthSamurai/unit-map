@@ -5,6 +5,7 @@
 
 
 ;; TODO: move all date time related consts to type definition
+;; TODO: add convert from/to java/js date objects
 
 
 (def format-patterns
