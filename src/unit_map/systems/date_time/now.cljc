@@ -1,5 +1,6 @@
 (ns unit-map.systems.date-time.now
   (:require [unit-map.core :as umap]
+            [unit-map.impl.registry :as registry]
             [unit-map.impl.system :as system]))
 
 ;; TODO:
@@ -24,7 +25,7 @@
            :year  (-> (.getYear now)
                       (+ 1900))
 
-           :month (system/useq-nth (system/useq registry :month :year)
+           :month (system/useq-nth (registry/useq registry :month :year)
                                    {}
                                    (.getMonth now))
            :day   (.getDate now)
