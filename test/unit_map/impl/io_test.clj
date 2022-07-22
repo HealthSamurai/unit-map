@@ -279,8 +279,20 @@
       (def reg (unit-map.core/new-registry))
 
       (unit-map.core/reg-useqs! reg [ns->sec ms->sec sec->min min->hour hour->day day->month month->year years])
-      (unit-map.core/reg-systems! reg [date datetime])
-      )
+      (unit-map.core/reg-systems! reg [date datetime]))
+
+  (comment
+    (reg-fmt-alias! registry
+                    :my/month
+                    {:unit :month
+                     :padding "0"
+                     :width 2
+                     :format (fn [])
+                     :parse (fn [])})
+
+    #_"NOTE: seems like regexes are no longer needed in fmt-vector"
+
+    (format registry [:year " " :my/month \space [:day 2 "0"]]))
 
   (t/testing "04/2015"
     (def cfg
