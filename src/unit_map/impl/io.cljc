@@ -35,7 +35,6 @@
   (let [[value & rest-fmt] (flatten (vector fmt-el))
         width              (util/ffilter integer? rest-fmt)]
     {:value     value
-     :function  (util/ffilter fn? rest-fmt)
      :pad-width width
      :pad-str   (util/ffilter (some-fn string? char?) rest-fmt)
      :regex     (or (and (keyword? value)
@@ -97,15 +96,13 @@
 
 (defn format-el [value fmt-vec fmt-el]
   (let [{:as   fmt-el
-         :keys [function name-fmt pad-width pad-str]
+         :keys [name-fmt pad-width pad-str]
          fmt   :value}
         (read-fmt-el fmt-vec fmt-el)
 
         v (get value fmt)
 
-        unit-value (or (when function (function value fmt-el))
-                       v
-                       fmt)
+        unit-value (or v fmt)
 
         pad-width (or pad-width
                        (max (format-patterns fmt 0)
