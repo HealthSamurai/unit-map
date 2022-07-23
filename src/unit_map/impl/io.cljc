@@ -19,7 +19,7 @@
 
 
 (defn parse-val [fmt-el x]
-  (util/try-parse-long x))
+  (util/try-parse-long (str/trim x)))
 
 
 (defn el->regex [{:keys [value width]}]
@@ -36,7 +36,9 @@
         width              (util/ffilter integer? rest-fmt)]
     {:value     value
      :pad-width width
-     :pad-str   (util/ffilter (some-fn string? char?) rest-fmt)
+     :pad-str   (when width
+                  (or (util/ffilter (some-fn string? char?) rest-fmt)
+                      \space))
      :regex     (el->regex {:value value, :width width})}))
 
 

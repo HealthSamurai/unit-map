@@ -174,11 +174,20 @@
 
     (t/testing "parsing formatting without separators"
       (t/testing "fmt vec with width"
-        (let [fmt [[:year 2] [:month 2] [:day 2] [:hour 2] [:min 2]]]
-          (t/is (= {:year 21 :month 3 :day 2 :hour 8 :min 5}
-                   (sut/parse "2103020805" fmt)))
+        (def fmt [[:year 2 \0] [:month 2 \0] [:day 2 \0] [:hour 2 \0] [:min 2 \0]])
 
-          (t/is (= "2103020805" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt))))))))
+        (t/is (= {:year 21 :month 3 :day 2 :hour 8 :min 5}
+                 (sut/parse "2103020805" fmt)))
+
+        (t/is (= "2103020805" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt)))
+
+        (t/testing "default padding"
+          (def fmt [[:year 2] [:month 2] [:day 2] [:hour 2] [:min 2]])
+
+          (t/is (= {:year 21 :month 3 :day 2 :hour 8 :min 5}
+                   (sut/parse "21 3 2 8 5" fmt)))
+
+          (t/is (= "21 3 2 8 5" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt))))))))
 
 
 (require '[unit-map.impl.system :as system]
