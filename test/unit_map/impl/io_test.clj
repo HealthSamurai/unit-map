@@ -187,7 +187,19 @@
           (t/is (= {:year 21 :month 3 :day 2 :hour 8 :min 5}
                    (sut/parse "21 3 2 8 5" fmt)))
 
-          (t/is (= "21 3 2 8 5" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt))))))))
+          (t/is (= "21 3 2 8 5" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt)))))))
+
+
+  (t/testing "map fmt el"
+    (def s "200101")
+    (def fmt [{:value :year, :width 2, :pad "0"}
+              {:value :month , :width 2 :pad 0}
+              {:value :day, :width 2 :pad \0}])
+
+    (t/is (= s
+             (-> s
+                 (sut/parse fmt)
+                 (sut/format fmt))))))
 
 
 (require '[unit-map.impl.system :as system]

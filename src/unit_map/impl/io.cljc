@@ -30,16 +30,28 @@
     :else               (util/sanitize value)))
 
 
-#_"TODO: maybe make this as data-reader for fmt-vec?"
+(defn parse-fmt-el [fmt-el]
+  (cond
+    (map? fmt-el)
+    fmt-el
+
+    (vector? fmt-el)
+    (let [[value & rest-fmt] fmt-el
+          width (util/ffilter integer? rest-fmt)]
+      {:value value
+       :width width
+       :pad   (when width
+                (or (util/ffilter (some-fn string? char?) rest-fmt)
+                    \space))})
+
+    :else
+    {:value fmt-el}))
+
+
+#_"TODO: maybe make this as a data-reader for fmt-vec?"
 (defn read-fmt-el [_fmt-vec fmt-el]
-  (let [[value & rest-fmt] (flatten (vector fmt-el))
-        width              (util/ffilter integer? rest-fmt)]
-    {:value     value
-     :pad-width width
-     :pad-str   (when width
-                  (or (util/ffilter (some-fn string? char?) rest-fmt)
-                      \space))
-     :regex     (el->regex {:value value, :width width})}))
+  (let [el (parse-fmt-el fmt-el)]
+    (assoc el :regex (el->regex el))))
 
 
 (defn mk-group-regex [cur-group next-group]
@@ -96,7 +108,7 @@
 
 (defn format-el [value fmt-vec fmt-el]
   (let [{:as   fmt-el
-         :keys [name-fmt pad-width pad-str]
+         :keys [name-fmt width pad]
          fmt   :value}
         (read-fmt-el fmt-vec fmt-el)
 
@@ -104,17 +116,17 @@
 
         unit-value (or v fmt)
 
-        pad-width (or pad-width
-                       (max (format-patterns fmt 0)
-                            (count (str unit-value))))
+        width (or width
+                  (max (format-patterns fmt 0)
+                       (count (str unit-value))))
 
-        pad-str (or pad-str
-                       (when (number? unit-value) 0)
-                       " ")]
+        pad (or pad
+                (when (number? unit-value) 0)
+                " ")]
 
     (cond->> (str unit-value)
-      (not (zero? pad-width))
-      (util/pad-str pad-str pad-width))))
+      (not (zero? width))
+      (util/pad-str pad width))))
 
 
 (defn format [t fmt-vec]
