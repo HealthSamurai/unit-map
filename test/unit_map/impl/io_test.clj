@@ -205,50 +205,45 @@
 (require '[unit-map.impl.system :as system]
          '[unit-map.impl.registry :as registry]
          '[unit-map.impl.util :as util]
+         '[unit-map.core]
          '[clojure.string :as str])
 
 
-(defn fmt-unit [registry gcfg umap format-key]
-  (let [cfg       (get gcfg format-key)
-        unit      (:unit cfg)
-        value     (get umap unit)
-        format-fn (:format-fn cfg)
-        width     (:width cfg)
-        pad-str   (or (:padding cfg)
+(defn get-format-stack [registry format-key]
+  (loop [format-element format-key
+         formats-stack []]
+    (let [format-params (get-in registry [::format format-element])
+          new-stack     (conj formats-stack format-params)]
+      (if-let [next-el (:element format-params)]
+        (recur next-el new-stack)
+        new-stack))))
+
+
+(defn fmt-unit [registry format-key value]
+  (let [fstack    (get-format-stack registry format-key)
+        unit      (:unit (peek fstack))
+        format-fn (->> fstack
+                       (keep :format)
+                       (apply comp str))
+        width     (first (keep :width fstack))
+        pad-str   (or (first (keep :pad fstack))
                       " ")]
-    (cond->> (if format-fn
-               (format-fn registry
-                          umap
-                          {:value value
-                           :index (system/useq-index-of
-                                    (->> unit
-                                         (system/get-next-unit registry umap)
-                                         (registry/useq registry unit))
-                                    umap
-                                    value)})
-               (str value))
+    (cond->> (format-fn value)
       (some? width)
       (util/pad-str pad-str width))))
 
 
-(defn parse-unit [registry gcfg fmt-vec fmt-key unit-s]
-  (let [cfg      (get gcfg fmt-key)
-        unit     (:unit cfg)
-        parse-fn (:parse-fn cfg)]
-    (when parse-fn
-      (let [{:keys [value index]} (parse-fn registry unit-s)]
-        (or value
-            (some->> index
-                     (system/useq-nth
-                       (->> (util/get-next-element
-                              (->> (filter keyword? fmt-vec)
-                                   (keep #(get-in gcfg [% :unit]))
-                                   set
-                                   (system/supporting-systems registry)
-                                   first)
-                              unit)
-                            (registry/useq registry unit))
-                       {})))))))
+(defn parse-unit [registry format-key value-s]
+  (let [fstack   (reverse (get-format-stack registry format-key))
+        unit     (:unit (peek fstack))
+        parse-fn (->> fstack
+                      (keep :parse)
+                      (apply comp identity))]
+    (parse-fn value-s)))
+
+
+(defn reg-format! [registry-atom format-name format-params]
+  (swap! registry-atom assoc-in [::format format-name] format-params))
 
 
 (t/deftest parse-format-cfg
@@ -295,7 +290,59 @@
       (unit-map.core/reg-useqs! reg [ns->sec ms->sec sec->min min->hour hour->day day->month month->year years])
       (unit-map.core/reg-systems! reg [date datetime]))
 
+  (def formats
+    {:day/number {:unit  :day
+                  :parse (fn [s] (parse-long s))}
+
+     :DD {:element :day/number
+          :width   2
+          :pad     "0"}
+
+     :month/index {:unit   :month
+                   :parse  (fn [i] (system/useq-nth (registry/useq @reg :month :year) {} i))
+                   :format (fn [v] (system/useq-index-of (registry/useq @reg :month :year) {} v))}
+
+     :month/number {:element :month/index
+                    :parse   (fn [s] (dec (parse-long s)))
+                    :format  (fn [i] (str (inc i)))}
+
+     :MM {:element :month/number
+          :width   2
+          :pad     "0"}
+
+     :year/number {:unit  :year
+                   :parse (fn [s] (parse-long s))}
+
+     :YY {:element :year/number
+          :parse   (fn [s] (str "20" s))
+          :width   2
+          :pad     "0"}
+
+     :YYYY {:element :year/number
+            :width   4
+            :pad     "0"}})
+
+  (doseq [[format-name format-params] formats]
+    (reg-format! reg format-name format-params))
+
   (comment
+    "02-02-02"
+    {:year 2002, :month :feb, :day 2}
+
+    ;; :day
+    ;; "02" > parse number => 2
+    ;; 2 > to string => "2" > day-format => "02"
+
+    ;; :month
+    ;; "12" > parse number => 12 > to index => 11 > to value => :dec
+    ;; :dec > to index => 11 > to number => 12 > to string => "12"
+
+    ;; :year
+    ;; "12" > parse number => 12 > to year => 2012
+
+    ;; :year
+    ;; "2002" > parse number => 2002
+
     (reg-fmt-alias! registry
                     :my/month
                     {:unit :month
@@ -308,39 +355,23 @@
 
     (format registry [:year " " :my/month \space [:day 2 "0"]]))
 
-  (t/testing "04/2015"
-    (def cfg
-      {:fmt/month {:unit :month
+  (t/testing "04/2005; 04/05"
+    (def d {:year 2005, :month :apr})
+    (def f [:MM "/" :YYYY])
 
-                   :width 2
-                   :padding "0"
+    (t/is (= "2005" (fmt-unit @reg :YYYY 2005)))
 
-                   :parse-fn (fn [_registry s]
-                               {:index (dec (parse-long s))})
+    (t/is (= 2005 (parse-unit @reg :YYYY "2005")))
 
-                   :format-fn (fn [_registry _umap {:keys [value index]}]
-                                (str (inc index)))}
+    (t/is (= "05" (fmt-unit @reg :YY 5)))
 
-       :fmt/year {:unit :year
+    (t/is (= 2005 (parse-unit @reg :YY "05")))
 
-                  :width 4
-                  :padding "0"
+    (t/is (= "04" (fmt-unit @reg :MM :apr)))
 
-                  :parse-fn (fn [_registry s]
-                              {:value (parse-long s)})}})
+    (t/is (= :apr (parse-unit @reg :MM "04"))))
 
-    (def d {:year 2015, :month :apr})
-    (def f [:fmt/month "/" :fmt/year])
-
-    (t/is (= "2015" (fmt-unit @reg cfg d :fmt/year)))
-
-    (t/is (= 2015 (parse-unit @reg cfg f :fmt/year "2015")))
-
-    (t/is (= "04" (fmt-unit @reg cfg d :fmt/month)))
-
-    (t/is (= :apr (parse-unit @reg cfg f :fmt/month "04"))))
-
-  (t/testing "Saturday, Apr 25, 2015"
+  #_(t/testing "Saturday, Apr 25, 2005"
 
     (defn day-of-week
       "m 0-11; y > 1752"
@@ -382,12 +413,12 @@
                                     6 "Saturday"
                                     7 "Sunday"))}})
 
-    (def d {:year 2015, :month :apr, :day 25})
+    (def d {:year 2005, :month :apr, :day 25})
     (def f [:fmt/weekday ", " :fmt/month " " :fmt/day ", " :fmt/year])
 
-    (t/is (= "2015" (fmt-unit @reg cfg d :fmt/year)))
+    (t/is (= "2005" (fmt-unit @reg cfg d :fmt/year)))
 
-    (t/is (= 2015 (parse-unit @reg cfg f :fmt/year "2015")))
+    (t/is (= 2005 (parse-unit @reg cfg f :fmt/year "2005")))
 
     (t/is (= "Apr" (fmt-unit @reg cfg d :fmt/month)))
 
