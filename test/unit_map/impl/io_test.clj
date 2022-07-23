@@ -173,13 +173,6 @@
                 {:year 2011 :month 7} (sut/parse "2011-JUL" [:year "-" :month] :strict true)))))
 
     (t/testing "parsing formatting without separators"
-      (t/testing "fmt vec with regex"
-        (let [fmt [[:year #"\d\d" 2] [:month #"\d\d"] [:day #"\d\d"] [:hour #"\d\d"] [:min #"\d\d"]]]
-          (t/is (= {:year 21 :month 3 :day 2 :hour 8 :min 5}
-                   (sut/parse "2103020805" fmt)))
-
-          (t/is (= "2103020805" (sut/format {:year 21 :month 3 :day 2 :hour 8 :min 5} fmt)))))
-
       (t/testing "fmt vec with width"
         (let [fmt [[:year 2] [:month 2] [:day 2] [:hour 2] [:min 2]]]
           (t/is (= {:year 21 :month 3 :day 2 :hour 8 :min 5}

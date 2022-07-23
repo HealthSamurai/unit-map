@@ -37,9 +37,7 @@
     {:value     value
      :pad-width width
      :pad-str   (util/ffilter (some-fn string? char?) rest-fmt)
-     :regex     (or (and (keyword? value)
-                         (util/ffilter util/regex? rest-fmt))
-                    (el->regex {:value value, :width width}))}))
+     :regex     (el->regex {:value value, :width width})}))
 
 
 (defn mk-group-regex [cur-group next-group]
