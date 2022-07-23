@@ -30,7 +30,8 @@
     :else               (util/sanitize value)))
 
 
-(defn parse-fmt-el [fmt-el]
+#_"TODO: maybe make this as a data-reader for fmt-vec?"
+(defn read-fmt-el [_fmt-vec fmt-el]
   (cond
     (map? fmt-el)
     fmt-el
@@ -48,12 +49,6 @@
     {:value fmt-el}))
 
 
-#_"TODO: maybe make this as a data-reader for fmt-vec?"
-(defn read-fmt-el [_fmt-vec fmt-el]
-  (let [el (parse-fmt-el fmt-el)]
-    (assoc el :regex (el->regex el))))
-
-
 (defn mk-group-regex [cur-group next-group]
   (let [{el-regex :regex, :as el} (last cur-group)
 
@@ -68,7 +63,9 @@
 
 (defn make-regex-groups [fmt-vec]
   (let [acc (reduce (fn [acc fmt-el]
-                      (let [el (read-fmt-el fmt-vec fmt-el)]
+                      (let [el (as-> fmt-el $
+                                 (read-fmt-el fmt-vec $)
+                                 (assoc $ :regex (el->regex $)))]
                         (if (keyword? (:value el))
                           {:group []
                            :result (-> (:result acc)
