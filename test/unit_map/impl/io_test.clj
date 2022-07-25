@@ -223,7 +223,8 @@
   (let [fstack    (get-format-stack registry format-key)
         unit      (:unit (peek fstack))
         format-fn (->> fstack
-                       (keep :format)
+                       (keep (fn [el] (when-let [f (:format el)]
+                                        (partial f registry))))
                        (apply comp str))
         width     (first (keep :width fstack))
         pad-str   (or (first (keep :pad fstack))
@@ -237,7 +238,8 @@
   (let [fstack   (reverse (get-format-stack registry format-key))
         unit     (:unit (peek fstack))
         parse-fn (->> fstack
-                      (keep :parse)
+                      (keep (fn [el] (when-let [f (:parse el)]
+                                       (partial f registry))))
                       (apply comp identity))]
     (parse-fn value-s)))
 
@@ -292,18 +294,18 @@
 
   (def base-formats
     {:day {:unit  :day
-           :parse (fn [s] (parse-long s))}
+           :parse (fn [_reg s] (parse-long s))}
 
      :month/index {:unit   :month
-                   :parse  (fn [i] (system/useq-nth (registry/useq @reg_ :month :year) {} i))
-                   :format (fn [v] (system/useq-index-of (registry/useq @reg_ :month :year) {} v))}
+                   :parse  (fn [reg i] (system/useq-nth (registry/useq reg :month :year) {} i))
+                   :format (fn [reg v] (system/useq-index-of (registry/useq reg :month :year) {} v))}
 
      :month {:element :month/index
-             :parse   (fn [s] (dec (parse-long s)))
-             :format  (fn [i] (inc i))}
+             :parse   (fn [_reg s] (dec (parse-long s)))
+             :format  (fn [_reg i] (inc i))}
 
      :year {:unit  :year
-            :parse (fn [s] (parse-long s))}})
+            :parse (fn [_reg s] (parse-long s))}})
 
   (def user-formats
     {:DD {:element :day
@@ -315,7 +317,7 @@
           :pad     "0"}
 
      :YY {:element :year
-          :parse   (fn [s] (str "20" s))
+          :parse   (fn [_reg s] (str "20" s))
           :width   2
           :pad     "0"}
 
