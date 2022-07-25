@@ -221,7 +221,6 @@
 
 (defn format-unit [registry format-key value]
   (let [fstack    (get-format-stack registry format-key)
-        unit      (:unit (peek fstack))
         format-fn (->> fstack
                        (keep (fn [el] (when-let [f (:format el)]
                                         (partial f registry))))
@@ -236,7 +235,6 @@
 
 (defn parse-unit [registry format-key value-s]
   (let [fstack   (reverse (get-format-stack registry format-key))
-        unit     (:unit (peek fstack))
         parse-fn (->> fstack
                       (keep (fn [el] (when-let [f (:parse el)]
                                        (partial f registry))))
