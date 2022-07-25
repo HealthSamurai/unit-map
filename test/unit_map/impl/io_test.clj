@@ -219,7 +219,7 @@
         new-stack))))
 
 
-(defn fmt-unit [registry format-key value]
+(defn format-unit [registry format-key value]
   (let [fstack    (get-format-stack registry format-key)
         unit      (:unit (peek fstack))
         format-fn (->> fstack
@@ -273,11 +273,11 @@
 
 
 
-      (def ns->sec     {:unit :ns,     :next-unit :sec,  :useq #unit-map/useq[0 1 .. 999999999]})
-      (def ms->sec     {:unit :ms,     :next-unit :sec,  :useq #unit-map/useq[0 1 .. 999]})
-      (def sec->min    {:unit :sec,    :next-unit :min,  :useq #unit-map/useq[0 1 .. 59]})
-      (def min->hour   {:unit :min,    :next-unit :hour, :useq #unit-map/useq[0 1 .. 59]})
-      (def hour->day   {:unit :hour,   :next-unit :day,  :useq #unit-map/useq[0 1 .. 23]})
+      (def ns->sec     {:unit :ns,    :next-unit :sec,   :useq #unit-map/useq[0 1 .. 999999999]})
+      (def ms->sec     {:unit :ms,    :next-unit :sec,   :useq #unit-map/useq[0 1 .. 999]})
+      (def sec->min    {:unit :sec,   :next-unit :min,   :useq #unit-map/useq[0 1 .. 59]})
+      (def min->hour   {:unit :min,   :next-unit :hour,  :useq #unit-map/useq[0 1 .. 59]})
+      (def hour->day   {:unit :hour,  :next-unit :day,   :useq #unit-map/useq[0 1 .. 23]})
       (def day->month  {:unit :day,   :next-unit :month, :useq #unit-map/useq[0 1 .. days-in-month]})
       (def month->year {:unit :month, :next-unit :year,  :useq #unit-map/useq[:jan :feb  :mar :apr :may  :jun :jul :aug  :sep :oct :nov  :dec]})
       (def years       {:unit :year,                     :useq #unit-map/useq[##-Inf .. -2 -1 1 2 .. ##Inf]})
@@ -285,91 +285,62 @@
       (def date [:day :month :year])
       (def datetime [:ms :sec :min :hour :day :month :year])
 
-      (def reg (unit-map.core/new-registry))
+      (def reg_ (unit-map.core/new-registry))
 
-      (unit-map.core/reg-useqs! reg [ns->sec ms->sec sec->min min->hour hour->day day->month month->year years])
-      (unit-map.core/reg-systems! reg [date datetime]))
+      (unit-map.core/reg-useqs! reg_ [ns->sec ms->sec sec->min min->hour hour->day day->month month->year years])
+      (unit-map.core/reg-systems! reg_ [date datetime]))
 
-  (def formats
-    {:day/number {:unit  :day
-                  :parse (fn [s] (parse-long s))}
-
-     :DD {:element :day/number
-          :width   2
-          :pad     "0"}
+  (def base-formats
+    {:day {:unit  :day
+           :parse (fn [s] (parse-long s))}
 
      :month/index {:unit   :month
-                   :parse  (fn [i] (system/useq-nth (registry/useq @reg :month :year) {} i))
-                   :format (fn [v] (system/useq-index-of (registry/useq @reg :month :year) {} v))}
+                   :parse  (fn [i] (system/useq-nth (registry/useq @reg_ :month :year) {} i))
+                   :format (fn [v] (system/useq-index-of (registry/useq @reg_ :month :year) {} v))}
 
-     :month/number {:element :month/index
-                    :parse   (fn [s] (dec (parse-long s)))
-                    :format  (fn [i] (str (inc i)))}
+     :month {:element :month/index
+             :parse   (fn [s] (dec (parse-long s)))
+             :format  (fn [i] (inc i))}
 
-     :MM {:element :month/number
+     :year {:unit  :year
+            :parse (fn [s] (parse-long s))}})
+
+  (def user-formats
+    {:DD {:element :day
           :width   2
           :pad     "0"}
 
-     :year/number {:unit  :year
-                   :parse (fn [s] (parse-long s))}
+     :MM {:element :month
+          :width   2
+          :pad     "0"}
 
-     :YY {:element :year/number
+     :YY {:element :year
           :parse   (fn [s] (str "20" s))
           :width   2
           :pad     "0"}
 
-     :YYYY {:element :year/number
+     :YYYY {:element :year
             :width   4
             :pad     "0"}})
 
-  (doseq [[format-name format-params] formats]
-    (reg-format! reg format-name format-params))
-
-  (comment
-    "02-02-02"
-    {:year 2002, :month :feb, :day 2}
-
-    ;; :day
-    ;; "02" > parse number => 2
-    ;; 2 > to string => "2" > day-format => "02"
-
-    ;; :month
-    ;; "12" > parse number => 12 > to index => 11 > to value => :dec
-    ;; :dec > to index => 11 > to number => 12 > to string => "12"
-
-    ;; :year
-    ;; "12" > parse number => 12 > to year => 2012
-
-    ;; :year
-    ;; "2002" > parse number => 2002
-
-    (reg-fmt-alias! registry
-                    :my/month
-                    {:unit :month
-                     :padding "0"
-                     :width 2
-                     :format (fn [])
-                     :parse (fn [])})
-
-    #_"NOTE: seems like regexes are no longer needed in fmt-vector"
-
-    (format registry [:year " " :my/month \space [:day 2 "0"]]))
+  (doseq [[format-name format-params] (concat base-formats user-formats)]
+    (reg-format! reg_ format-name format-params))
 
   (t/testing "04/2005; 04/05"
     (def d {:year 2005, :month :apr})
     (def f [:MM "/" :YYYY])
 
-    (t/is (= "2005" (fmt-unit @reg :YYYY 2005)))
+    (t/is (= "2005" (format-unit @reg_ :YYYY 2005)))
 
-    (t/is (= 2005 (parse-unit @reg :YYYY "2005")))
+    (t/is (= 2005 (parse-unit @reg_ :YYYY "2005")))
 
-    (t/is (= "05" (fmt-unit @reg :YY 5)))
+    (t/is (= "05" (format-unit @reg_ :YY 5)))
 
-    (t/is (= 2005 (parse-unit @reg :YY "05")))
+    (t/is (= 2005 (parse-unit @reg_ :YY "05")))
 
-    (t/is (= "04" (fmt-unit @reg :MM :apr)))
+    (t/is (= "04" (format-unit @reg_ :MM :apr)))
 
-    (t/is (= :apr (parse-unit @reg :MM "04"))))
+    (t/is (= :apr (parse-unit @reg_ :MM "04"))))
 
   #_(t/testing "Saturday, Apr 25, 2005"
 
@@ -416,18 +387,18 @@
     (def d {:year 2005, :month :apr, :day 25})
     (def f [:fmt/weekday ", " :fmt/month " " :fmt/day ", " :fmt/year])
 
-    (t/is (= "2005" (fmt-unit @reg cfg d :fmt/year)))
+    (t/is (= "2005" (format-unit @reg_ cfg d :fmt/year)))
 
-    (t/is (= 2005 (parse-unit @reg cfg f :fmt/year "2005")))
+    (t/is (= 2005 (parse-unit @reg_ cfg f :fmt/year "2005")))
 
-    (t/is (= "Apr" (fmt-unit @reg cfg d :fmt/month)))
+    (t/is (= "Apr" (format-unit @reg_ cfg d :fmt/month)))
 
-    (t/is (= :apr (parse-unit @reg cfg f :fmt/month "Apr")))
+    (t/is (= :apr (parse-unit @reg_ cfg f :fmt/month "Apr")))
 
-    (t/is (= "25" (fmt-unit @reg cfg d :fmt/day)))
+    (t/is (= "25" (format-unit @reg_ cfg d :fmt/day)))
 
-    (t/is (= 25 (parse-unit @reg cfg f :fmt/day "25")))
+    (t/is (= 25 (parse-unit @reg_ cfg f :fmt/day "25")))
 
-    (t/is (= "Saturday" (fmt-unit @reg cfg d :fmt/weekday)))
+    (t/is (= "Saturday" (format-unit @reg_ cfg d :fmt/weekday)))
 
-    (t/is (= nil (parse-unit @reg cfg f :fmt/weekday "Saturday")))))
+    (t/is (= nil (parse-unit @reg_ cfg f :fmt/weekday "Saturday")))))
