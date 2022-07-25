@@ -21,7 +21,7 @@
 
 
 (defn pad-str [p n s]
-  (->> (concat (reverse s) (repeat p))
+  (->> (concat (reverse (str s)) (repeat p))
        (take n)
        reverse
        str/join))
