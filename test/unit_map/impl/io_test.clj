@@ -223,7 +223,7 @@
   (let [fstack    (get-format-stack registry format-key)
         format-fn (->> fstack
                        (keep (fn [el] (when-let [f (:format el)]
-                                        (partial f registry))))
+                                        #(when (some? %) (f registry %)))))
                        (apply comp str))
         width     (first (keep :width fstack))
         pad-str   (or (first (keep :pad fstack))
@@ -237,9 +237,9 @@
   (let [fstack   (reverse (get-format-stack registry format-key))
         parse-fn (->> fstack
                       (keep (fn [el] (when-let [f (:parse el)]
-                                       (partial f registry))))
+                                       #(when (some? %) (f registry %)))))
                       (apply comp identity))]
-    (parse-fn value-s)))
+    (parse-fn (str/trim value-s))))
 
 
 (defn reg-format! [registry-atom format-name format-params]
@@ -294,13 +294,9 @@
     {:day {:unit  :day
            :parse (fn [_reg s] (parse-long s))}
 
-     :month/index {:unit   :month
-                   :parse  (fn [reg i] (system/useq-nth (registry/useq reg :month :year) {} i))
-                   :format (fn [reg v] (system/useq-index-of (registry/useq reg :month :year) {} v))}
-
-     :month {:element :month/index
-             :parse   (fn [_reg s] (dec (parse-long s)))
-             :format  (fn [_reg i] (inc i))}
+     :month {:unit   :month
+             :parse  (fn [reg s] (system/useq-nth (registry/useq reg :month :year) {} (dec (parse-long s))))
+             :format (fn [reg v] (inc (system/useq-index-of (registry/useq reg :month :year) {} v)))}
 
      :year {:unit  :year
             :parse (fn [_reg s] (parse-long s))}})
@@ -342,63 +338,73 @@
 
     (t/is (= :apr (parse-unit @reg_ :MM "04"))))
 
-  #_(t/testing "Saturday, Apr 25, 2005"
-
+  (t/testing "Saturday, Apr 25, 2005"
     (defn day-of-week
-      "m 0-11; y > 1752"
-      [y m d]
-      (let [t [0 3 2 5 0 3 5 1 4 6 2 4]
-            y (- y (if (< m 2) 1 0))]
-        (rem (+ y
-                (int (/ y 4))
-                (- (int (/ y 100)))
-                (int (/ y 400))
-                (nth t m)
-                d)
-             7)))
+      "y > 1752"
+      [year month day]
+      (let [t {:jan 0, :feb 3
+               :mar 2, :apr 5, :may 0
+               :jun 3, :jul 5, :aug 1
+               :sep 4, :oct 6, :nov 2
+               :dec 4}
+            y (if (contains? #{:jan :feb} month)
+                (dec year)
+                year)]
+        (nth [:sun :mon :tue :wed :thu :fri :sat]
+             (rem (+ y
+                     (int (/ y 4))
+                     (- (int (/ y 100)))
+                     (int (/ y 400))
+                     (get t month)
+                     day)
+                  7))))
 
-    (def cfg
-      {:fmt/year {:unit :year
-                  :parse-fn (fn [_registry s]
-                              {:value (parse-long s)})}
+    (def weekday-names
+      {:mon {:full "Monday"    :short "Mon"}
+       :tue {:full "Tuesday"   :short "Tue"}
+       :wed {:full "Wednesday" :short "Tue"}
+       :thu {:full "Thursday"  :short "Thu"}
+       :fri {:full "Friday"    :short "Fri"}
+       :sat {:full "Saturday"  :short "Sat"}
+       :sun {:full "Sunday"    :short "Sun"}})
 
-       :fmt/month {:unit :month
-                   :parse-fn (fn [_registry s]
-                               {:value (keyword (str/lower-case (subs s 0 3)))})
-                   :format-fn (fn [_registry _umap {:keys [value index]}]
-                                (str/capitalize (name value)))}
+    (reg-format! reg_
+                 :month/weekday
+                 {:unit #{:year :month :day}
+                  :parse   (constantly nil)
+                  :format  (fn [_reg {:keys [year month day]}]
+                             (get-in weekday-names [(day-of-week year month day) :full]))})
 
+    (reg-format! reg_
+                 :month/weekday-short
+                 {:unit #{:year :month :day}
+                  :parse  (constantly nil)
+                  :format (fn [_reg {:keys [year month day]}]
+                            (get-in weekday-names [(day-of-week year month day) :short]))})
 
-       :fmt/day {:unit :day
-                 :parse-fn (fn [_registry s]
-                             {:value (parse-long s)})}
+    (reg-format! reg_
+                 :month/short
+                 {:unit   :month
+                  :width  3
+                  :pad    " "
+                  :parse  (fn [_reg s] (keyword (str/lower-case s)))
+                  :format (fn [_reg v] (str/capitalize (name v)))})
 
-       :fmt/weekday {:unit :month
-                     :format-fn (fn [registry umap {:keys [value index]}]
-                                  (case (day-of-week (:year umap) index (:day umap))
-                                    1 "Monday"
-                                    2 "Tuesday"
-                                    3 "Wednesday"
-                                    4 "Thursday"
-                                    5 "Friday"
-                                    6 "Saturday"
-                                    7 "Sunday"))}})
+    (def d {:year 2005, :month :apr, :day 5})
+    (def f [:month/weekday ", " :month/short " " :day ", " :year])
 
-    (def d {:year 2005, :month :apr, :day 25})
-    (def f [:fmt/weekday ", " :fmt/month " " :fmt/day ", " :fmt/year])
+    (t/is (= "Apr" (format-unit @reg_ :month/short (:month d))))
 
-    (t/is (= "2005" (format-unit @reg_ cfg d :fmt/year)))
+    (t/is (= (:month d) (parse-unit @reg_ :month/short "Apr")))
 
-    (t/is (= 2005 (parse-unit @reg_ cfg f :fmt/year "2005")))
+    (t/is (= "5" (format-unit @reg_ :day (:day d))))
 
-    (t/is (= "Apr" (format-unit @reg_ cfg d :fmt/month)))
+    (t/is (= (:day d) (parse-unit @reg_ :day "5")))
 
-    (t/is (= :apr (parse-unit @reg_ cfg f :fmt/month "Apr")))
+    (t/is (= "Tuesday" (format-unit @reg_ :month/weekday d)))
 
-    (t/is (= "25" (format-unit @reg_ cfg d :fmt/day)))
+    (t/is (= nil (parse-unit @reg_ :month/weekday "Tuesday")))
 
-    (t/is (= 25 (parse-unit @reg_ cfg f :fmt/day "25")))
+    (t/is (= "Tue" (format-unit @reg_ :month/weekday-short d)))
 
-    (t/is (= "Saturday" (format-unit @reg_ cfg d :fmt/weekday)))
-
-    (t/is (= nil (parse-unit @reg_ cfg f :fmt/weekday "Saturday")))))
+    (t/is (= nil (parse-unit @reg_ :month/weekday-short "Sat")))))
