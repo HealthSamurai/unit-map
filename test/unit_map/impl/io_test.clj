@@ -209,7 +209,7 @@
          '[clojure.string :as str])
 
 
-(declare format-stack-recur)
+(declare format-unit)
 
 
 (defn format-args [registry format-params umap]
@@ -218,7 +218,7 @@
     (get umap (:unit format-params))
 
     (:element format-params)
-    (format-stack-recur registry (:element format-params) umap)
+    (format-unit registry (:element format-params) umap)
 
     (:units format-params)
     (->> (:units format-params)
@@ -231,27 +231,23 @@
     (:elements format-params)
     (->> (:elements format-params)
          (into {} (keep (fn [fmt-key]
-                          (when-let [v (format-stack-recur registry fmt-key umap)]
+                          (when-let [v (format-unit registry fmt-key umap)]
                             [fmt-key v]))))
          not-empty)))
 
 
-(defn format-stack-recur [registry format-key umap]
-  (let [params    (get-in registry [::format format-key])
-        arg       (format-args registry params umap)
-        format-fn (:format params)
-        width     (:width params)
-        pad       (:pad params " ")]
-    (when (some? arg)
-      (cond->> arg
-        format-fn (format-fn registry)
-        width     (util/pad-str pad width)))))
-
-
 (defn format-unit [registry format-key umap]
-  (some->> umap
-           (format-stack-recur registry format-key)
-           str))
+  (when (seq umap)
+    (let [params    (get-in registry [::format format-key])
+          arg       (format-args registry params umap)
+          format-fn (:format params)
+          width     (:width params)
+          pad       (:pad params " ")]
+      (when (some? arg)
+        (cond->> arg
+          format-fn (format-fn registry)
+          :always   str
+          width     (util/pad-str pad width))))))
 
 
 (defn parse-unit [registry format-key value-s]
@@ -271,6 +267,7 @@
   ;; 25 07 (апр.) 2015
   ;; Fri Apr 25 2015 12:48:59 GMT+0200 (Eastern European Standard Time)
   ;; 2015-06-30T23:59:60Z
+  ;; Roman year
 
   (do #_"NOTE: fixtures"
 
