@@ -487,4 +487,48 @@
 
     (t/is (= d (read-string (format-unit @reg_ ::read-string d))))
 
-    (t/is (= d (parse-unit @reg_ ::read-string (str d))))))
+    (t/is (= d (parse-unit @reg_ ::read-string (str d)))))
+
+
+  (t/testing "roman numeric YYYY•MM•DD"
+    (defn int->roman [i]
+      (clojure.pprint/cl-format nil "~@R" i))
+
+    (defn roman->int [r]
+      (->> (reverse (str/upper-case r))
+           (map {\M 1000 \D 500 \C 100 \L 50 \X 10 \V 5 \I 1})
+           (partition-by identity)
+           (map (partial apply +))
+           (reduce #(if (< %1 %2) (+ %1 %2) (- %1 %2)))))
+
+    (reg-format! reg_
+                 :roman/year
+                 {:unit   :year
+                  :parse  (fn [_reg s] (roman->int s))
+                  :format (fn [_reg i] (int->roman i))})
+
+    (reg-format! reg_
+                 :roman/month
+                 {:element :month
+                  :parse  (fn [_reg s] (str (roman->int s)))
+                  :format (fn [_reg s] (int->roman (parse-long s)))})
+
+    (reg-format! reg_
+                 :roman/day
+                 {:unit   :day
+                  :parse  (fn [_reg s] (roman->int s))
+                  :format (fn [_reg i] (int->roman i))})
+
+    (def d {:year 2022, :month :jun, :day 1})
+
+    (t/is (= "MMXXII" (format-unit @reg_ :roman/year d)))
+
+    (t/is (= {:year 2022} (parse-unit @reg_ :roman/year "MMXXII")))
+
+    (t/is (= "VI" (format-unit @reg_ :roman/month d)))
+
+    (t/is (= {:month :jun} (parse-unit @reg_ :roman/month "VI")))
+
+    (t/is (= "I" (format-unit @reg_ :roman/day d)))
+
+    (t/is (= {:day 1} (parse-unit @reg_ :roman/day "I")))))
