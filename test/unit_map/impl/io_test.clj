@@ -250,15 +250,45 @@
           width     (util/pad-str pad width))))))
 
 
+(declare parse-unit)
+
+
+(defn parse-res [registry parse-params parsed]
+  (cond
+    (:unit parse-params)
+    {(:unit parse-params) parsed}
+
+    (:units parse-params)
+    (into {}
+          (keep (fn [u] (when-let [v (get parsed u)]
+                          [u v])))
+          (:units parse-params))
+
+    (:element parse-params)
+    (parse-unit registry (:element parse-params) parsed)
+
+    (:elements parse-params)
+    (into {}
+          (map #(parse-unit registry % (get parsed %)))
+          (:elements parse-params))))
+
+
 (defn parse-unit [registry format-key value-s]
-  nil #_"TODO")
+  (when (not (str/blank? value-s))
+    (let [params (get-in registry [::format format-key])
+          parsed (if-let [parse-fn (:parse params)]
+                   (parse-fn registry value-s)
+                   value-s)]
+      (some->> parsed
+               (parse-res registry params)
+               not-empty))))
 
 
 (defn reg-format! [registry-atom format-name format-params]
   (swap! registry-atom assoc-in [::format format-name] format-params))
 
 
-(t/deftest ^:kaocha/pending parse-format-cfg
+(t/deftest parse-format-cfg
   ;; 2015
   ;; 2015-04
   ;; 2015-04-25
@@ -321,11 +351,10 @@
           :width   2
           :pad     "0"}
 
-     :YY {:elements #{:year}
-          :parse    (fn [_reg s] {:year (str "20" s)})
-          :format   (fn [_reg m] (:year m))
-          :width    2
-          :pad      "0"}
+     :YY {:element :year
+          :parse   (fn [_reg s] (str "20" s))
+          :width   2
+          :pad     "0"}
 
      :YYYY {:element :year
             :width   4
@@ -419,4 +448,43 @@
 
     (t/is (= "Tue" (format-unit @reg_ :month/weekday-short d)))
 
-    (t/is (= nil (parse-unit @reg_ :month/weekday-short "Sat")))))
+    (t/is (= nil (parse-unit @reg_ :month/weekday-short "Sat"))))
+
+  (t/testing ":elements; m2y2 0f6m0t1 -> {:year 2022, :month :jun, :day 1}"
+    (reg-format! reg_
+                 :YYMMDD
+                 {:elements #{:YY :MM :DD}
+                  :width 6
+                  :parse (fn [_reg s]
+                           {:YY (subs s 0 2)
+                            :MM (subs s 2 4)
+                            :DD (subs s 4 6)})
+                  :format (fn [_reg {:as arg :keys [YY MM DD]}]
+                            (str YY MM DD))})
+
+    (reg-format! reg_
+                 ::my-format
+                 {:element :YYMMDD
+                  :width 12
+                  :parse  (fn [_reg s]
+                            (str/join (take-nth 2 (rest s))))
+                  :format (fn [_reg YYMMDD]
+                            (str/join (interleave "my fmt" YYMMDD)))})
+
+    (def d {:year 2022, :month :jun, :day 1})
+
+    (t/is (= "m2y2 0f6m0t1" (format-unit @reg_ ::my-format d)))
+
+    (t/is (= d (parse-unit @reg_ ::my-format "m2y2 0f6m0t1"))))
+
+  (t/testing ":units"
+    (reg-format! reg_
+                 ::read-string
+                 {:units #{:day :month :year}
+                  :parse (fn [_reg s] (read-string s))})
+
+    (def d {:year 2022, :month :jun, :day 1})
+
+    (t/is (= d (read-string (format-unit @reg_ ::read-string d))))
+
+    (t/is (= d (parse-unit @reg_ ::read-string (str d))))))
