@@ -11,8 +11,11 @@
 - guess-system-with-useqs
 - refactor repeating guess-system calls
 - maybe use plural for deltas e.g.: {:month :jul} and {:months 7}
-- move calendar, mask & crono to scripts"
-
+- move calendar, mask & crono to scripts
+- move core tests to impl
+- use core tests as doc examples
+- replace #unit-map/useq[1 2 .. 10] with [1 2 '.. 10]
+"
 
 ;;;;;;;;;; registrator
 

@@ -6,7 +6,6 @@
 
 (def treg_ (umap/new-registry))
 
-
 (do
   (defn leap-year? [{:keys [year]}]
     (and (zero? (rem year 4))
@@ -127,4 +126,149 @@
              (sut/subtract-from-unit @treg_ {:day 1, :month :jan, :year 2020} :hour 216000)))
     (t/is (= {:day 1, :month :jan, :year 2020}
              (sut/subtract-from-unit @treg_ {:day 1, :month :jan, :year 2020} :hour 0)))))
+
+
+(comment
+  (def treg_ unit-map.impl.system-test/treg_)
+
+ (assoc-delta {:hour 17} :utc {:hours 3})        ;; => {:hour 17, :utc {:hours 3}}
+ (dissoc-delta {:hour 17, :utc {:hours 3}} :utc) ;; => {:hour 17}
+
+ (apply-delta {:hour 17} :utc {:hours 3})        ;; => {:hour 20, :utc {:hours 3}}
+ (remove-delta {:hour 20, :utc {:hours 3}} :utc) ;; => {:hour 17}
+
+ (to-delta {:hour 20, :utc {:hours 3}} :utc {:hour 2}) ;; => {:hour 16, :utc {:hour 2}}
+
+ (dissoc-deltas {:hour 20, :utc {:hours 3}}) ;; => {:hour 20}
+ (remove-deltas {:hour 20, :utc {:hours 3}}) ;; => {:hour 17}
+
+ "+ delta = delta
+  + value = value
+
+     a   + delta =   a
+   delta +   a   =   a
+   value + value = error"
+
+ ;; forbid not normalized values?
+ ;; (- {:months 1} {:days 4}) ;; => {:months 1, :days -4}
+ ;; maybe deltas must consist of one unit
+
+ (+ {:year 2020, :month :feb}) ;; => {:year 2020, :month :feb}
+ (+ {:months 2})               ;; => {:year 2020, :month :apr}
+
+ (+ {:year 2020, :month :feb} {:months 2}) ;; => {:year 2020, :month :apr}
+ (+ {:months 2} {:year 2020, :month :feb}) ;; => {:year 2020, :month :apr}
+ (+ {:months 2} {:months 2})               ;; => {:months 4}
+ (+ {:year 2020, :month :feb} {:year 2020, :month :feb}) ;; => error
+
+ (+ {:hour 17} {:hours 3})                  ;; => {:hour 20}
+ (+ {:hour 17, :utc {:hours 3}} {:hours 3}) ;; => {:hour 20, :utc {:hours 3}}
+
+ "- delta = delta
+  - value = error
+
+    a   -   a   = delta
+  value - delta = value
+  delta - value = error"
+
+ (- {:year 2020, :month :feb}) ;; => error
+ (- {:months 2})               ;; => {:months -2}
+
+ (abs {:year 2020, :month :feb}) ;; ?> {:year 2020, :month :feb}
+ (abs {:months -2 :days -4})     ;; => {:months 2, :days 4}
+ (abs {:months 2 :days 4})       ;; => {:months 2, :days 4}
+ (abs {:months -2 :days 4})      ;; ?> {:months 2 :days -4}
+ (abs {:months 2 :days -4})      ;; ?> {:months 2 :days -4}
+
+ (normalize {:year 2020, :month :feb, :day 30}) ;; {:year 2020, :month :mar, :day 2}
+ (normalize {:year 2020, :month :feb, :day 30, :hour -100}) ;; {:year 2020, :month :mar, :day 2}
+ (normalize {:months 20, :days 35, :hours 100}) ;; ?> {:years 1, :month 8, :days 39, :hours 4}
+ (normalize {:hours 100}) ;; => {:days 4, :hours 4}
+
+ (normalize {:inches 16}) ;; => {:feets 1, :inches 4}
+ (normalize {:inch 16})   ;; => {:feet 1, :inch 4}
+
+ (- {:year 2020, :month :feb} {:months 2} {:months 2}) ;; => {:year 2019, :month :oct}
+
+ (- {:months 2} {:year 2020, :month :feb} {:months 2}) ;; => error
+ (- {:months 2} {:months 2} {:year 2020, :month :feb}) ;; => error
+
+ (- {:months 2} {:months 2} {:months 2})               ;; => {:months -2}
+
+ (- {:year 2020, :month :feb} {:year 2020, :month :mar}) ;; => {:months -1}
+ (- {:year 2020, :month :mar} {:year 2020, :month :feb}) ;; => {:months 1}
+
+ (- {:year 2020, :month :feb} {:year 2020, :month :mar} {:year 2020, :month :mar}) ;; => error
+
+ (- {:months 1} {:days 4}) ;; => {:months 1, :days -4}
+
+ (difference {:year 2020, :month :feb} {:months 2}) ;; => error
+ (difference {:months 2} {:year 2020, :month :feb}) ;; => error
+
+ (difference {:months 1} {:months 2}) ;; => {:months 1}
+ (difference {:months 2} {:months 1}) ;; => {:months 1}
+ (difference {:months 2} {:months 2}) ;; => {:months 0}
+
+ (difference {:year 2020, :month :feb} {:year 2020, :month :mar}) ;; => {:years 0, months 1}
+ (difference {:year 2020, :month :mar} {:year 2020, :month :feb}) ;; => {:years 0, months 1}
+ (difference {:year 2020, :month :feb} {:year 2020, :month :feb}) ;; => {:years 0, :months 0}
+
+ (difference-in [:days] {:year 2020, :month :feb, :day 1} {:year 2020, :month :mar, :day 1}) ;; => {:days 28}
+ (difference-in [:days] {:year 2020, :month :mar, :day 1} {:year 2020, :month :feb, :day 1}) ;; => {:days -28}
+ (difference-in [:days] {:year 2020, :month :feb, :day 1} {:year 2020, :month :feb, :day 1}) ;; => {:days 0}
+
+ (strip-zeros {:years 0, :months 1}) ;; => {:months 1}
+
+ (compare {:hour 17} {:hour 16}) ;; => 1
+ (compare {:hour 17} {:hour 16}) ;; => 1
+ (compare {:hour 17, :utc {:hours 3}}
+          {:hour 16, :utc {:hours 2}}) ;; => 0
+ (compare (remove-deltas {:hour 17, :utc {:hours 3}})
+          (remove-deltas {:hour 16, :utc {:hours 2}})) ;; => 1
+
+ (- {:hour 17} {:hour 3})   ;; => {:hours 14}
+ (- {:hour 17} {:hours 3})  ;; => {:hour 14}
+ (- {:hours 17} {:hours 3}) ;; => {:hours 14}
+ (- {:hour 17, :utc {:hours 3}} {:hours 3}) ;; => {:hour 14, :utc {:hour 3}}
+
+ (- {:hour 17} {:hour 16}) ;; => {:hours 1}
+ (- {:hour 16} {:hour 17}) ;; => {:hours -1}
+
+ (- {:hour 17, :utc {:hours 3}} {:hour 16, :utc {:hours 2}}) ;; => {:hours 0}
+ (- {:hour 17, :utc {:hours 3}} {:hour 16, :utc {:hours 3}}) ;; => {:hours 1}
+ (- {:hour 16, :utc {:hours 3}} {:hour 17, :utc {:hours 3}}) ;; => {:hours -1}
+
+ (difference {:hour 17} {:hour 16}) ;; => {:hours -1}
+ (difference {:hour 16} {:hour 17}) ;; => {:hours 1}
+
+ (difference {:hours 17} {:hours 16}) ;; => {:hours -1}
+ (difference {:hours 16} {:hours 17}) ;; => {:hours 1}
+
+ (difference {:hour 17, :utc {:hours 3}}
+             {:hour 16, :utc {:hours 2}}) ;; => {:hours 0}
+
+
+ {:inch 11, :foot 5}
+ {:inches 11, :feet 5}
+
+ ;; фактор пространство по классу эквивалентности datetime и построил на этом афинное пространство
+
+
+ ;1234
+
+
+ ;[4 -3 2 1]
+ ;4 * 10^0
+ ;-3 * 10^1
+ ;2 * 10^2
+ ;1 * 10^3
+ ;1174
+
+ ;1000
+
+
+
+ (abs {:months -2, :days 4})
+
+ )
 
