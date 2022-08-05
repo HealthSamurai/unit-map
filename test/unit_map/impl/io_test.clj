@@ -54,7 +54,7 @@
          :parse (fn [_reg s] (parse-long s))}
 
    :month {:unit   :month
-           :parse  (fn [reg s] (prn s) (system/useq-nth (registry/useq reg :month :year) {} (dec (parse-long s))))
+           :parse  (fn [reg s] (system/useq-nth (registry/useq reg :month :year) {} (dec (parse-long s))))
            :format (fn [reg v] (inc (system/useq-index-of (registry/useq reg :month :year) {} v)))}
 
    :year {:unit  :year
